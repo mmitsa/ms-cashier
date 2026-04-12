@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="MsCashier.API/MsCashier.API.csproj" />
+  <Project Path="MsCashier.Application/MsCashier.Application.csproj" />
+  <Project Path="MsCashier.Domain/MsCashier.Domain.csproj" />
+  <Project Path="MsCashier.Infrastructure/MsCashier.Infrastructure.csproj" />
+  <Project Path="MsCashier.Tests/MsCashier.Tests.csproj" />
+</Solution>

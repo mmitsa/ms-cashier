@@ -1,0 +1,133 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mscashier-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD}
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  # One-shot job that applies EF Core migrations and then exits.
+  # In production this should be the FIRST thing run on every deploy, and the
+  # API container should NOT auto-migrate (set Database__AutoMigrate=false).
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mscashier-migrate
+    command: ["dotnet", "MsCashier.API.dll", "--migrate-only"]
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=MsCashierDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=True
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER:-MsCashier}
+      - Jwt__Audience=${JWT_AUDIENCE:-MsCashier}
+      - Cors__Origins=${CORS_ORIGINS:-http://localhost:3000}
+      - Seed__SuperAdminPassword=${SEED_SUPERADMIN_PASSWORD:-}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mscashier-api
+    ports:
+      - "5050:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=MsCashierDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=True
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER:-MsCashier}
+      - Jwt__Audience=${JWT_AUDIENCE:-MsCashier}
+      - Jwt__ExpiryHours=${JWT_EXPIRY_HOURS:-24}
+      - Cors__Origins=${CORS_ORIGINS:-http://localhost:3000}
+      - Seed__SuperAdminPassword=${SEED_SUPERADMIN_PASSWORD:-}
+      - Database__AutoMigrate=${DATABASE_AUTO_MIGRATE:-true}
+      # OpenTelemetry: send traces + metrics here. Leave empty for console only.
+      # When the observability profile is up, set this to http://jaeger:4317.
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL:-grpc}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      # Use CMD-SHELL so that the `||` operator is interpreted by sh.
+      # The plain CMD form passes every token literally to curl.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mscashier-frontend
+    ports:
+      - "3000:8080"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Jaeger — local OpenTelemetry collector + UI for traces.
+  # Enable with the "observability" profile:
+  #   docker compose --profile observability up -d jaeger
+  # Then set OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317 in .env and
+  # restart the api. Browse traces at http://localhost:16686
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: mscashier-jaeger
+    profiles: ["observability"]
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP/gRPC
+      - "4318:4318"     # OTLP/HTTP
+    restart: unless-stopped
+
+  # TLS-terminating reverse proxy. Only enabled when "prod" profile is active.
+  # Local: DOMAIN=localhost docker compose --profile prod up -d
+  # Prod:  DOMAIN=pos.example.com docker compose --profile prod up -d
+  caddy:
+    image: caddy:2-alpine
+    container_name: mscashier-caddy
+    profiles: ["prod"]
+    ports:
+      # Host ports default to 80/443 for production, but can be overridden
+      # via env (e.g. CADDY_HTTP_PORT=8080) when those ports are taken locally.
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+  caddy-data:
+  caddy-config:

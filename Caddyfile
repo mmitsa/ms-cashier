@@ -1,0 +1,51 @@
+# Caddyfile — TLS-terminating reverse proxy in front of frontend + API.
+#
+# In production, set the DOMAIN env var (e.g. "pos.example.com") and Caddy
+# will request a Let's Encrypt certificate automatically.
+#
+# In local development, use DOMAIN=localhost. Caddy will issue a self-signed
+# cert from its internal CA — accept the browser warning the first time.
+#
+# Usage:
+#   DOMAIN=pos.example.com docker compose --profile prod up -d
+#   DOMAIN=localhost       docker compose --profile prod up -d  (dev TLS)
+
+{$DOMAIN:localhost} {
+	encode gzip zstd
+
+	# API: forward /api/* to the backend, preserving the original host so
+	# the rate limiter sees the real client IP via X-Forwarded-For.
+	handle /api/* {
+		reverse_proxy api:8080 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# Health: forward /health to the backend.
+	handle /health {
+		reverse_proxy api:8080
+	}
+
+	# Swagger only available in dev/staging — block in prod by default.
+	handle /swagger/* {
+		reverse_proxy api:8080
+	}
+
+	# Everything else → frontend (the SPA + static assets).
+	handle {
+		reverse_proxy frontend:8080
+	}
+
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		# remove the Server header
+		-Server
+	}
+}

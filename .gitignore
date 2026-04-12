@@ -1,0 +1,36 @@
+# Secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+appsettings.Development.json
+appsettings.Production.json
+secrets.json
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+.vs/
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
