@@ -100,6 +100,25 @@ public class AppDbContext : DbContext
 
     public DbSet<BundleItem> BundleItems => Set<BundleItem>();
 
+    // Social Media
+    public DbSet<SocialMediaAccount> SocialMediaAccounts => Set<SocialMediaAccount>();
+    public DbSet<SocialMediaPost> SocialMediaPosts => Set<SocialMediaPost>();
+    public DbSet<SocialMediaPostTarget> SocialMediaPostTargets => Set<SocialMediaPostTarget>();
+    public DbSet<AutoPostRule> AutoPostRules => Set<AutoPostRule>();
+
+    // Public API & Webhooks
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<WebhookSubscription> WebhookSubscriptions => Set<WebhookSubscription>();
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
+
+    // Online Store
+    public DbSet<OnlineStore> OnlineStores => Set<OnlineStore>();
+    public DbSet<StoreBanner> StoreBanners => Set<StoreBanner>();
+    public DbSet<OnlineOrder> OnlineOrders => Set<OnlineOrder>();
+    public DbSet<OnlineOrderItem> OnlineOrderItems => Set<OnlineOrderItem>();
+    public DbSet<OnlinePaymentConfig> OnlinePaymentConfigs => Set<OnlinePaymentConfig>();
+    public DbSet<StoreShippingConfig> StoreShippingConfigs => Set<StoreShippingConfig>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -178,6 +197,12 @@ public class AppDbContext : DbContext
         // Bundle items: tenant isolation
         modelBuilder.Entity<BundleItem>().HasQueryFilter(e => _tenantService == null || e.TenantId == _tenantService.TenantId);
 
+        // Social Media: STRICT tenant isolation
+        modelBuilder.Entity<SocialMediaAccount>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<SocialMediaPost>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<SocialMediaPostTarget>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<AutoPostRule>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+
         // Loyalty
         modelBuilder.Entity<LoyaltyProgram>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<CustomerLoyalty>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
@@ -195,6 +220,14 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SalesRep>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<SalesRepTransaction>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<SalesRepCommission>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+
+        // Online Store: STRICT tenant isolation
+        modelBuilder.Entity<OnlineStore>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<StoreBanner>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<OnlineOrder>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<OnlineOrderItem>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<OnlinePaymentConfig>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<StoreShippingConfig>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
 
         // Tenant
         modelBuilder.Entity<Tenant>(e =>
@@ -863,6 +896,60 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Invoice>(e =>
         {
             e.HasOne(x => x.SalesRep).WithMany().HasForeignKey(x => x.SalesRepId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Online Store
+        modelBuilder.Entity<OnlineStore>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.TenantId);
+            e.HasIndex(x => x.Subdomain).IsUnique();
+            e.Property(x => x.Subdomain).HasMaxLength(100).IsRequired();
+            e.HasMany(x => x.Banners).WithOne(x => x.OnlineStore).HasForeignKey(x => x.OnlineStoreId).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.Orders).WithOne(x => x.OnlineStore).HasForeignKey(x => x.OnlineStoreId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(x => x.PaymentConfigs).WithOne(x => x.OnlineStore).HasForeignKey(x => x.OnlineStoreId).OnDelete(DeleteBehavior.Cascade);
+            e.HasMany(x => x.ShippingConfigs).WithOne(x => x.OnlineStore).HasForeignKey(x => x.OnlineStoreId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StoreBanner>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.OnlineStoreId);
+            e.Property(x => x.ImageUrl).HasMaxLength(500).IsRequired();
+        });
+
+        modelBuilder.Entity<OnlineOrder>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.TenantId);
+            e.HasIndex(x => new { x.OnlineStoreId, x.OrderNumber }).IsUnique();
+            e.HasIndex(x => x.Status);
+            e.HasIndex(x => x.CreatedAt);
+            e.Property(x => x.OrderNumber).HasMaxLength(50).IsRequired();
+            e.HasOne(x => x.Contact).WithMany().HasForeignKey(x => x.ContactId).OnDelete(DeleteBehavior.SetNull);
+            e.HasOne(x => x.Invoice).WithMany().HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.SetNull);
+            e.HasMany(x => x.Items).WithOne(x => x.OnlineOrder).HasForeignKey(x => x.OnlineOrderId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OnlineOrderItem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.OnlineOrderId);
+            e.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OnlinePaymentConfig>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.OnlineStoreId);
+            e.Property(x => x.Provider).HasMaxLength(50).IsRequired();
+        });
+
+        modelBuilder.Entity<StoreShippingConfig>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.OnlineStoreId);
+            e.Property(x => x.ShippingType).HasMaxLength(50).IsRequired();
         });
 
         // Seed Plans

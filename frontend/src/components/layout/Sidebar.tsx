@@ -4,7 +4,8 @@ import {
   Receipt, DollarSign, Warehouse, UserCheck, Building2,
   ChevronRight, ChevronLeft, ChevronDown, FileText, Shield, Fingerprint, Banknote,
   GitBranch, ClipboardCheck, UtensilsCrossed, ChefHat, MapPin, QrCode, CreditCard,
-  LayoutGrid, Store, Utensils, Landmark, UserCog, ShieldCheck,
+  LayoutGrid, Store, Utensils, Landmark, UserCog, ShieldCheck, Ruler, Gift,
+  Megaphone, Globe, ScanLine, Code,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -52,7 +53,11 @@ const sidebarGroups: ModuleGroup[] = [
       { id: 'sales', label: 'المبيعات', icon: Receipt, permission: MODULE_PERMISSIONS.sales },
       { id: 'inventory', label: 'المخزون', icon: Package, permission: MODULE_PERMISSIONS.inventory },
       { id: 'warehouses', label: 'المخازن', icon: Warehouse, permission: MODULE_PERMISSIONS.warehouses },
+      { id: 'units', label: 'وحدات القياس', icon: Ruler, permission: MODULE_PERMISSIONS.inventory },
       { id: 'customers', label: 'العملاء والموردين', icon: Users, permission: MODULE_PERMISSIONS.customers },
+      { id: 'sales-reps', label: 'مندوبي المبيعات', icon: UserCheck, permission: MODULE_PERMISSIONS.sales },
+      { id: 'loyalty', label: 'نقاط الولاء', icon: Gift, permission: MODULE_PERMISSIONS.settings },
+      { id: 'rfid-inventory', label: 'جرد RFID و QR', icon: ScanLine, permission: MODULE_PERMISSIONS.inventory },
     ],
   },
   {
@@ -84,6 +89,30 @@ const sidebarGroups: ModuleGroup[] = [
     items: [
       { id: 'employees', label: 'الموظفين', icon: UserCheck, permission: MODULE_PERMISSIONS.employees },
       { id: 'attendance', label: 'الحضور والانصراف', icon: Fingerprint, permission: MODULE_PERMISSIONS.attendance },
+    ],
+  },
+  {
+    id: 'online-store',
+    label: 'المتجر الإلكتروني',
+    icon: Globe,
+    items: [
+      { id: 'store-builder', label: 'المتجر الإلكتروني', icon: Globe, permission: MODULE_PERMISSIONS.settings },
+    ],
+  },
+  {
+    id: 'marketing',
+    label: 'التسويق',
+    icon: Megaphone,
+    items: [
+      { id: 'social-media', label: 'التواصل الاجتماعي', icon: Megaphone, permission: MODULE_PERMISSIONS.settings },
+    ],
+  },
+  {
+    id: 'developers',
+    label: 'المطورين',
+    icon: Code,
+    items: [
+      { id: 'api-management', label: 'إدارة API', icon: Code, permission: MODULE_PERMISSIONS.settings },
     ],
   },
   {

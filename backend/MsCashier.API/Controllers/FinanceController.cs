@@ -9,6 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 [Route("api/v1/finance")]
+[Authorize(Roles = "SuperAdmin,Admin")]
 public class FinanceController : BaseApiController
 {
     private readonly IFinanceService _financeService;

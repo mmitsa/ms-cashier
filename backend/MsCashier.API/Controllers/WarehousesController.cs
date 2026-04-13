@@ -9,6 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 [Route("api/v1/warehouses")]
+[Authorize(Roles = "SuperAdmin,Admin")]
 public class WarehousesController : BaseApiController
 {
     private readonly IWarehouseService _warehouseService;

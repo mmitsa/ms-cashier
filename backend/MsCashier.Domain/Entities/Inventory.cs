@@ -12,6 +12,7 @@ public class Inventory
 
     public Guid TenantId { get; set; }
     public int ProductId { get; set; }
+    public int? ProductVariantId { get; set; }
     public int WarehouseId { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
@@ -28,6 +29,7 @@ public class Inventory
 
     // Navigation
     public Product? Product { get; set; }
+    public ProductVariant? ProductVariant { get; set; }
     public Warehouse? Warehouse { get; set; }
 }
 

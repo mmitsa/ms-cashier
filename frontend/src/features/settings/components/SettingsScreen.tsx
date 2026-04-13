@@ -11,6 +11,9 @@ import {
 import { apiClient } from '@/lib/api/client';
 import { useUIStore } from '@/store/uiStore';
 import toast from 'react-hot-toast';
+import { StoreSettingsTab } from './StoreSettingsTab';
+import { CurrencyTaxTab } from './CurrencyTaxTab';
+import { IntegrationsTab } from './IntegrationsTab';
 
 // ==================== Helper: get tenantId from JWT ====================
 function getTenantId(): string {
@@ -27,16 +30,19 @@ function getTenantId(): string {
 }
 
 // ==================== Tab Definitions ====================
-type TabKey = 'business' | 'users' | 'print' | 'scale' | 'zatca' | 'payment' | 'otp' | 'backup' | 'notifications' | 'system';
+type TabKey = 'business' | 'users' | 'print' | 'scale' | 'zatca' | 'payment' | 'otp' | 'backup' | 'notifications' | 'system' | 'store-settings' | 'currency-tax' | 'integrations';
 
 const tabs: { key: TabKey; label: string; icon: typeof Building2; badge?: string }[] = [
+  { key: 'store-settings', label: 'إعدادات المتجر', icon: Building2, badge: 'جديد' },
+  { key: 'currency-tax', label: 'العملات والضريبة', icon: Globe, badge: 'جديد' },
+  { key: 'integrations', label: 'التكاملات', icon: Zap, badge: 'جديد' },
   { key: 'business', label: 'معلومات المنشأة', icon: Building2 },
   { key: 'users', label: 'المستخدمون', icon: Users },
   { key: 'print', label: 'الطباعة', icon: Printer },
   { key: 'scale', label: 'الميزان', icon: Scale },
-  { key: 'zatca', label: 'زاتكا', icon: FileCheck, badge: 'مهم' },
-  { key: 'payment', label: 'بوابات الدفع', icon: CreditCard, badge: 'جديد' },
-  { key: 'otp', label: 'رسائل OTP', icon: MessageSquare, badge: 'جديد' },
+  { key: 'zatca', label: 'زاتكا', icon: FileCheck },
+  { key: 'payment', label: 'بوابات الدفع', icon: CreditCard },
+  { key: 'otp', label: 'رسائل OTP', icon: MessageSquare },
   { key: 'backup', label: 'النسخ الاحتياطي', icon: Database },
   { key: 'notifications', label: 'الإشعارات', icon: Bell },
   { key: 'system', label: 'النظام', icon: Settings },
@@ -2061,6 +2067,9 @@ function OtpFormModal({ initial, onClose, onSave, saving }: { initial: OtpConfig
 
 // ==================== Main Settings Screen ====================
 const tabComponents: Record<TabKey, React.FC> = {
+  'store-settings': StoreSettingsTab,
+  'currency-tax': CurrencyTaxTab,
+  'integrations': IntegrationsTab,
   business: BusinessInfoTab,
   users: UsersTab,
   print: PrintSettingsTab,
@@ -2074,8 +2083,8 @@ const tabComponents: Record<TabKey, React.FC> = {
 };
 
 export function SettingsScreen() {
-  const [activeTab, setActiveTab] = useState<TabKey>('business');
-  const ActivePanel = tabComponents[activeTab];
+  const [activeTab, setActiveTab] = useState<TabKey>('store-settings');
+  const ActivePanel = tabComponents[activeTab] ?? StoreSettingsTab;
 
   return (
     <div className="flex gap-6 h-full min-h-0">

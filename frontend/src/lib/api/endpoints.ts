@@ -8,6 +8,10 @@ import type {
   EmployeeDto, CreateEmployeeRequest, InstallmentDto,
   DashboardDto, CreateProductRequest as CreateProduct,
   TenantDto, CreateTenantRequest, UpdateTenantRequest, TenantSearchParams,
+  UnitDto, CreateUnitRequest, UpdateUnitRequest,
+  SalesRepDto, CreateSalesRepRequest, UpdateSalesRepRequest,
+  SalesRepTransactionDto, CollectPaymentRequest, SalesRepCommissionDto, SalesRepSummaryDto,
+  ProductWithVariantsDto, SetVariantOptionsRequest, GenerateVariantsRequest, UpdateVariantRequest, ProductVariantDto,
 } from '@/types/api.types';
 
 // ==================== Auth ====================
@@ -44,6 +48,85 @@ export const productsApi = {
 
   getLowStock: () =>
     apiClient.get<ApiResponse<Array<{ id: number; name: string; barcode?: string; quantity: number; minStock: number }>>>('/products/low-stock').then(r => r.data),
+};
+
+// ==================== Units ====================
+export const unitsApi = {
+  getAll: () =>
+    apiClient.get<ApiResponse<UnitDto[]>>('/units').then(r => r.data),
+
+  create: (data: CreateUnitRequest) =>
+    apiClient.post<ApiResponse<UnitDto>>('/units', data).then(r => r.data),
+
+  update: (id: number, data: UpdateUnitRequest) =>
+    apiClient.put<ApiResponse<UnitDto>>(`/units/${id}`, data).then(r => r.data),
+
+  delete: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/units/${id}`).then(r => r.data),
+
+  convert: (fromUnitId: number, toUnitId: number, quantity: number) =>
+    apiClient.get<ApiResponse<number>>('/units/convert', { params: { fromUnitId, toUnitId, quantity } }).then(r => r.data),
+};
+
+// ==================== Sales Reps ====================
+export const salesRepsApi = {
+  getAll: () =>
+    apiClient.get<ApiResponse<SalesRepDto[]>>('/sales-reps').then(r => r.data),
+  getMine: () =>
+    apiClient.get<ApiResponse<SalesRepDto>>('/sales-reps/mine').then(r => r.data),
+  getById: (id: number) =>
+    apiClient.get<ApiResponse<SalesRepDto>>(`/sales-reps/${id}`).then(r => r.data),
+  getSummary: () =>
+    apiClient.get<ApiResponse<SalesRepSummaryDto>>('/sales-reps/summary').then(r => r.data),
+  create: (data: CreateSalesRepRequest) =>
+    apiClient.post<ApiResponse<SalesRepDto>>('/sales-reps', data).then(r => r.data),
+  update: (id: number, data: UpdateSalesRepRequest) =>
+    apiClient.put<ApiResponse<SalesRepDto>>(`/sales-reps/${id}`, data).then(r => r.data),
+  delete: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/sales-reps/${id}`).then(r => r.data),
+  getLedger: (id: number, from?: string, to?: string) =>
+    apiClient.get<ApiResponse<SalesRepTransactionDto[]>>(`/sales-reps/${id}/ledger`, { params: { from, to } }).then(r => r.data),
+  collectPayment: (id: number, data: CollectPaymentRequest) =>
+    apiClient.post<ApiResponse<SalesRepTransactionDto>>(`/sales-reps/${id}/collect-payment`, data).then(r => r.data),
+  getCommissions: (id: number) =>
+    apiClient.get<ApiResponse<SalesRepCommissionDto[]>>(`/sales-reps/${id}/commissions`).then(r => r.data),
+  calculateCommission: (id: number, month: number, year: number) =>
+    apiClient.post<ApiResponse<SalesRepCommissionDto>>(`/sales-reps/${id}/commissions/calculate?month=${month}&year=${year}`).then(r => r.data),
+  payCommission: (commissionId: number, data: { amount: number; notes?: string }) =>
+    apiClient.post<ApiResponse<SalesRepCommissionDto>>(`/sales-reps/commissions/${commissionId}/pay`, data).then(r => r.data),
+};
+
+// ==================== Store Settings ====================
+export const storeSettingsApi = {
+  get: () => apiClient.get<ApiResponse<any>>('/store-settings').then(r => r.data),
+  save: (data: any) => apiClient.put<ApiResponse<any>>('/store-settings', data).then(r => r.data),
+  getCurrencies: () => apiClient.get<ApiResponse<any[]>>('/store-settings/currencies').then(r => r.data),
+  saveCurrency: (id: number | null, data: any) =>
+    id ? apiClient.put<ApiResponse<any>>(`/store-settings/currencies/${id}`, data).then(r => r.data)
+       : apiClient.post<ApiResponse<any>>('/store-settings/currencies', data).then(r => r.data),
+  deleteCurrency: (id: number) => apiClient.delete<ApiResponse<boolean>>(`/store-settings/currencies/${id}`).then(r => r.data),
+  getTax: () => apiClient.get<ApiResponse<any>>('/store-settings/tax').then(r => r.data),
+  saveTax: (data: any) => apiClient.put<ApiResponse<any>>('/store-settings/tax', data).then(r => r.data),
+};
+
+// ==================== Integrations ====================
+export const integrationsApi = {
+  getCatalog: () => apiClient.get<ApiResponse<any[]>>('/integrations/catalog').then(r => r.data),
+  getAll: () => apiClient.get<ApiResponse<any[]>>('/integrations').then(r => r.data),
+  save: (id: number | null, data: any) =>
+    id ? apiClient.put<ApiResponse<any>>(`/integrations/${id}`, data).then(r => r.data)
+       : apiClient.post<ApiResponse<any>>('/integrations', data).then(r => r.data),
+  delete: (id: number) => apiClient.delete<ApiResponse<boolean>>(`/integrations/${id}`).then(r => r.data),
+  toggle: (id: number) => apiClient.post<ApiResponse<boolean>>(`/integrations/${id}/toggle`).then(r => r.data),
+  test: (id: number) => apiClient.post<ApiResponse<boolean>>(`/integrations/${id}/test`).then(r => r.data),
+};
+
+// ==================== Notifications ====================
+export const notificationsApi = {
+  getMine: (limit = 50) => apiClient.get<ApiResponse<any[]>>('/notifications', { params: { limit } }).then(r => r.data),
+  getUnreadCount: () => apiClient.get<ApiResponse<number>>('/notifications/unread-count').then(r => r.data),
+  markRead: (id: number) => apiClient.post<ApiResponse<boolean>>(`/notifications/${id}/read`).then(r => r.data),
+  markAllRead: () => apiClient.post<ApiResponse<boolean>>('/notifications/read-all').then(r => r.data),
 };
 
 // ==================== Categories ====================
@@ -121,6 +204,12 @@ export const inventoryApi = {
     apiClient.get<ApiResponse<PagedResult<FinanceTransactionDto>>>(`/inventory/${productId}/movements`, {
       params: { from, to, page, pageSize },
     }).then(r => r.data),
+
+  getProductStock: (productId: number) =>
+    apiClient.get<ApiResponse<any[]>>(`/inventory/product/${productId}/stock`).then(r => r.data),
+
+  getDashboard: () =>
+    apiClient.get<ApiResponse<any>>('/inventory/dashboard').then(r => r.data),
 };
 
 // ==================== Finance ====================
@@ -540,6 +629,36 @@ export const customerApi = {
 };
 
 // ============================================================
+// Loyalty — برنامج نقاط الولاء
+// ============================================================
+
+export const loyaltyApi = {
+  getProgram: () =>
+    apiClient.get<ApiResponse<any>>('/loyalty/program').then(r => r.data),
+
+  saveProgram: (data: { name: string; pointsPerCurrency: number; redemptionValue: number; minRedemptionPoints: number; pointsExpireDays: number; isActive: boolean }) =>
+    apiClient.post<ApiResponse<any>>('/loyalty/program', data).then(r => r.data),
+
+  getCustomerLoyalty: (contactId: number) =>
+    apiClient.get<ApiResponse<any>>(`/loyalty/customer/${contactId}`).then(r => r.data),
+
+  enrollCustomer: (contactId: number) =>
+    apiClient.post<ApiResponse<any>>(`/loyalty/customer/${contactId}/enroll`).then(r => r.data),
+
+  earnPoints: (contactId: number, invoiceId: number, totalAmount: number) =>
+    apiClient.post<ApiResponse<any>>(`/loyalty/customer/${contactId}/earn`, null, { params: { invoiceId, totalAmount } }).then(r => r.data),
+
+  redeemPoints: (contactId: number, points: number) =>
+    apiClient.post<ApiResponse<any>>(`/loyalty/customer/${contactId}/redeem`, { points }).then(r => r.data),
+
+  getTransactions: (contactId: number, page = 1, pageSize = 20) =>
+    apiClient.get<ApiResponse<any>>(`/loyalty/customer/${contactId}/transactions`, { params: { page, pageSize } }).then(r => r.data),
+
+  getDashboard: () =>
+    apiClient.get<ApiResponse<any>>('/loyalty/dashboard').then(r => r.data),
+};
+
+// ============================================================
 // Payment Terminals
 // ============================================================
 
@@ -597,4 +716,271 @@ export const otpApi = {
   test: (id: number) => apiClient.post<ApiResponse<any>>(`/otp/configs/${id}/test`).then(r => r.data),
   send: (data: { phone: string; purpose: string }) => apiClient.post<ApiResponse<any>>('/otp/send', data).then(r => r.data),
   verify: (data: { phone: string; code: string; purpose: string }) => apiClient.post<ApiResponse<any>>('/otp/verify', data).then(r => r.data),
+};
+
+// ============================================================
+// CSV Import/Export
+// ============================================================
+
+export type CsvImportResult = {
+  totalRows: number;
+  successCount: number;
+  skippedCount: number;
+  errorCount: number;
+  errors: { row: number; field: string; value: string; message: string }[];
+  warnings: string[];
+};
+
+export const importExportApi = {
+  importProducts: (file: File, warehouseId: number, skipDuplicates = true) => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.post<ApiResponse<CsvImportResult>>(
+      `/import-export/import/products?warehouseId=${warehouseId}&skipDuplicates=${skipDuplicates}`,
+      form, { headers: { 'Content-Type': 'multipart/form-data' } }
+    ).then(r => r.data);
+  },
+
+  importContacts: (file: File, skipDuplicates = true) => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.post<ApiResponse<CsvImportResult>>(
+      `/import-export/import/contacts?skipDuplicates=${skipDuplicates}`,
+      form, { headers: { 'Content-Type': 'multipart/form-data' } }
+    ).then(r => r.data);
+  },
+
+  importCategories: (file: File, skipDuplicates = true) => {
+    const form = new FormData();
+    form.append('file', file);
+    return apiClient.post<ApiResponse<CsvImportResult>>(
+      `/import-export/import/categories?skipDuplicates=${skipDuplicates}`,
+      form, { headers: { 'Content-Type': 'multipart/form-data' } }
+    ).then(r => r.data);
+  },
+
+  exportProducts: (categoryId?: number, activeOnly = true) =>
+    apiClient.get('/import-export/export/products', {
+      params: { categoryId, activeOnly }, responseType: 'blob',
+    }).then(r => r.data),
+
+  exportContacts: (activeOnly = true) =>
+    apiClient.get('/import-export/export/contacts', {
+      params: { activeOnly }, responseType: 'blob',
+    }).then(r => r.data),
+
+  exportCategories: () =>
+    apiClient.get('/import-export/export/categories', { responseType: 'blob' }).then(r => r.data),
+
+  downloadTemplate: (type: 'Products' | 'Contacts' | 'Categories') => {
+    const typeNum = type === 'Products' ? 1 : type === 'Contacts' ? 2 : 3;
+    return apiClient.get(`/import-export/template/${typeNum}`, { responseType: 'blob' }).then(r => r.data);
+  },
+};
+
+// ============================================================
+// Product Variants
+// ============================================================
+
+export const productVariantsApi = {
+  getProductVariants: (productId: number) =>
+    apiClient.get<ApiResponse<ProductWithVariantsDto>>(`/product-variants/${productId}`).then(r => r.data),
+
+  setOptions: (data: SetVariantOptionsRequest) =>
+    apiClient.post<ApiResponse<ProductWithVariantsDto>>('/product-variants/options', data).then(r => r.data),
+
+  generate: (data: GenerateVariantsRequest) =>
+    apiClient.post<ApiResponse<ProductWithVariantsDto>>('/product-variants/generate', data).then(r => r.data),
+
+  update: (variantId: number, data: UpdateVariantRequest) =>
+    apiClient.put<ApiResponse<ProductVariantDto>>(`/product-variants/${variantId}`, data).then(r => r.data),
+
+  delete: (variantId: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/product-variants/${variantId}`).then(r => r.data),
+
+  getByBarcode: (barcode: string) =>
+    apiClient.get<ApiResponse<ProductVariantDto>>(`/product-variants/barcode/${barcode}`).then(r => r.data),
+};
+
+// ============================================================
+// Online Store
+// ============================================================
+
+export const onlineStoreApi = {
+  // Store settings
+  getSettings: () =>
+    apiClient.get<ApiResponse<any>>('/online-store').then(r => r.data),
+
+  updateSettings: (data: any) =>
+    apiClient.put<ApiResponse<any>>('/online-store', data).then(r => r.data),
+
+  // Banners
+  getBanners: () =>
+    apiClient.get<ApiResponse<any[]>>('/online-store/banners').then(r => r.data),
+
+  saveBanner: (data: any) =>
+    apiClient.post<ApiResponse<any>>('/online-store/banners', data).then(r => r.data),
+
+  deleteBanner: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/online-store/banners/${id}`).then(r => r.data),
+
+  // Orders
+  getOrders: (params: { page?: number; pageSize?: number; status?: number; search?: string }) =>
+    apiClient.get<ApiResponse<PagedResult<any>>>('/online-store/orders', { params }).then(r => r.data),
+
+  getOrderById: (id: number) =>
+    apiClient.get<ApiResponse<any>>(`/online-store/orders/${id}`).then(r => r.data),
+
+  updateOrderStatus: (id: number, status: number) =>
+    apiClient.put<ApiResponse<any>>(`/online-store/orders/${id}/status`, { status }).then(r => r.data),
+
+  // Payment configs
+  getPaymentConfigs: () =>
+    apiClient.get<ApiResponse<any[]>>('/online-store/payment-configs').then(r => r.data),
+
+  savePaymentConfig: (data: any) =>
+    apiClient.post<ApiResponse<any>>('/online-store/payment-configs', data).then(r => r.data),
+
+  // Shipping configs
+  getShippingConfigs: () =>
+    apiClient.get<ApiResponse<any[]>>('/online-store/shipping-configs').then(r => r.data),
+
+  saveShippingConfig: (data: any) =>
+    apiClient.post<ApiResponse<any>>('/online-store/shipping-configs', data).then(r => r.data),
+
+  // Dashboard
+  getDashboard: () =>
+    apiClient.get<ApiResponse<any>>('/online-store/dashboard').then(r => r.data),
+};
+
+// ============================================================
+// Social Media
+// ============================================================
+
+export const socialMediaApi = {
+  // Accounts
+  getAccounts: () =>
+    apiClient.get<ApiResponse<any[]>>('/social-media/accounts').then(r => r.data),
+
+  saveAccount: (data: any) =>
+    apiClient.post<ApiResponse<any>>('/social-media/accounts', data).then(r => r.data),
+
+  deleteAccount: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/social-media/accounts/${id}`).then(r => r.data),
+
+  // Posts
+  getPosts: (page = 1, pageSize = 20) =>
+    apiClient.get<ApiResponse<any>>('/social-media/posts', { params: { page, pageSize } }).then(r => r.data),
+
+  createPost: (data: any) =>
+    apiClient.post<ApiResponse<any>>('/social-media/posts', data).then(r => r.data),
+
+  schedulePost: (id: number, scheduledAt: string) =>
+    apiClient.post<ApiResponse<any>>(`/social-media/posts/${id}/schedule`, { postId: id, scheduledAt }).then(r => r.data),
+
+  publishPost: (id: number) =>
+    apiClient.post<ApiResponse<any>>(`/social-media/posts/${id}/publish`).then(r => r.data),
+
+  // Auto Post Rules
+  getAutoRules: () =>
+    apiClient.get<ApiResponse<any[]>>('/social-media/auto-rules').then(r => r.data),
+
+  saveAutoRule: (data: any) =>
+    apiClient.post<ApiResponse<any>>('/social-media/auto-rules', data).then(r => r.data),
+
+  deleteAutoRule: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/social-media/auto-rules/${id}`).then(r => r.data),
+};
+
+// ============================================================
+// RFID & QR Inventory
+// ============================================================
+
+export const rfidInventoryApi = {
+  // RFID Tags
+  getTags: (productId?: number) =>
+    apiClient.get<ApiResponse<any[]>>('/rfid-inventory/tags', { params: productId ? { productId } : {} }).then(r => r.data),
+
+  createTag: (data: { productId: number; productVariantId?: number; rfidTagId: string; tagType: string; warehouseId?: number; shelfLocation?: string }) =>
+    apiClient.post<ApiResponse<any>>('/rfid-inventory/tags', data).then(r => r.data),
+
+  deleteTag: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/rfid-inventory/tags/${id}`).then(r => r.data),
+
+  getTagByRfid: (rfidTagId: string) =>
+    apiClient.get<ApiResponse<any>>(`/rfid-inventory/tags/rfid/${rfidTagId}`).then(r => r.data),
+
+  // QR Codes
+  getQrCodes: (warehouseId?: number) =>
+    apiClient.get<ApiResponse<any[]>>('/rfid-inventory/qr-codes', { params: warehouseId ? { warehouseId } : {} }).then(r => r.data),
+
+  createQrCode: (data: { warehouseId: number; qrType: string; locationCode: string; description?: string }) =>
+    apiClient.post<ApiResponse<any>>('/rfid-inventory/qr-codes', data).then(r => r.data),
+
+  deleteQrCode: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/rfid-inventory/qr-codes/${id}`).then(r => r.data),
+
+  generateQrData: (warehouseId: number, type: string, locationCode: string) =>
+    apiClient.get<ApiResponse<string>>('/rfid-inventory/qr-codes/generate', { params: { warehouseId, type, locationCode } }).then(r => r.data),
+
+  // Scan Sessions
+  startSession: (data: { warehouseId: number; sessionType: string }) =>
+    apiClient.post<ApiResponse<any>>('/rfid-inventory/sessions/start', data).then(r => r.data),
+
+  recordScan: (sessionId: number, data: { rfidTagId: string; scannedLocation?: string }) =>
+    apiClient.post<ApiResponse<any>>(`/rfid-inventory/sessions/${sessionId}/scan`, data).then(r => r.data),
+
+  completeSession: (sessionId: number) =>
+    apiClient.post<ApiResponse<any>>(`/rfid-inventory/sessions/${sessionId}/complete`).then(r => r.data),
+
+  getSessionResults: (sessionId: number) =>
+    apiClient.get<ApiResponse<any>>(`/rfid-inventory/sessions/${sessionId}/results`).then(r => r.data),
+
+  getSessions: (params?: { warehouseId?: number; page?: number; pageSize?: number }) =>
+    apiClient.get<ApiResponse<any>>('/rfid-inventory/sessions', { params }).then(r => r.data),
+
+  // QR Count
+  startQrCount: (warehouseId: number) =>
+    apiClient.post<ApiResponse<any>>('/rfid-inventory/qr-count/start', { warehouseId, sessionType: 'qr_count' }).then(r => r.data),
+
+  recordQrScan: (sessionId: number, data: { productId: number; quantity: number }) =>
+    apiClient.post<ApiResponse<any>>(`/rfid-inventory/qr-count/${sessionId}/scan`, data).then(r => r.data),
+
+  completeQrCount: (sessionId: number) =>
+    apiClient.post<ApiResponse<any>>(`/rfid-inventory/qr-count/${sessionId}/complete`).then(r => r.data),
+};
+
+// ============================================================
+// Public API Management
+// ============================================================
+
+export const publicApiManagementApi = {
+  // API Keys
+  getKeys: () =>
+    apiClient.get<ApiResponse<any[]>>('/api-management/keys').then(r => r.data),
+
+  createKey: (data: { name: string; scopes?: string[]; expiresAt?: string }) =>
+    apiClient.post<ApiResponse<any>>('/api-management/keys', data).then(r => r.data),
+
+  revokeKey: (id: number) =>
+    apiClient.post<ApiResponse<boolean>>(`/api-management/keys/${id}/revoke`).then(r => r.data),
+
+  // Webhooks
+  getWebhooks: () =>
+    apiClient.get<ApiResponse<any[]>>('/api-management/webhooks').then(r => r.data),
+
+  createWebhook: (data: { url: string; events: string[] }) =>
+    apiClient.post<ApiResponse<any>>('/api-management/webhooks', data).then(r => r.data),
+
+  updateWebhook: (id: number, data: { url?: string; events?: string[]; isActive?: boolean }) =>
+    apiClient.put<ApiResponse<any>>(`/api-management/webhooks/${id}`, data).then(r => r.data),
+
+  deleteWebhook: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/api-management/webhooks/${id}`).then(r => r.data),
+
+  getDeliveries: (subscriptionId: number, page = 1, pageSize = 20) =>
+    apiClient.get<ApiResponse<any>>(`/api-management/webhooks/${subscriptionId}/deliveries`, { params: { page, pageSize } }).then(r => r.data),
+
+  testWebhook: (subscriptionId: number) =>
+    apiClient.post<ApiResponse<any>>(`/api-management/webhooks/${subscriptionId}/test`).then(r => r.data),
 };

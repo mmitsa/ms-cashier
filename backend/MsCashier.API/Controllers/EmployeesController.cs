@@ -9,6 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 [Route("api/v1/employees-legacy")]
+[Authorize(Roles = "SuperAdmin,Admin")]
 public class EmployeesController : BaseApiController
 {
     private readonly IEmployeeService _employeeService;

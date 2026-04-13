@@ -9,6 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 [Route("api/v1/contacts")]
+[Authorize(Roles = "SuperAdmin,Admin,Cashier,SalesRep")]
 public class ContactsController : BaseApiController
 {
     private readonly IContactService _contactService;

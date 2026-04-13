@@ -419,7 +419,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
       // Handle object format (ASP.NET ValidationProblemDetails): { errors: { "Field": ["msg"] } }
       else if (serverErrors && typeof serverErrors === 'object') {
         const firstField = Object.values(serverErrors).flat() as string[];
-        if (firstField.length > 0) {
+        if (firstField.length > 0 && firstField[0]) {
           toast.error(firstField[0]);
         } else {
           toast.error('فشل إنشاء المتجر. تحقق من البيانات وحاول مرة أخرى.');

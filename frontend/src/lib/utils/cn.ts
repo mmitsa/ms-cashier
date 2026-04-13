@@ -41,6 +41,10 @@ export function getPaymentMethodLabel(method: number): string {
     3: 'انستاباي',
     4: 'آجل',
     5: 'تقسيط',
+    6: 'تابي',
+    7: 'تمارا',
+    8: 'ڤاليو',
+    9: 'تحويل بنكي',
   };
   return labels[method] ?? 'غير محدد';
 }

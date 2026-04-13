@@ -1,14 +1,17 @@
 /**
  * IndexedDB Offline Storage Engine
- * Stores: products cache, pending invoices, sync queue, customers cache
+ * Stores: products cache, pending invoices, sync queue, customers cache,
+ *         categories cache, settings cache
  */
 
-const DB_NAME = 'ms_cashier_offline';
-const DB_VERSION = 1;
+const DB_NAME = 'mpos-offline';
+const DB_VERSION = 2;
 
 const STORES = {
   products: 'products',
   customers: 'customers',
+  categories: 'categories',
+  settings: 'settings',
   pendingInvoices: 'pending_invoices',
   syncQueue: 'sync_queue',
   meta: 'meta',
@@ -28,6 +31,10 @@ function openDb(): Promise<IDBDatabase> {
         db.createObjectStore(STORES.products, { keyPath: 'id' });
       if (!db.objectStoreNames.contains(STORES.customers))
         db.createObjectStore(STORES.customers, { keyPath: 'id' });
+      if (!db.objectStoreNames.contains(STORES.categories))
+        db.createObjectStore(STORES.categories, { keyPath: 'id' });
+      if (!db.objectStoreNames.contains(STORES.settings))
+        db.createObjectStore(STORES.settings, { keyPath: 'key' });
       if (!db.objectStoreNames.contains(STORES.pendingInvoices))
         db.createObjectStore(STORES.pendingInvoices, { keyPath: 'offlineId', autoIncrement: true });
       if (!db.objectStoreNames.contains(STORES.syncQueue))
@@ -38,6 +45,7 @@ function openDb(): Promise<IDBDatabase> {
 
     req.onsuccess = () => {
       dbInstance = req.result;
+      dbInstance.onclose = () => { dbInstance = null; };
       resolve(dbInstance);
     };
 
@@ -88,16 +96,43 @@ export async function getCachedCustomers(): Promise<any[]> {
   return promisify(store.getAll());
 }
 
+// ─── Categories Cache ────────────────────────────────────
+
+export async function cacheCategories(categories: any[]) {
+  const store = await getStore(STORES.categories, 'readwrite');
+  for (const c of categories) store.put(c);
+  const meta = await getStore(STORES.meta, 'readwrite');
+  meta.put({ key: 'categories_cached_at', value: Date.now() });
+}
+
+export async function getCachedCategories(): Promise<any[]> {
+  const store = await getStore(STORES.categories);
+  return promisify(store.getAll());
+}
+
+// ─── Settings Cache ──────────────────────────────────────
+
+export async function cacheSettings(settings: any) {
+  const store = await getStore(STORES.settings, 'readwrite');
+  store.put({ key: 'store_settings', value: settings });
+}
+
+export async function getCachedSettings(): Promise<any | null> {
+  const store = await getStore(STORES.settings);
+  const result = await promisify(store.get('store_settings'));
+  return result?.value ?? null;
+}
+
 // ─── Pending Invoices (offline sales) ────────────────────
 
-export interface PendingInvoice {
+export type PendingInvoice = {
   offlineId?: number;
-  data: any; // CreateInvoiceRequest
+  data: any;
   createdAt: string;
   synced: boolean;
   syncError?: string;
   serverId?: number;
-}
+};
 
 export async function savePendingInvoice(invoice: PendingInvoice): Promise<number> {
   const store = await getStore(STORES.pendingInvoices, 'readwrite');
@@ -144,7 +179,7 @@ export async function clearSyncedInvoices() {
 
 // ─── Sync Queue (generic operations) ─────────────────────
 
-export interface SyncQueueItem {
+export type SyncQueueItem = {
   id?: number;
   type: 'invoice' | 'zatca_report' | 'stock_adjustment' | 'contact_create';
   payload: any;
@@ -152,7 +187,7 @@ export interface SyncQueueItem {
   status: 'pending' | 'syncing' | 'synced' | 'failed';
   error?: string;
   retries: number;
-}
+};
 
 export async function addToSyncQueue(item: Omit<SyncQueueItem, 'id'>) {
   const store = await getStore(STORES.syncQueue, 'readwrite');

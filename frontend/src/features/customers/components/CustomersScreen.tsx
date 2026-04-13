@@ -349,6 +349,17 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ملاحظات</label>
+            <textarea
+              value={form.notes ?? ''}
+              onChange={(e) => updateField('notes', e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm resize-none"
+              placeholder="ملاحظات إضافية..."
+              rows={3}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">نوع السعر</label>

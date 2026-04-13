@@ -6,7 +6,7 @@ import {
   tenantsApi, salaryConfigApi, attendanceDevicesApi, attendanceApi, payrollApi,
   branchesApi, adminBranchRequestsApi,
   tablesApi, dineOrdersApi, floorSectionsApi, qrConfigApi, customerApi, paymentTerminalsApi,
-  subscriptionsApi, paymentGatewayApi, otpApi, usersApi,
+  subscriptionsApi, paymentGatewayApi, otpApi, usersApi, unitsApi, salesRepsApi,
 } from '@/lib/api/endpoints';
 import { useAuthStore } from '@/store/authStore';
 import type {
@@ -14,6 +14,8 @@ import type {
   CreateInvoiceRequest, InvoiceSearchRequest, InvoiceItemRequest,
   CreateContactRequest, CreateEmployeeRequest, LoginRequest,
   CreateTenantRequest, UpdateTenantRequest, TenantSearchParams,
+  CreateUnitRequest, UpdateUnitRequest,
+  CreateSalesRepRequest, UpdateSalesRepRequest, CollectPaymentRequest,
 } from '@/types/api.types';
 import toast from 'react-hot-toast';
 
@@ -167,6 +169,70 @@ export function useDeleteProduct() {
       toast.success('تم حذف الصنف');
     },
   });
+}
+
+// ==================== Units ====================
+export function useUnits() {
+  return useQuery({
+    queryKey: ['units'],
+    queryFn: () => unitsApi.getAll(),
+    select: (res) => res.data,
+    staleTime: 60_000,
+  });
+}
+
+export function useCreateUnit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateUnitRequest) => unitsApi.create(data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['units'] }); toast.success('تم إنشاء الوحدة'); },
+  });
+}
+
+export function useUpdateUnit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateUnitRequest }) => unitsApi.update(id, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['units'] }); toast.success('تم تحديث الوحدة'); },
+  });
+}
+
+export function useDeleteUnit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => unitsApi.delete(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['units'] }); toast.success('تم حذف الوحدة'); },
+  });
+}
+
+// ==================== Sales Reps ====================
+export function useSalesReps() {
+  return useQuery({ queryKey: ['sales-reps'], queryFn: () => salesRepsApi.getAll(), select: r => r.data, staleTime: 30_000 });
+}
+export function useSalesRepSummary() {
+  return useQuery({ queryKey: ['sales-reps', 'summary'], queryFn: () => salesRepsApi.getSummary(), select: r => r.data });
+}
+export function useCreateSalesRep() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (data: CreateSalesRepRequest) => salesRepsApi.create(data), onSuccess: () => { qc.invalidateQueries({ queryKey: ['sales-reps'] }); toast.success('تم إنشاء المندوب'); } });
+}
+export function useUpdateSalesRep() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: ({ id, data }: { id: number; data: UpdateSalesRepRequest }) => salesRepsApi.update(id, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ['sales-reps'] }); toast.success('تم تحديث المندوب'); } });
+}
+export function useDeleteSalesRep() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (id: number) => salesRepsApi.delete(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['sales-reps'] }); toast.success('تم حذف المندوب'); } });
+}
+export function useSalesRepLedger(id: number) {
+  return useQuery({ queryKey: ['sales-reps', id, 'ledger'], queryFn: () => salesRepsApi.getLedger(id), select: r => r.data, enabled: !!id });
+}
+export function useCollectPayment() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: ({ id, data }: { id: number; data: CollectPaymentRequest }) => salesRepsApi.collectPayment(id, data), onSuccess: () => { qc.invalidateQueries({ queryKey: ['sales-reps'] }); toast.success('تم تسجيل السداد'); } });
+}
+export function useSalesRepCommissions(id: number) {
+  return useQuery({ queryKey: ['sales-reps', id, 'commissions'], queryFn: () => salesRepsApi.getCommissions(id), select: r => r.data, enabled: !!id });
 }
 
 // ==================== Categories ====================

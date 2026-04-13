@@ -128,10 +128,20 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IUnitService, UnitService>();
+builder.Services.AddScoped<ISalesRepService, SalesRepService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IPdfService, PdfService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IStoreSettingsService, StoreSettingsService>();
+builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IContactService, ContactService>();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<ICsvImportService, CsvImportService>();
+builder.Services.AddScoped<ILoyaltyService, LoyaltyService>();
+builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
 builder.Services.AddScoped<IFinanceService, FinanceService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IInstallmentService, InstallmentService>();
@@ -154,11 +164,20 @@ builder.Services.AddScoped<IFloorSectionService, FloorSectionService>();
 builder.Services.AddScoped<IQrConfigService, QrConfigService>();
 builder.Services.AddScoped<ICustomerOrderService, CustomerOrderService>();
 builder.Services.AddScoped<IPaymentTerminalService, PaymentTerminalService>();
+// Social Media
+builder.Services.AddScoped<ISocialMediaService, SocialMediaService>();
 // Production & Kitchen
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IKitchenStationService, KitchenStationService>();
 builder.Services.AddScoped<IProductionOrderService, ProductionOrderService>();
 builder.Services.AddScoped<IProductionWasteService, ProductionWasteService>();
+// RFID & QR Inventory
+builder.Services.AddScoped<IRfidInventoryService, RfidInventoryService>();
+// Public API & Webhooks
+builder.Services.AddScoped<IPublicApiService, PublicApiService>();
+// Online Store
+builder.Services.AddScoped<IOnlineStoreService, OnlineStoreService>();
+builder.Services.AddScoped<IStorefrontService, StorefrontService>();
 builder.Services.AddHttpClient();
 
 // ============================================================

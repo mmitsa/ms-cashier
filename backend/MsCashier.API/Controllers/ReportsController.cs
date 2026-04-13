@@ -9,6 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 [Route("api/v1/reports")]
+[Authorize(Roles = "SuperAdmin,Admin")]
 public class ReportsController : BaseApiController
 {
     private readonly IReportService _reportService;

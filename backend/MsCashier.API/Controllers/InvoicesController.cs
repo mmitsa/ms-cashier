@@ -12,8 +12,22 @@ namespace MsCashier.API.Controllers;
 public class InvoicesController : BaseApiController
 {
     private readonly IInvoiceService _invoiceService;
+    private readonly IPdfService _pdfService;
 
-    public InvoicesController(IInvoiceService invoiceService) => _invoiceService = invoiceService;
+    public InvoicesController(IInvoiceService invoiceService, IPdfService pdfService)
+    {
+        _invoiceService = invoiceService;
+        _pdfService = pdfService;
+    }
+
+    [HttpGet("{id:long}/pdf")]
+    public async Task<IActionResult> GetPdf(long id)
+    {
+        var result = await _pdfService.GenerateInvoicePdfAsync(id);
+        if (!result.IsSuccess)
+            return BadRequest(new { success = false, errors = result.Errors });
+        return File(result.Data!, "application/pdf", $"invoice-{id}.pdf");
+    }
 
     [HttpPost("sale")]
     public async Task<IActionResult> CreateSale([FromBody] CreateInvoiceRequest request)

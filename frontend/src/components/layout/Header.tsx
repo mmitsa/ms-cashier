@@ -1,7 +1,8 @@
 import { Bell, LogOut, ChevronDown, ShoppingCart, LayoutDashboard, Sun, Moon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
+import { notificationsApi } from '@/lib/api/endpoints';
 import { modules } from './Sidebar';
 import { hasPermission } from '@/lib/permissions/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions/permissions';
@@ -75,9 +76,7 @@ export function Header() {
         </button>
 
         {/* Notifications */}
-        <button className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-          <Bell size={16} />
-        </button>
+        <NotificationBell />
 
         {/* User menu */}
         <div className="relative">
@@ -117,5 +116,66 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function NotificationBell() {
+  const [count, setCount] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [notifs, setNotifs] = useState<any[]>([]);
+
+  useEffect(() => {
+    notificationsApi.getUnreadCount().then(r => { if (r.success) setCount(r.data ?? 0); }).catch(() => {});
+    const interval = setInterval(() => {
+      notificationsApi.getUnreadCount().then(r => { if (r.success) setCount(r.data ?? 0); }).catch(() => {});
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const toggle = async () => {
+    if (!open) {
+      const r = await notificationsApi.getMine(20);
+      if (r.success) setNotifs(r.data ?? []);
+    }
+    setOpen(!open);
+  };
+
+  const markAllRead = async () => {
+    await notificationsApi.markAllRead();
+    setCount(0);
+    setNotifs(ns => ns.map(n => ({ ...n, isRead: true })));
+  };
+
+  return (
+    <div className="relative">
+      <button onClick={toggle} className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative">
+        <Bell size={16} />
+        {count > 0 && (
+          <span className="absolute -top-1 -left-1 w-4 h-4 bg-red-500 text-white text-[9px] rounded-full flex items-center justify-center font-bold">{count > 9 ? '9+' : count}</span>
+        )}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden" dir="rtl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+              <span className="font-bold text-sm text-gray-900 dark:text-gray-100">الإشعارات</span>
+              {count > 0 && <button onClick={markAllRead} className="text-xs text-brand-600 hover:underline">قراءة الكل</button>}
+            </div>
+            <div className="max-h-72 overflow-y-auto">
+              {notifs.length === 0 ? (
+                <p className="p-6 text-center text-gray-400 text-sm">لا توجد إشعارات</p>
+              ) : notifs.map(n => (
+                <div key={n.id} className={`px-4 py-3 border-b border-gray-50 dark:border-gray-700 ${!n.isRead ? 'bg-brand-50/50 dark:bg-brand-950/30' : ''}`}>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{n.title}</p>
+                  {n.body && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{n.body}</p>}
+                  <p className="text-[10px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleString('ar')}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

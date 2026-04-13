@@ -40,6 +40,14 @@ public class InventoryController : BaseApiController
         var result = await _inventoryService.GetMovementsAsync(productId, from, to, page, pageSize);
         return HandleResult(result);
     }
+
+    [HttpGet("product/{productId:int}/stock")]
+    public async Task<IActionResult> GetProductStock(int productId)
+        => HandleResult(await _inventoryService.GetProductStockByWarehouseAsync(productId));
+
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> GetDashboard()
+        => HandleResult(await _inventoryService.GetDashboardAsync());
 }
 
 // ============================================================

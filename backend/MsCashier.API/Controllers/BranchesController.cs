@@ -10,7 +10,7 @@ namespace MsCashier.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "SuperAdmin,Admin")]
 public class BranchesController : BaseApiController
 {
     private readonly IBranchService _service;

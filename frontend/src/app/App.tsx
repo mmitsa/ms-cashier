@@ -23,6 +23,8 @@ import { CustomersScreen } from '@/features/customers/components/CustomersScreen
 import { FinanceScreen } from '@/features/finance/components/FinanceScreen';
 import { ReportsScreen } from '@/features/reports/components/ReportsScreen';
 import { WarehousesScreen } from '@/features/warehouses/components/WarehousesScreen';
+import { UnitsScreen } from '@/features/units/components/UnitsScreen';
+import { SalesRepsScreen } from '@/features/sales-reps/components/SalesRepsScreen';
 import { EmployeesScreen } from '@/features/employees/components/EmployeesScreen';
 import { SettingsScreen } from '@/features/settings/components/SettingsScreen';
 import { TenantsScreen } from '@/features/tenants/components/TenantsScreen';
@@ -32,15 +34,22 @@ import { AttendanceScreen } from '@/features/attendance/components/AttendanceScr
 import { PayrollScreen } from '@/features/payroll/components/PayrollScreen';
 import { BranchesScreen } from '@/features/branches/components/BranchesScreen';
 import { AdminBranchRequestsScreen } from '@/features/branches/components/AdminBranchRequestsScreen';
+import { LoyaltySettingsScreen } from '@/features/loyalty/components/LoyaltySettingsScreen';
 import { WaiterScreen } from '@/features/waiter/components/WaiterScreen';
 import { KitchenDisplayScreen } from '@/features/waiter/components/KitchenDisplayScreen';
 import FloorPlanScreen from '@/features/floor/components/FloorPlanScreen';
 import QrManagementScreen from '@/features/qr/components/QrManagementScreen';
 import TerminalManagementScreen from '@/features/terminals/components/TerminalManagementScreen';
 import CustomerOrderApp from '@/features/customer/components/CustomerOrderApp';
+import CustomerDisplayPage from '@/features/customer-display/CustomerDisplayPage';
+import { SocialMediaScreen } from '@/features/social-media/components/SocialMediaScreen';
+import { StoreBuilderScreen } from '@/features/online-store/components/StoreBuilderScreen';
+import { RfidManagementScreen } from '@/features/rfid-inventory/components/RfidManagementScreen';
+import { ApiManagementScreen } from '@/features/api-management/components/ApiManagementScreen';
 import { initSyncEngine, destroySyncEngine, syncAll, onSyncStatusChange, type SyncStatus } from '@/lib/offline/syncEngine';
 import { hasPermission } from '@/lib/permissions/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions/permissions';
+import { InstallPrompt } from '@/components/ui/InstallPrompt';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +70,8 @@ const consoleModules: Record<string, React.FC> = {
   finance: FinanceScreen,
   reports: ReportsScreen,
   warehouses: WarehousesScreen,
+  units: UnitsScreen,
+  'sales-reps': SalesRepsScreen,
   employees: EmployeesScreen,
   attendance: AttendanceScreen,
   payroll: PayrollScreen,
@@ -75,6 +86,11 @@ const consoleModules: Record<string, React.FC> = {
   kitchen: KitchenDisplayScreen,
   branches: BranchesScreen,
   branchRequests: AdminBranchRequestsScreen,
+  loyalty: LoyaltySettingsScreen,
+  'social-media': SocialMediaScreen,
+  'store-builder': StoreBuilderScreen,
+  'rfid-inventory': RfidManagementScreen,
+  'api-management': ApiManagementScreen,
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -232,10 +248,10 @@ function CashierLayout() {
         </div>
 
         {/* Center: Clock */}
-        <div className="flex items-center gap-2 text-gray-300 text-xs">
-          <Clock size={13} />
-          <span className="font-mono font-medium">{timeStr}</span>
-          <span className="text-gray-500 hidden sm:inline">• {dateStr}</span>
+        <div className="flex items-center gap-2.5">
+          <Clock size={16} className="text-brand-400" />
+          <span className="font-mono font-bold text-base text-white tracking-wide">{timeStr}</span>
+          <span className="text-gray-300 text-sm font-medium hidden sm:inline">• {dateStr}</span>
         </div>
 
         {/* Right: Quick tools + User */}
@@ -261,14 +277,14 @@ function CashierLayout() {
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-                <div className="absolute left-0 top-full mt-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-1 text-gray-900" dir="rtl">
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-bold text-gray-900">{user?.fullName}</p>
-                    <p className="text-xs text-gray-500">@{user?.username}</p>
-                    <p className="text-[10px] text-brand-600 font-bold mt-0.5">كاشير</p>
+                <div className="absolute left-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-2xl dark:shadow-dark-soft border border-gray-100 dark:border-gray-700 z-50 py-1 text-gray-900 dark:text-gray-100" dir="rtl">
+                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{user?.fullName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">@{user?.username}</p>
+                    <p className="text-[10px] text-brand-600 dark:text-brand-400 font-bold mt-0.5">كاشير</p>
                   </div>
                   <button onClick={() => { logout(); window.location.reload(); }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition">
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 transition">
                     <LogOut size={15} /> تسجيل الخروج
                   </button>
                 </div>
@@ -278,7 +294,8 @@ function CashierLayout() {
         </div>
       </div>
 
-      {/* ── Trial Banner ── */}
+      {/* ── Install Prompt + Trial Banner ── */}
+      <InstallPrompt />
       <TrialBanner />
 
       {/* ── POS Content (full screen) ── */}
@@ -315,6 +332,7 @@ function ConsoleLayout() {
       style={{ fontFamily: "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" }}>
       <Sidebar />
       <main className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <InstallPrompt />
         <OfflineStatusBar />
         <TrialBanner />
         <Header />
@@ -335,11 +353,23 @@ export default function App() {
   const user = useAuthStore((s) => s.user);
   const [showLogin, setShowLogin] = useState(false);
 
+  // Check if this is a customer display page (public, no auth)
+  const isCustomerDisplayPage = window.location.pathname === '/customer-display';
+
   // Check if this is a customer order page (public)
   const isCustomerOrderPage = window.location.pathname.startsWith('/order/');
 
   // Determine layout: Cashier gets POS-only, everyone else gets console
   const isCashierOnly = user?.role === 'Cashier';
+
+  // If customer display page, render only the customer display
+  if (isCustomerDisplayPage) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <CustomerDisplayPage />
+      </QueryClientProvider>
+    );
+  }
 
   // If customer order page, render only the customer app
   if (isCustomerOrderPage) {

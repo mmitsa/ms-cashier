@@ -48,7 +48,7 @@ export function Modal({ open, onClose, title, children, size = 'md', className }
     >
       <div
         className={cn(
-          'bg-white rounded-2xl shadow-xl w-full mx-4 animate-scale-in',
+          'bg-white dark:bg-gray-900 rounded-2xl shadow-xl dark:shadow-dark-soft w-full mx-4 animate-scale-in',
           sizeMap[size],
           className
         )}
@@ -56,10 +56,10 @@ export function Modal({ open, onClose, title, children, size = 'md', className }
       >
         {title && (
           <div className="flex items-center justify-between p-5 pb-0">
-            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h3>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <X size={16} />
             </button>

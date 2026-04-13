@@ -7,13 +7,14 @@ import { apiClient } from '@/lib/api/client';
 import {
   getUnsyncedInvoices, markInvoiceSynced, markInvoiceSyncError,
   getPendingSyncItems, updateSyncItem, clearSyncedInvoices, clearCompletedSync,
-  cacheProducts, cacheCustomers, addToSyncQueue,
-  type PendingInvoice, type SyncQueueItem,
+  cacheProducts, cacheCustomers, cacheCategories, cacheSettings,
+  addToSyncQueue,
+  type SyncQueueItem,
 } from './offlineDb';
 
 type SyncCallback = (status: SyncStatus) => void;
 
-export interface SyncStatus {
+export type SyncStatus = {
   isSyncing: boolean;
   isOnline: boolean;
   pendingCount: number;
@@ -21,11 +22,12 @@ export interface SyncStatus {
   currentItem?: string;
   errors: string[];
   syncedCount: number;
-}
+};
 
 let listeners: SyncCallback[] = [];
 let syncInProgress = false;
 let lastSyncAt: string | null = null;
+let periodicTimer: ReturnType<typeof setInterval> | null = null;
 
 const status: SyncStatus = {
   isSyncing: false,
@@ -51,7 +53,6 @@ export function onSyncStatusChange(cb: SyncCallback) {
 function handleOnline() {
   status.isOnline = true;
   notify();
-  // Auto-sync when back online
   syncAll();
 }
 
@@ -66,7 +67,7 @@ export function initSyncEngine() {
   status.isOnline = navigator.onLine;
 
   // Periodic sync every 2 minutes when online
-  setInterval(() => {
+  periodicTimer = setInterval(() => {
     if (navigator.onLine && !syncInProgress) syncAll();
   }, 120_000);
 
@@ -81,6 +82,8 @@ export function initSyncEngine() {
 export function destroySyncEngine() {
   window.removeEventListener('online', handleOnline);
   window.removeEventListener('offline', handleOffline);
+  if (periodicTimer) clearInterval(periodicTimer);
+  periodicTimer = null;
   listeners = [];
 }
 
@@ -100,6 +103,26 @@ export async function cacheDataForOffline() {
     const custRes = await apiClient.get('/contacts/search', { params: { pageSize: 9999 } });
     if (custRes.data?.data?.items) {
       await cacheCustomers(custRes.data.data.items);
+    }
+
+    // Cache categories
+    try {
+      const catRes = await apiClient.get('/categories');
+      if (catRes.data?.data) {
+        await cacheCategories(Array.isArray(catRes.data.data) ? catRes.data.data : []);
+      }
+    } catch {
+      // Categories endpoint may not exist yet
+    }
+
+    // Cache store settings
+    try {
+      const settingsRes = await apiClient.get('/store-settings');
+      if (settingsRes.data?.data) {
+        await cacheSettings(settingsRes.data.data);
+      }
+    } catch {
+      // Settings endpoint may not exist yet
     }
   } catch {
     // Silent fail for cache
@@ -191,7 +214,7 @@ async function syncQueueItems() {
 
   for (const item of items) {
     if (!navigator.onLine) break;
-    if (item.retries >= 3) continue; // Skip after 3 retries
+    if (item.retries >= 3) continue;
 
     status.currentItem = getItemDescription(item);
     notify();
@@ -220,7 +243,6 @@ async function syncQueueItems() {
         error: msg,
         retries: item.retries + 1,
       });
-      // Don't add ZATCA failures as user-facing errors (auto-retries)
       if (item.type !== 'zatca_report') {
         status.errors.push(`${getItemDescription(item)}: ${msg}`);
       }

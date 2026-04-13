@@ -9,6 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 [Route("api/v1/dashboard")]
+[Authorize(Roles = "SuperAdmin,Admin,Cashier")]
 public class DashboardController : BaseApiController
 {
     private readonly IDashboardService _dashboardService;

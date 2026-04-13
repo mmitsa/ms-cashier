@@ -29,6 +29,8 @@ import {
   useLowStockProducts,
 } from '@/hooks/useApi';
 import type { ProductDto, CreateProductRequest, UpdateProductRequest } from '@/types/api.types';
+import { StockManagementTabs } from './StockManagementTabs';
+import { CsvImportModal } from './CsvImportModal';
 
 type StockStatus = 'low' | 'medium' | 'ok';
 
@@ -95,6 +97,7 @@ function productToFormData(p: ProductDto): ProductFormData {
 }
 
 export function InventoryScreen() {
+  const [view, setView] = useState<'products' | 'stock'>('products');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [lowStockOnly, setLowStockOnly] = useState(false);
@@ -102,6 +105,7 @@ export function InventoryScreen() {
   const pageSize = 20;
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showCsvModal, setShowCsvModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPrintBarcodeModal, setShowPrintBarcodeModal] = useState(false);
@@ -253,7 +257,7 @@ export function InventoryScreen() {
   };
 
   const handleImport = () => {
-    alert('وظيفة الاستيراد قيد التطوير');
+    setShowCsvModal(true);
   };
 
   return (
@@ -273,7 +277,7 @@ export function InventoryScreen() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">إدارة المخزون</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">عرض وإدارة أصناف المخزون</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">عرض وإدارة أصناف المخزون والحركات</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setShowAddModal(true)} className="btn-primary">
@@ -291,6 +295,25 @@ export function InventoryScreen() {
         </div>
       </div>
 
+      {/* View Toggle */}
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+        <button onClick={() => setView('products')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            view === 'products' ? 'bg-white dark:bg-gray-900 text-brand-700 dark:text-brand-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'
+          }`}>
+          <Package size={16} /> الأصناف
+        </button>
+        <button onClick={() => setView('stock')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            view === 'stock' ? 'bg-white dark:bg-gray-900 text-brand-700 dark:text-brand-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'
+          }`}>
+          <Layers size={16} /> إدارة المخزون والحركات
+        </button>
+      </div>
+
+      {view === 'stock' && <StockManagementTabs />}
+
+      {view === 'products' && <>
       {/* StatCards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -503,6 +526,8 @@ export function InventoryScreen() {
           </div>
         )}
       </div>
+
+      </>}
 
       {/* Add Product Modal */}
       <Modal
@@ -864,6 +889,13 @@ export function InventoryScreen() {
           </div>
         </div>
       </Modal>
+
+      {/* CSV Import/Export Modal */}
+      <CsvImportModal
+        open={showCsvModal}
+        onClose={() => setShowCsvModal(false)}
+        defaultType="Products"
+      />
     </div>
   );
 }

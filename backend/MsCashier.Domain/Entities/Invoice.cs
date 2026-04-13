@@ -62,10 +62,26 @@ public class Invoice : TenantEntity
     [Column(TypeName = "nvarchar(max)")]
     public string? ZatcaQrCode { get; set; }
 
+    /// <summary>مندوب المبيعات (إن وجد) — الفاتورة تبقى معلقة لحد السداد</summary>
+    public int? SalesRepId { get; set; }
+
+    /// <summary>عملة الفاتورة (null = العملة الأساسية للمستأجر)</summary>
+    [MaxLength(10)]
+    public string? CurrencyCode { get; set; }
+
+    /// <summary>سعر الصرف وقت إنشاء الفاتورة (1 وحدة عملة = X عملة أساسية)</summary>
+    [Column(TypeName = "decimal(18,6)")]
+    public decimal? ExchangeRate { get; set; }
+
+    /// <summary>إجمالي بالعملة الأساسية = TotalAmount × ExchangeRate</summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? TotalInBaseCurrency { get; set; }
+
     // Navigation
     public Contact? Contact { get; set; }
     public Warehouse? Warehouse { get; set; }
     public User? Creator { get; set; }
+    public SalesRep? SalesRep { get; set; }
     public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
 }
 
