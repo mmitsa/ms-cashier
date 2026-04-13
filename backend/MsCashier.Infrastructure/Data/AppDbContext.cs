@@ -22,6 +22,15 @@ public class AppDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Unit> Units => Set<Unit>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductVariantOption> ProductVariantOptions => Set<ProductVariantOption>();
+    public DbSet<ProductVariantValue> ProductVariantValues => Set<ProductVariantValue>();
+    public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+
+    // Loyalty
+    public DbSet<LoyaltyProgram> LoyaltyPrograms => Set<LoyaltyProgram>();
+    public DbSet<CustomerLoyalty> CustomerLoyalties => Set<CustomerLoyalty>();
+    public DbSet<LoyaltyTransaction> LoyaltyTransactions => Set<LoyaltyTransaction>();
+
     public DbSet<Warehouse> Warehouses => Set<Warehouse>();
     public DbSet<Inventory> Inventories => Set<Inventory>();
     public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
@@ -38,6 +47,19 @@ public class AppDbContext : DbContext
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Payroll> Payrolls => Set<Payroll>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    // Notifications
+    public DbSet<Notification> Notifications => Set<Notification>();
+
+    // Store Settings
+    public DbSet<TenantCurrency> TenantCurrencies => Set<TenantCurrency>();
+    public DbSet<TenantTaxConfig> TenantTaxConfigs => Set<TenantTaxConfig>();
+    public DbSet<TenantIntegration> TenantIntegrations => Set<TenantIntegration>();
+
+    // Sales Reps
+    public DbSet<SalesRep> SalesReps => Set<SalesRep>();
+    public DbSet<SalesRepTransaction> SalesRepTransactions => Set<SalesRepTransaction>();
+    public DbSet<SalesRepCommission> SalesRepCommissions => Set<SalesRepCommission>();
     public DbSet<SubscriptionRequest> SubscriptionRequests => Set<SubscriptionRequest>();
     public DbSet<PaymentGatewayConfig> PaymentGatewayConfigs => Set<PaymentGatewayConfig>();
     public DbSet<OnlinePayment> OnlinePayments => Set<OnlinePayment>();
@@ -61,6 +83,12 @@ public class AppDbContext : DbContext
     public DbSet<PaymentTerminal> PaymentTerminals => Set<PaymentTerminal>();
     public DbSet<TerminalTransaction> TerminalTransactions => Set<TerminalTransaction>();
 
+    // RFID & QR Inventory
+    public DbSet<ProductRfidTag> ProductRfidTags => Set<ProductRfidTag>();
+    public DbSet<WarehouseQrCode> WarehouseQrCodes => Set<WarehouseQrCode>();
+    public DbSet<RfidScanSession> RfidScanSessions => Set<RfidScanSession>();
+    public DbSet<RfidScanResult> RfidScanResults => Set<RfidScanResult>();
+
     // Production & Kitchen
     public DbSet<Recipe> Recipes => Set<Recipe>();
     public DbSet<RecipeIngredient> RecipeIngredients => Set<RecipeIngredient>();
@@ -69,6 +97,8 @@ public class AppDbContext : DbContext
     public DbSet<ProductionOrder> ProductionOrders => Set<ProductionOrder>();
     public DbSet<ProductionOrderItem> ProductionOrderItems => Set<ProductionOrderItem>();
     public DbSet<ProductionWaste> ProductionWastes => Set<ProductionWaste>();
+
+    public DbSet<BundleItem> BundleItems => Set<BundleItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -144,6 +174,27 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<KitchenStation>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<ProductionOrder>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<ProductionWaste>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+
+        // Bundle items: tenant isolation
+        modelBuilder.Entity<BundleItem>().HasQueryFilter(e => _tenantService == null || e.TenantId == _tenantService.TenantId);
+
+        // Loyalty
+        modelBuilder.Entity<LoyaltyProgram>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<CustomerLoyalty>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<LoyaltyTransaction>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+
+        // Notifications
+        modelBuilder.Entity<Notification>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+
+        // Store Settings
+        modelBuilder.Entity<TenantCurrency>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<TenantTaxConfig>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<TenantIntegration>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+
+        // Sales Reps
+        modelBuilder.Entity<SalesRep>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<SalesRepTransaction>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<SalesRepCommission>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
 
         // Tenant
         modelBuilder.Entity<Tenant>(e =>
@@ -228,6 +279,19 @@ public class AppDbContext : DbContext
             e.Property(x => x.TaxRate).HasPrecision(5, 2);
             e.HasOne(x => x.Category).WithMany(x => x.Products).HasForeignKey(x => x.CategoryId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Unit).WithMany().HasForeignKey(x => x.UnitId).OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.BundleDiscountValue).HasPrecision(18, 2);
+            e.HasIndex(x => x.IsBundle);
+        });
+
+        // BundleItem
+        modelBuilder.Entity<BundleItem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.ProductId, x.ComponentId }).IsUnique();
+            e.HasIndex(x => x.ProductId);
+            e.Property(x => x.Quantity).HasPrecision(18, 2);
+            e.HasOne(x => x.Product).WithMany(x => x.BundleItems).HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Component).WithMany().HasForeignKey(x => x.ComponentId).OnDelete(DeleteBehavior.Restrict);
         });
 
         // Warehouse
@@ -325,6 +389,8 @@ public class AppDbContext : DbContext
             e.Property(x => x.TaxAmount).HasPrecision(18, 2);
             e.Property(x => x.TotalPrice).HasPrecision(18, 2);
             e.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => x.BundleParentId);
+            e.HasOne(x => x.BundleParent).WithMany(x => x.BundleChildren).HasForeignKey(x => x.BundleParentId).OnDelete(DeleteBehavior.Restrict);
         });
 
         // Installment
@@ -751,6 +817,52 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Unit).WithMany().HasForeignKey(x => x.UnitId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Branch).WithMany().HasForeignKey(x => x.BranchId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Sales Reps configuration
+        modelBuilder.Entity<SalesRep>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.TenantId);
+            e.HasIndex(x => new { x.TenantId, x.UserId }).IsUnique();
+            e.Property(x => x.Name).HasMaxLength(200).IsRequired();
+            e.Property(x => x.CommissionPercent).HasPrecision(5, 2);
+            e.Property(x => x.FixedBonus).HasPrecision(18, 2);
+            e.Property(x => x.OutstandingBalance).HasPrecision(18, 2);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.AssignedWarehouse).WithMany().HasForeignKey(x => x.AssignedWarehouseId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<SalesRepTransaction>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.TenantId);
+            e.HasIndex(x => x.SalesRepId);
+            e.HasIndex(x => x.TransactionDate);
+            e.Property(x => x.Amount).HasPrecision(18, 2);
+            e.Property(x => x.BalanceAfter).HasPrecision(18, 2);
+            e.HasOne(x => x.SalesRep).WithMany(r => r.Transactions).HasForeignKey(x => x.SalesRepId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Invoice).WithMany().HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<SalesRepCommission>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.TenantId);
+            e.HasIndex(x => new { x.SalesRepId, x.Year, x.Month }).IsUnique();
+            e.Property(x => x.TotalPaidSales).HasPrecision(18, 2);
+            e.Property(x => x.CommissionPercent).HasPrecision(5, 2);
+            e.Property(x => x.CommissionAmount).HasPrecision(18, 2);
+            e.Property(x => x.FixedBonus).HasPrecision(18, 2);
+            e.Property(x => x.TotalEarned).HasPrecision(18, 2);
+            e.Property(x => x.PaidAmount).HasPrecision(18, 2);
+            e.HasOne(x => x.SalesRep).WithMany(r => r.Commissions).HasForeignKey(x => x.SalesRepId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Invoice → SalesRep (optional)
+        modelBuilder.Entity<Invoice>(e =>
+        {
+            e.HasOne(x => x.SalesRep).WithMany().HasForeignKey(x => x.SalesRepId).OnDelete(DeleteBehavior.SetNull);
         });
 
         // Seed Plans
