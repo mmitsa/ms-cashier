@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>المصادقة وتسجيل الدخول</summary>
 [Route("api/v1/auth")]
 public class AuthController : BaseApiController
 {
@@ -15,6 +16,8 @@ public class AuthController : BaseApiController
 
     public AuthController(IAuthService authService) => _authService = authService;
 
+    /// <summary>تسجيل الدخول والحصول على رمز JWT</summary>
+    /// <param name="request">بيانات تسجيل الدخول</param>
     [HttpPost("login")]
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
@@ -24,6 +27,8 @@ public class AuthController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تجديد رمز الوصول باستخدام رمز التحديث</summary>
+    /// <param name="request">رمز التحديث</param>
     [HttpPost("refresh")]
     [AllowAnonymous]
     [EnableRateLimiting("auth")]
@@ -33,6 +38,8 @@ public class AuthController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تغيير كلمة المرور للمستخدم الحالي</summary>
+    /// <param name="request">كلمة المرور القديمة والجديدة</param>
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {

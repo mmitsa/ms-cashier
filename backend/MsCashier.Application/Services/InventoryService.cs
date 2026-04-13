@@ -30,6 +30,7 @@ public class InventoryService : IInventoryService
         try
         {
             var inventoryList = await _uow.Repository<Inventory>().Query()
+                .AsNoTracking()
                 .Where(i =>
                     i.TenantId == _tenant.TenantId &&
                     i.WarehouseId == warehouseId)
@@ -38,6 +39,7 @@ public class InventoryService : IInventoryService
             var productIds = inventoryList.Select(i => i.ProductId).Distinct().ToList();
 
             var productsQuery = _uow.Repository<Product>().Query()
+                .AsNoTracking()
                 .Where(p =>
                     productIds.Contains(p.Id) &&
                     !p.IsDeleted);
@@ -169,6 +171,7 @@ public class InventoryService : IInventoryService
             var toDate = to.Date.AddDays(1);
 
             var query = _uow.Repository<InventoryTransaction>().Query()
+                .AsNoTracking()
                 .Where(t =>
                     t.TenantId == _tenant.TenantId &&
                     t.ProductId == productId &&

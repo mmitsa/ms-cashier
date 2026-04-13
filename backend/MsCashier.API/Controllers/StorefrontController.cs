@@ -5,8 +5,10 @@ using MsCashier.Application.Interfaces;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>واجهة المتجر العامة (بدون مصادقة)</summary>
 [Route("api/v1/storefront/{subdomain}")]
 [AllowAnonymous]
+[ResponseCache(Duration = 60)]
 public class StorefrontController : BaseApiController
 {
     private readonly IStorefrontService _storefrontService;
@@ -16,6 +18,8 @@ public class StorefrontController : BaseApiController
         _storefrontService = storefrontService;
     }
 
+    /// <summary>عرض بيانات المتجر بالنطاق الفرعي</summary>
+    /// <param name="subdomain">النطاق الفرعي للمتجر</param>
     [HttpGet]
     public async Task<IActionResult> GetStore(string subdomain)
     {
@@ -23,6 +27,12 @@ public class StorefrontController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض منتجات المتجر</summary>
+    /// <param name="subdomain">النطاق الفرعي</param>
+    /// <param name="categoryId">معرف التصنيف (اختياري)</param>
+    /// <param name="search">نص البحث</param>
+    /// <param name="page">رقم الصفحة</param>
+    /// <param name="pageSize">حجم الصفحة</param>
     [HttpGet("products")]
     public async Task<IActionResult> GetProducts(
         string subdomain,
@@ -39,6 +49,9 @@ public class StorefrontController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض منتج محدد من المتجر</summary>
+    /// <param name="subdomain">النطاق الفرعي</param>
+    /// <param name="productId">معرف المنتج</param>
     [HttpGet("products/{productId:int}")]
     public async Task<IActionResult> GetProductById(string subdomain, int productId)
     {
@@ -50,6 +63,8 @@ public class StorefrontController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض تصنيفات المتجر</summary>
+    /// <param name="subdomain">النطاق الفرعي</param>
     [HttpGet("categories")]
     public async Task<IActionResult> GetCategories(string subdomain)
     {
@@ -61,6 +76,8 @@ public class StorefrontController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض بانرات المتجر</summary>
+    /// <param name="subdomain">النطاق الفرعي</param>
     [HttpGet("banners")]
     public async Task<IActionResult> GetBanners(string subdomain)
     {
@@ -72,7 +89,11 @@ public class StorefrontController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>إنشاء طلب جديد من المتجر</summary>
+    /// <param name="subdomain">النطاق الفرعي</param>
+    /// <param name="request">بيانات الطلب</param>
     [HttpPost("orders")]
+    [ResponseCache(Duration = 0, NoStore = true)]
     public async Task<IActionResult> CreateOrder(string subdomain, [FromBody] CreateOnlineOrderRequest request)
     {
         var storeResult = await _storefrontService.GetStoreBySubdomainAsync(subdomain);

@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>لوحة المعلومات الرئيسية</summary>
 [Route("api/v1/dashboard")]
 [Authorize(Roles = "SuperAdmin,Admin,Cashier")]
 public class DashboardController : BaseApiController
@@ -16,7 +17,10 @@ public class DashboardController : BaseApiController
 
     public DashboardController(IDashboardService dashboardService) => _dashboardService = dashboardService;
 
+    /// <summary>عرض لوحة المعلومات الرئيسية</summary>
+    /// <param name="date">التاريخ (اختياري، الافتراضي: اليوم)</param>
     [HttpGet]
+    [ResponseCache(Duration = 30)]
     public async Task<IActionResult> GetDashboard([FromQuery] DateTime? date)
     {
         var result = await _dashboardService.GetDashboardAsync(date ?? DateTime.UtcNow);
@@ -27,4 +31,3 @@ public class DashboardController : BaseApiController
 // ============================================================
 // ReportsController
 // ============================================================
-

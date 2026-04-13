@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة الموظفين (النظام القديم)</summary>
 [Route("api/v1/employees-legacy")]
 [Authorize(Roles = "SuperAdmin,Admin")]
 public class EmployeesController : BaseApiController
@@ -16,6 +17,8 @@ public class EmployeesController : BaseApiController
 
     public EmployeesController(IEmployeeService employeeService) => _employeeService = employeeService;
 
+    /// <summary>إنشاء موظف جديد</summary>
+    /// <param name="request">بيانات الموظف</param>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEmployeeRequest request)
     {
@@ -23,6 +26,7 @@ public class EmployeesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض جميع الموظفين</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -30,6 +34,9 @@ public class EmployeesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تسجيل حضور موظف</summary>
+    /// <param name="id">معرف الموظف</param>
+    /// <param name="request">بيانات الحضور</param>
     [HttpPost("{id:int}/attendance")]
     public async Task<IActionResult> RecordAttendance(int id, [FromBody] AttendanceRequest request)
     {
@@ -37,6 +44,8 @@ public class EmployeesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>معالجة الرواتب الشهرية</summary>
+    /// <param name="dto">الشهر والسنة</param>
     [HttpPost("payroll")]
     public async Task<IActionResult> ProcessPayroll([FromBody] PayrollDto dto)
     {
@@ -48,4 +57,3 @@ public class EmployeesController : BaseApiController
 // ============================================================
 // InstallmentsController
 // ============================================================
-

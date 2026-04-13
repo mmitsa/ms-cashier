@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة المستودعات</summary>
 [Route("api/v1/warehouses")]
 [Authorize(Roles = "SuperAdmin,Admin")]
 public class WarehousesController : BaseApiController
@@ -16,6 +17,8 @@ public class WarehousesController : BaseApiController
 
     public WarehousesController(IWarehouseService warehouseService) => _warehouseService = warehouseService;
 
+    /// <summary>إنشاء مستودع جديد</summary>
+    /// <param name="request">بيانات المستودع</param>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateWarehouseRequest request)
     {
@@ -23,6 +26,7 @@ public class WarehousesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض جميع المستودعات</summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -30,6 +34,8 @@ public class WarehousesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تحويل مخزون بين المستودعات</summary>
+    /// <param name="request">بيانات التحويل</param>
     [HttpPost("transfer")]
     public async Task<IActionResult> Transfer([FromBody] StockTransferRequest request)
     {
@@ -41,4 +47,3 @@ public class WarehousesController : BaseApiController
 // ============================================================
 // InventoryController
 // ============================================================
-

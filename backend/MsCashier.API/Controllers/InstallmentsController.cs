@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة الأقساط</summary>
 [Route("api/v1/installments")]
 public class InstallmentsController : BaseApiController
 {
@@ -15,6 +16,8 @@ public class InstallmentsController : BaseApiController
 
     public InstallmentsController(IInstallmentService installmentService) => _installmentService = installmentService;
 
+    /// <summary>إنشاء خطة أقساط جديدة</summary>
+    /// <param name="request">بيانات خطة الأقساط</param>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateInstallmentRequest request)
     {
@@ -22,6 +25,7 @@ public class InstallmentsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض الأقساط النشطة</summary>
     [HttpGet("active")]
     public async Task<IActionResult> GetActive()
     {
@@ -29,6 +33,10 @@ public class InstallmentsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تسجيل دفعة قسط</summary>
+    /// <param name="id">معرف خطة الأقساط</param>
+    /// <param name="paymentNumber">رقم الدفعة</param>
+    /// <param name="dto">المبلغ</param>
     [HttpPost("{id:int}/pay/{paymentNumber:int}")]
     public async Task<IActionResult> Pay(int id, int paymentNumber, [FromBody] InstPayDto dto)
     {
@@ -36,6 +44,7 @@ public class InstallmentsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض الأقساط المتأخرة</summary>
     [HttpGet("overdue")]
     public async Task<IActionResult> GetOverdue()
     {
@@ -47,4 +56,3 @@ public class InstallmentsController : BaseApiController
 // ============================================================
 // DashboardController
 // ============================================================
-

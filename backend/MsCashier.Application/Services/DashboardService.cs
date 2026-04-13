@@ -32,6 +32,7 @@ public class DashboardService : IDashboardService
 
             // Today's sales
             var todaySales = await _uow.Repository<Invoice>().Query()
+                .AsNoTracking()
                 .Where(i =>
                     i.TenantId == _tenant.TenantId &&
                     i.InvoiceType == InvoiceType.Sale &&
@@ -42,6 +43,7 @@ public class DashboardService : IDashboardService
 
             // Today's invoice count
             var todayInvoices = await _uow.Repository<Invoice>().Query()
+                .AsNoTracking()
                 .CountAsync(i =>
                     i.TenantId == _tenant.TenantId &&
                     i.InvoiceType == InvoiceType.Sale &&
@@ -51,6 +53,7 @@ public class DashboardService : IDashboardService
 
             // Today's profit
             var todayInvoiceIds = await _uow.Repository<Invoice>().Query()
+                .AsNoTracking()
                 .Where(i =>
                     i.TenantId == _tenant.TenantId &&
                     i.InvoiceType == InvoiceType.Sale &&
@@ -72,6 +75,7 @@ public class DashboardService : IDashboardService
 
             // New customers today
             var newCustomers = await _uow.Repository<Contact>().Query()
+                .AsNoTracking()
                 .CountAsync(c =>
                     c.TenantId == _tenant.TenantId &&
                     c.ContactType == ContactType.Customer &&
@@ -81,6 +85,7 @@ public class DashboardService : IDashboardService
 
             // Low stock items
             var lowStockProducts = await _uow.Repository<Product>().Query()
+                .AsNoTracking()
                 .Where(p =>
                     p.TenantId == _tenant.TenantId &&
                     !p.IsDeleted &&
@@ -120,6 +125,7 @@ public class DashboardService : IDashboardService
             var weekEnd = weekStart.AddDays(7);
 
             var weekInvoiceIds = await _uow.Repository<Invoice>().Query()
+                .AsNoTracking()
                 .Where(i =>
                     i.TenantId == _tenant.TenantId &&
                     i.InvoiceType == InvoiceType.Sale &&

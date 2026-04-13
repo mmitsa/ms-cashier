@@ -1,7 +1,8 @@
-import { Bell, LogOut, ChevronDown, ShoppingCart, LayoutDashboard, Sun, Moon } from 'lucide-react';
+import { Bell, LogOut, ChevronDown, ShoppingCart, LayoutDashboard, Sun, Moon, Languages } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
+import { useLocaleStore } from '@/lib/i18n';
 import { notificationsApi } from '@/lib/api/endpoints';
 import { modules } from './Sidebar';
 import { hasPermission } from '@/lib/permissions/usePermissions';
@@ -23,6 +24,9 @@ export function Header() {
   const toggleTheme = useUIStore((s) => s.toggleTheme);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const locale = useLocaleStore((s) => s.locale);
+  const setLocale = useLocaleStore((s) => s.setLocale);
+  const t = useLocaleStore((s) => s.t);
   const [showMenu, setShowMenu] = useState(false);
 
   const currentModule = modules.find((m) => m.id === activeModule);
@@ -66,10 +70,20 @@ export function Header() {
           </button>
         )}
 
+        {/* Language toggle */}
+        <button
+          onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
+          title={locale === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
+          className="h-9 px-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-xs font-bold"
+        >
+          <Languages size={14} />
+          {locale === 'ar' ? 'EN' : 'AR'}
+        </button>
+
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          title={isDark ? 'الوضع الفاتح' : 'الوضع الداكن'}
+          title={isDark ? (t.console?.lightMode ?? 'Light Mode') : (t.console?.darkMode ?? 'Dark Mode')}
           className="w-9 h-9 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           {isDark ? <Sun size={16} /> : <Moon size={16} />}

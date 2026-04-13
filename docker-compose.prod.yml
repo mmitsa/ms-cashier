@@ -1,0 +1,29 @@
+services:
+  sqlserver:
+    volumes:
+      - /data/mpos/sqlserver:/var/opt/mssql
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Database__AutoMigrate=false
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  frontend:
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  storefront:
+    deploy:
+      resources:
+        limits:
+          memory: 256M

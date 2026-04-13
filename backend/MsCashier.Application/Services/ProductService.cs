@@ -143,6 +143,7 @@ public class ProductService : IProductService
         try
         {
             var query = _uow.Repository<Product>().Query()
+                .AsNoTracking()
                 .Where(p => p.TenantId == _tenant.TenantId && !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
@@ -420,6 +421,7 @@ public class ProductService : IProductService
         try
         {
             var lowStock = await _uow.Repository<Product>().Query()
+                .AsNoTracking()
                 .Where(p => p.TenantId == _tenant.TenantId && !p.IsDeleted && p.IsActive && p.TrackInventory)
                 .GroupJoin(
                     _uow.Repository<Inventory>().Query()

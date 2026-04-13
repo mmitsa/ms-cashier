@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة الفواتير</summary>
 [Route("api/v1/invoices")]
 public class InvoicesController : BaseApiController
 {
@@ -20,6 +21,8 @@ public class InvoicesController : BaseApiController
         _pdfService = pdfService;
     }
 
+    /// <summary>تحميل فاتورة بصيغة PDF</summary>
+    /// <param name="id">معرف الفاتورة</param>
     [HttpGet("{id:long}/pdf")]
     public async Task<IActionResult> GetPdf(long id)
     {
@@ -29,6 +32,8 @@ public class InvoicesController : BaseApiController
         return File(result.Data!, "application/pdf", $"invoice-{id}.pdf");
     }
 
+    /// <summary>إنشاء فاتورة بيع</summary>
+    /// <param name="request">بيانات الفاتورة</param>
     [HttpPost("sale")]
     public async Task<IActionResult> CreateSale([FromBody] CreateInvoiceRequest request)
     {
@@ -36,6 +41,8 @@ public class InvoicesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>إنشاء فاتورة شراء</summary>
+    /// <param name="request">بيانات الفاتورة</param>
     [HttpPost("purchase")]
     public async Task<IActionResult> CreatePurchase([FromBody] CreateInvoiceRequest request)
     {
@@ -43,6 +50,9 @@ public class InvoicesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>إنشاء مرتجع لفاتورة</summary>
+    /// <param name="id">معرف الفاتورة الأصلية</param>
+    /// <param name="items">الأصناف المرتجعة</param>
     [HttpPost("{id:long}/return")]
     public async Task<IActionResult> CreateReturn(long id, [FromBody] List<InvoiceItemRequest> items)
     {
@@ -50,6 +60,8 @@ public class InvoicesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>البحث في الفواتير</summary>
+    /// <param name="request">معايير البحث</param>
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] InvoiceSearchRequest request)
     {
@@ -57,6 +69,8 @@ public class InvoicesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض فاتورة بالمعرف</summary>
+    /// <param name="id">معرف الفاتورة</param>
     [HttpGet("{id:long}")]
     public async Task<IActionResult> GetById(long id)
     {
@@ -68,4 +82,3 @@ public class InvoicesController : BaseApiController
 // ============================================================
 // ContactsController
 // ============================================================
-

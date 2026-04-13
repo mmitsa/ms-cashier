@@ -5,6 +5,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة المتجر الإلكتروني</summary>
 [Route("api/v1/online-store")]
 public class OnlineStoreController : BaseApiController
 {
@@ -15,6 +16,7 @@ public class OnlineStoreController : BaseApiController
         _storeService = storeService;
     }
 
+    /// <summary>عرض بيانات المتجر الإلكتروني</summary>
     [HttpGet]
     public async Task<IActionResult> GetStore()
     {
@@ -22,6 +24,8 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>إنشاء أو تحديث المتجر الإلكتروني</summary>
+    /// <param name="request">بيانات المتجر</param>
     [HttpPost]
     public async Task<IActionResult> CreateOrUpdateStore([FromBody] CreateOnlineStoreRequest request)
     {
@@ -31,6 +35,7 @@ public class OnlineStoreController : BaseApiController
 
     // ── Banners ──────────────────────────────────────────────
 
+    /// <summary>عرض بانرات المتجر</summary>
     [HttpGet("banners")]
     public async Task<IActionResult> GetBanners()
     {
@@ -38,6 +43,8 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>حفظ بانر جديد أو تحديثه</summary>
+    /// <param name="banner">بيانات البانر</param>
     [HttpPost("banners")]
     public async Task<IActionResult> SaveBanner([FromBody] StoreBannerDto banner)
     {
@@ -45,6 +52,8 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>حذف بانر</summary>
+    /// <param name="id">معرف البانر</param>
     [HttpDelete("banners/{id:int}")]
     public async Task<IActionResult> DeleteBanner(int id)
     {
@@ -54,6 +63,10 @@ public class OnlineStoreController : BaseApiController
 
     // ── Orders ───────────────────────────────────────────────
 
+    /// <summary>عرض طلبات المتجر الإلكتروني</summary>
+    /// <param name="page">رقم الصفحة</param>
+    /// <param name="pageSize">حجم الصفحة</param>
+    /// <param name="status">حالة الطلب</param>
     [HttpGet("orders")]
     public async Task<IActionResult> GetOrders(
         [FromQuery] int page = 1,
@@ -64,6 +77,8 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض طلب بالمعرف</summary>
+    /// <param name="id">معرف الطلب</param>
     [HttpGet("orders/{id:long}")]
     public async Task<IActionResult> GetOrderById(long id)
     {
@@ -71,6 +86,9 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تحديث حالة طلب</summary>
+    /// <param name="id">معرف الطلب</param>
+    /// <param name="request">الحالة الجديدة</param>
     [HttpPut("orders/{id:long}/status")]
     public async Task<IActionResult> UpdateOrderStatus(long id, [FromBody] UpdateOrderStatusRequest request)
     {
@@ -78,6 +96,9 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>ربط طلب بفاتورة</summary>
+    /// <param name="id">معرف الطلب</param>
+    /// <param name="invoiceId">معرف الفاتورة</param>
     [HttpPut("orders/{id:long}/link-invoice/{invoiceId:long}")]
     public async Task<IActionResult> LinkOrderToInvoice(long id, long invoiceId)
     {
@@ -87,6 +108,7 @@ public class OnlineStoreController : BaseApiController
 
     // ── Payment Configs ──────────────────────────────────────
 
+    /// <summary>عرض إعدادات الدفع</summary>
     [HttpGet("payment-configs")]
     public async Task<IActionResult> GetPaymentConfigs()
     {
@@ -94,6 +116,8 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>حفظ إعدادات الدفع</summary>
+    /// <param name="config">إعدادات الدفع</param>
     [HttpPost("payment-configs")]
     public async Task<IActionResult> SavePaymentConfig([FromBody] OnlinePaymentConfigDto config)
     {
@@ -103,6 +127,7 @@ public class OnlineStoreController : BaseApiController
 
     // ── Shipping Configs ─────────────────────────────────────
 
+    /// <summary>عرض إعدادات الشحن</summary>
     [HttpGet("shipping-configs")]
     public async Task<IActionResult> GetShippingConfigs()
     {
@@ -110,6 +135,8 @@ public class OnlineStoreController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>حفظ إعدادات الشحن</summary>
+    /// <param name="config">إعدادات الشحن</param>
     [HttpPost("shipping-configs")]
     public async Task<IActionResult> SaveShippingConfig([FromBody] StoreShippingConfigDto config)
     {
@@ -119,6 +146,7 @@ public class OnlineStoreController : BaseApiController
 
     // ── Dashboard ────────────────────────────────────────────
 
+    /// <summary>لوحة معلومات المتجر الإلكتروني</summary>
     [HttpGet("dashboard")]
     public async Task<IActionResult> GetDashboard()
     {

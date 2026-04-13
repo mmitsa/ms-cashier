@@ -869,6 +869,7 @@ public class InvoiceService : IInvoiceService
         try
         {
             var query = _uow.Repository<Invoice>().Query()
+                .AsNoTracking()
                 .Where(i => i.TenantId == _tenant.TenantId && !i.IsDeleted);
 
             if (request.DateFrom.HasValue)

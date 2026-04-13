@@ -87,6 +87,20 @@ services:
       - api
     restart: unless-stopped
 
+  storefront:
+    build:
+      context: ./storefront
+      dockerfile: Dockerfile
+    container_name: mscashier-storefront
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8080/api/v1
+      - NEXT_PUBLIC_DEFAULT_STORE=mpos-demo
+    depends_on:
+      - api
+    restart: unless-stopped
+
   # Jaeger — local OpenTelemetry collector + UI for traces.
   # Enable with the "observability" profile:
   #   docker compose --profile observability up -d jaeger

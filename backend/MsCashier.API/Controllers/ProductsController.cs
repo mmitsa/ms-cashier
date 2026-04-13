@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة المنتجات</summary>
 [Route("api/v1/products")]
 public class ProductsController : BaseApiController
 {
@@ -15,6 +16,8 @@ public class ProductsController : BaseApiController
 
     public ProductsController(IProductService productService) => _productService = productService;
 
+    /// <summary>إنشاء منتج جديد</summary>
+    /// <param name="request">بيانات المنتج</param>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductRequest request)
     {
@@ -22,13 +25,18 @@ public class ProductsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>البحث في المنتجات</summary>
+    /// <param name="request">معايير البحث</param>
     [HttpGet("search")]
+    [ResponseCache(Duration = 30)]
     public async Task<IActionResult> Search([FromQuery] ProductSearchRequest request)
     {
         var result = await _productService.SearchAsync(request);
         return HandleResult(result);
     }
 
+    /// <summary>عرض منتج بالمعرف</summary>
+    /// <param name="id">معرف المنتج</param>
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -36,6 +44,8 @@ public class ProductsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض منتج بالباركود</summary>
+    /// <param name="barcode">رقم الباركود</param>
     [HttpGet("barcode/{barcode}")]
     public async Task<IActionResult> GetByBarcode(string barcode)
     {
@@ -43,6 +53,9 @@ public class ProductsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تحديث بيانات منتج</summary>
+    /// <param name="id">معرف المنتج</param>
+    /// <param name="request">البيانات المحدثة</param>
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProductRequest request)
     {
@@ -50,6 +63,8 @@ public class ProductsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>حذف منتج</summary>
+    /// <param name="id">معرف المنتج</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -57,6 +72,7 @@ public class ProductsController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض المنتجات منخفضة المخزون</summary>
     [HttpGet("low-stock")]
     public async Task<IActionResult> GetLowStock()
     {

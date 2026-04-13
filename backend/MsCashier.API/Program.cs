@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MsCashier.API.Middleware;
+using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
 using MsCashier.Application.Services;
 using MsCashier.Domain.Entities;
@@ -168,6 +170,11 @@ builder.Services.AddScoped<IFloorSectionService, FloorSectionService>();
 builder.Services.AddScoped<IQrConfigService, QrConfigService>();
 builder.Services.AddScoped<ICustomerOrderService, CustomerOrderService>();
 builder.Services.AddScoped<IPaymentTerminalService, PaymentTerminalService>();
+// Email & SMS
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.Configure<SmsSettings>(builder.Configuration.GetSection("Sms"));
+builder.Services.AddScoped<ISmsService, SmsService>();
 // Social Media
 builder.Services.AddScoped<ISocialMediaService, SocialMediaService>();
 // Production & Kitchen
@@ -179,6 +186,8 @@ builder.Services.AddScoped<IProductionWasteService, ProductionWasteService>();
 builder.Services.AddScoped<IRfidInventoryService, RfidInventoryService>();
 // Public API & Webhooks
 builder.Services.AddScoped<IPublicApiService, PublicApiService>();
+// Demo Data Seeder
+builder.Services.AddScoped<IDemoDataSeeder, DemoDataSeeder>();
 // Online Store
 builder.Services.AddScoped<IOnlineStoreService, OnlineStoreService>();
 builder.Services.AddScoped<IStorefrontService, StorefrontService>();
@@ -236,9 +245,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "MsCashier POS API",
+        Title = "MPOS API",
         Version = "v1",
-        Description = "Multi-Tenant Point of Sale API"
+        Description = "Multi-tenant Point of Sale system API"
     });
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -248,7 +257,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter your JWT token"
+        Description = "أدخل رمز JWT الخاص بك — Enter your JWT token"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -265,6 +274,12 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+
+    // Include XML documentation comments
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+        options.IncludeXmlComments(xmlPath);
 });
 
 // ============================================================
@@ -373,6 +388,13 @@ builder.Services.AddOpenTelemetry()
 // 6. Controllers & Health Checks
 // ============================================================
 
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
+builder.Services.AddResponseCaching();
+
 builder.Services.AddControllers();
 
 builder.Services.AddHealthChecks()
@@ -394,8 +416,14 @@ var app = builder.Build();
 // 0. Correlation IDs (outermost so every log line has one)
 app.UseMiddleware<CorrelationIdMiddleware>();
 
+// 0.3 Request/response logging (method, path, status, timing, tenant)
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 // 0.5 Serilog HTTP request logging (status, timing, route)
 app.UseSerilogRequestLogging();
+
+// 0.6 Response compression (before other content-producing middleware)
+app.UseResponseCompression();
 
 // 1. Global exception handler
 app.UseMiddleware<ExceptionMiddleware>();
@@ -406,7 +434,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MsCashier POS API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MPOS API v1");
         c.RoutePrefix = "swagger";
     });
 }
@@ -422,6 +450,9 @@ app.UseRateLimiter();
 
 // 4.6 API key rate limiting for public API endpoints
 app.UseMiddleware<ApiKeyRateLimitMiddleware>();
+
+// 4.7 Response caching
+app.UseResponseCaching();
 
 // 5. Authentication & Authorization
 app.UseAuthentication();

@@ -68,6 +68,7 @@ public class ContactService : IContactService
         try
         {
             var query = _uow.Repository<Contact>().Query()
+                .AsNoTracking()
                 .Where(c => c.TenantId == _tenant.TenantId && !c.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(search))

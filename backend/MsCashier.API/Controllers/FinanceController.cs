@@ -8,6 +8,7 @@ using MsCashier.Domain.Enums;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>إدارة الحسابات المالية والمعاملات</summary>
 [Route("api/v1/finance")]
 [Authorize(Roles = "SuperAdmin,Admin")]
 public class FinanceController : BaseApiController
@@ -16,6 +17,7 @@ public class FinanceController : BaseApiController
 
     public FinanceController(IFinanceService financeService) => _financeService = financeService;
 
+    /// <summary>عرض جميع الحسابات المالية</summary>
     [HttpGet("accounts")]
     public async Task<IActionResult> GetAccounts()
     {
@@ -23,6 +25,8 @@ public class FinanceController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>إنشاء حساب مالي جديد</summary>
+    /// <param name="request">بيانات الحساب</param>
     [HttpPost("accounts")]
     public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
     {
@@ -30,6 +34,8 @@ public class FinanceController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تسجيل معاملة مالية</summary>
+    /// <param name="request">بيانات المعاملة</param>
     [HttpPost("transactions")]
     public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request)
     {
@@ -37,6 +43,12 @@ public class FinanceController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض المعاملات المالية مع التصفية</summary>
+    /// <param name="accountId">معرف الحساب (اختياري)</param>
+    /// <param name="from">تاريخ البداية</param>
+    /// <param name="to">تاريخ النهاية</param>
+    /// <param name="page">رقم الصفحة</param>
+    /// <param name="pageSize">حجم الصفحة</param>
     [HttpGet("transactions")]
     public async Task<IActionResult> GetTransactions(
         [FromQuery] int? accountId,
@@ -49,6 +61,7 @@ public class FinanceController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>عرض إجمالي الرصيد لجميع الحسابات</summary>
     [HttpGet("total-balance")]
     public async Task<IActionResult> GetTotalBalance()
     {
@@ -60,4 +73,3 @@ public class FinanceController : BaseApiController
 // ============================================================
 // EmployeesController
 // ============================================================
-

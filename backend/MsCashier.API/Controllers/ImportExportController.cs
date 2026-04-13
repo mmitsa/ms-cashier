@@ -5,6 +5,7 @@ using MsCashier.Application.Interfaces;
 
 namespace MsCashier.API.Controllers;
 
+/// <summary>استيراد وتصدير البيانات (CSV)</summary>
 [Route("api/v1/import-export")]
 [Authorize]
 public class ImportExportController : BaseApiController
@@ -15,6 +16,10 @@ public class ImportExportController : BaseApiController
 
     // ─── Import ───
 
+    /// <summary>استيراد منتجات من ملف CSV</summary>
+    /// <param name="file">ملف CSV</param>
+    /// <param name="warehouseId">معرف المستودع</param>
+    /// <param name="skipDuplicates">تخطي المكرر</param>
     [HttpPost("import/products")]
     public async Task<IActionResult> ImportProducts(IFormFile file, [FromQuery] int warehouseId, [FromQuery] bool skipDuplicates = true)
     {
@@ -29,6 +34,9 @@ public class ImportExportController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>استيراد جهات اتصال من ملف CSV</summary>
+    /// <param name="file">ملف CSV</param>
+    /// <param name="skipDuplicates">تخطي المكرر</param>
     [HttpPost("import/contacts")]
     public async Task<IActionResult> ImportContacts(IFormFile file, [FromQuery] bool skipDuplicates = true)
     {
@@ -40,6 +48,9 @@ public class ImportExportController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>استيراد تصنيفات من ملف CSV</summary>
+    /// <param name="file">ملف CSV</param>
+    /// <param name="skipDuplicates">تخطي المكرر</param>
     [HttpPost("import/categories")]
     public async Task<IActionResult> ImportCategories(IFormFile file, [FromQuery] bool skipDuplicates = true)
     {
@@ -53,6 +64,9 @@ public class ImportExportController : BaseApiController
 
     // ─── Export ───
 
+    /// <summary>تصدير المنتجات إلى ملف CSV</summary>
+    /// <param name="categoryId">معرف التصنيف (اختياري)</param>
+    /// <param name="activeOnly">المنتجات النشطة فقط</param>
     [HttpGet("export/products")]
     public async Task<IActionResult> ExportProducts([FromQuery] int? categoryId, [FromQuery] bool activeOnly = true)
     {
@@ -61,6 +75,8 @@ public class ImportExportController : BaseApiController
         return File(result.Data!, "text/csv; charset=utf-8", $"products-{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
+    /// <summary>تصدير جهات الاتصال إلى ملف CSV</summary>
+    /// <param name="activeOnly">جهات الاتصال النشطة فقط</param>
     [HttpGet("export/contacts")]
     public async Task<IActionResult> ExportContacts([FromQuery] bool activeOnly = true)
     {
@@ -69,6 +85,7 @@ public class ImportExportController : BaseApiController
         return File(result.Data!, "text/csv; charset=utf-8", $"contacts-{DateTime.UtcNow:yyyyMMdd}.csv");
     }
 
+    /// <summary>تصدير التصنيفات إلى ملف CSV</summary>
     [HttpGet("export/categories")]
     public async Task<IActionResult> ExportCategories()
     {
@@ -79,6 +96,8 @@ public class ImportExportController : BaseApiController
 
     // ─── Templates ───
 
+    /// <summary>تحميل قالب CSV للاستيراد</summary>
+    /// <param name="type">نوع القالب (منتجات، جهات اتصال، تصنيفات)</param>
     [HttpGet("template/{type}")]
     public IActionResult GetTemplate(CsvImportType type)
     {
