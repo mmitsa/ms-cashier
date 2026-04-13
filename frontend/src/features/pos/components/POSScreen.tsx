@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone,
   Clock, ShoppingCart, Box, CheckCircle, Printer, Scale, ScanBarcode,
@@ -7,7 +7,7 @@ import {
 import toast from 'react-hot-toast';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
-import { usePOSStore } from '@/store/posStore';
+import { usePOSStore, calcBundlePrice } from '@/store/posStore';
 import { useBarcodeScanner } from '@/hooks/useBarcodeScanner';
 import { useScale } from '@/hooks/useScale';
 import {
@@ -17,6 +17,9 @@ import {
 } from '@/hooks/useApi';
 import { formatCurrency, getPriceByType, cn } from '@/lib/utils/cn';
 import { printReceipt } from '@/lib/utils/printer';
+import { sendToCustomerDisplay } from '@/lib/customerDisplayChannel';
+import { useAuthStore } from '@/store/authStore';
+import { salesRepsApi } from '@/lib/api/endpoints';
 import type {
   ProductDto, ContactDto, CategoryDto, WarehouseDto,
   PaymentMethod, PriceType, CreateInvoiceRequest,
@@ -48,12 +51,12 @@ const PRICE_TYPE_MAP: Record<string, PriceType> = {
 function ProductSkeleton() {
   return (
     <div className="card p-3 animate-pulse">
-      <div className="w-full h-16 bg-gray-100 rounded-lg mb-2" />
-      <div className="h-4 bg-gray-100 rounded w-3/4 mb-1" />
-      <div className="h-3 bg-gray-50 rounded w-1/2 mt-1" />
+      <div className="w-full h-16 bg-gray-100 dark:bg-gray-800 rounded-lg mb-2" />
+      <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-3/4 mb-1" />
+      <div className="h-3 bg-gray-50 dark:bg-gray-800 rounded w-1/2 mt-1" />
       <div className="flex items-center justify-between mt-2">
-        <div className="h-5 bg-gray-100 rounded-full w-14" />
-        <div className="h-4 bg-gray-100 rounded w-16" />
+        <div className="h-5 bg-gray-100 dark:bg-gray-800 rounded-full w-14" />
+        <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded w-16" />
       </div>
     </div>
   );
@@ -86,7 +89,23 @@ export function POSScreen() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [scannedBarcode, setScannedBarcode] = useState('');
   const [lastSaleInvoice, setLastSaleInvoice] = useState<string | null>(null);
+  const [salesRepId, setSalesRepId] = useState<number | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-detect SalesRep from JWT when logged in as SalesRep role
+  const user = useAuthStore(s => s.user);
+  useEffect(() => {
+    if (user?.role === 'SalesRep') {
+      salesRepsApi.getMine().then(res => {
+        if (res.success && res.data) {
+          setSalesRepId(res.data.id);
+          if (res.data.assignedWarehouseId) {
+            setSelectedWarehouse(res.data.assignedWarehouseId);
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [user?.role]);
 
   // ── API Hooks ──────────────────────────────────────────────────────────────
   const {
@@ -255,6 +274,7 @@ export function POSScreen() {
       discountAmount: discount,
       paidAmount: paid,
       notes: notes || undefined,
+      salesRepId: salesRepId ?? undefined,
       items: cart.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -286,6 +306,14 @@ export function POSScreen() {
         storePhone: '01012345678',
       });
 
+      // Broadcast payment to customer display
+      sendToCustomerDisplay({
+        type: 'PAYMENT_COMPLETE',
+        paid,
+        change: Math.max(0, paid - total),
+        method: PAYMENT_METHODS.find((m) => m.id === method)?.label || 'كاش',
+      });
+
       setShowPayment(false);
       setShowSuccess(true);
     } catch {
@@ -306,6 +334,27 @@ export function POSScreen() {
   const subTotal = getSubTotal();
   const total = getTotal();
   const profit = getProfit();
+
+  // ── Broadcast cart changes to Customer Display ────────────────────────────
+  useEffect(() => {
+    if (cart.length === 0) {
+      sendToCustomerDisplay({ type: 'CLEAR_ORDER' });
+      return;
+    }
+    sendToCustomerDisplay({
+      type: 'UPDATE_ORDER',
+      items: cart.map((item) => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.unitPrice * item.quantity - item.discount,
+      })),
+      subtotal: subTotal,
+      tax: 0,
+      discount,
+      total,
+    });
+  }, [cart, subTotal, total, discount]);
 
   // ══════════════════════════════════════════════════════════════════════════
   // RENDER
@@ -346,7 +395,7 @@ export function POSScreen() {
               'touch-btn px-3 border rounded-xl text-sm gap-2',
               scale.connected
                 ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                : 'bg-gray-50 border-gray-200 text-gray-400',
+                : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400',
             )}
             title={scale.connected ? `الميزان: ${scale.weight} ${scale.unit}` : 'توصيل الميزان'}
           >
@@ -354,7 +403,7 @@ export function POSScreen() {
             {scale.connected && <span className="font-mono">{scale.weight}</span>}
           </button>
 
-          <button className="touch-btn px-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-400">
+          <button className="touch-btn px-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-400">
             <ScanBarcode size={16} />
           </button>
         </div>
@@ -367,7 +416,7 @@ export function POSScreen() {
               'px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all',
               !selectedCategory
                 ? 'bg-brand-900 text-white shadow-sm'
-                : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
+                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
             )}
           >
             الكل
@@ -377,7 +426,7 @@ export function POSScreen() {
             ? Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="px-4 py-2 rounded-xl bg-gray-100 animate-pulse w-20 shrink-0"
+                  className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse w-20 shrink-0"
                 />
               ))
             : categories.map((cat: CategoryDto) => (
@@ -390,7 +439,7 @@ export function POSScreen() {
                     'px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all',
                     selectedCategory === cat.id
                       ? 'bg-brand-900 text-white shadow-sm'
-                      : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50',
+                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
                   )}
                 >
                   {cat.name}
@@ -450,6 +499,12 @@ export function POSScreen() {
                     )}
                   </div>
 
+                  {product.isBundle && (
+                    <div className="absolute top-1 right-1 bg-purple-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-sm">
+                      باقة
+                    </div>
+                  )}
+
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate leading-tight">
                     {product.name}
                   </p>
@@ -461,9 +516,20 @@ export function POSScreen() {
                     <Badge variant={isLowStock ? 'danger' : 'success'}>
                       {product.currentStock} {product.unitName}
                     </Badge>
-                    <span className="text-sm font-bold text-brand-700 dark:text-brand-300">
-                      {formatCurrency(price)}
-                    </span>
+                    {product.isBundle && product.bundleItems?.length ? (
+                      <div className="flex items-center gap-1">
+                        <span className="font-bold text-brand-600 dark:text-brand-400 text-sm">
+                          {formatCurrency(calcBundlePrice(product, priceType))}
+                        </span>
+                        <span className="text-[10px] text-gray-400 line-through">
+                          {formatCurrency(product.bundleItems.reduce((s, bi) => s + bi.componentRetailPrice * bi.quantity, 0))}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm font-bold text-brand-700 dark:text-brand-300">
+                        {formatCurrency(price)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Cart quantity indicator */}
@@ -570,12 +636,13 @@ export function POSScreen() {
             </div>
           ) : (
             cart.map((item) => (
+              <div key={item.product.id}>
               <div
-                key={item.product.id}
                 className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                    {item.isBundleParent && <span className="text-purple-500 ml-1 text-xs">📦</span>}
                     {item.product.name}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -587,7 +654,7 @@ export function POSScreen() {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                    className="touch-btn w-8 h-8 bg-white border border-gray-200 rounded-lg hover:bg-red-50 hover:border-red-200 hover:text-red-500"
+                    className="touch-btn w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-200 hover:text-red-500"
                   >
                     {item.quantity === 1 ? <Trash2 size={13} /> : <Minus size={13} />}
                   </button>
@@ -609,7 +676,7 @@ export function POSScreen() {
                           setEditingQty(null);
                         }
                       }}
-                      className="w-12 text-center text-sm font-bold border border-brand-300 rounded-lg py-1 bg-white"
+                      className="w-12 text-center text-sm font-bold border border-brand-300 dark:border-brand-700 rounded-lg py-1 bg-white dark:bg-gray-800 dark:text-gray-100"
                       autoFocus
                     />
                   ) : (
@@ -618,7 +685,7 @@ export function POSScreen() {
                         setEditingQty(item.product.id);
                         setEditQtyValue(item.quantity.toString());
                       }}
-                      className="w-10 text-center text-sm font-bold text-gray-900 py-1 hover:bg-brand-50 rounded-lg"
+                      className="w-10 text-center text-sm font-bold text-gray-900 dark:text-gray-100 py-1 hover:bg-brand-50 dark:hover:bg-brand-950 rounded-lg"
                     >
                       {item.quantity}
                     </button>
@@ -626,7 +693,7 @@ export function POSScreen() {
 
                   <button
                     onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                    className="touch-btn w-8 h-8 bg-white border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-200 hover:text-green-500"
+                    className="touch-btn w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-green-50 dark:hover:bg-green-950 hover:border-green-200 hover:text-green-500"
                   >
                     <Plus size={13} />
                   </button>
@@ -635,6 +702,15 @@ export function POSScreen() {
                 <span className="text-sm font-bold text-gray-900 dark:text-gray-100 w-20 text-left tabular-nums">
                   {formatCurrency(item.unitPrice * item.quantity - item.discount)}
                 </span>
+              </div>
+              {item.isBundleParent && item.bundleChildren?.map((child, idx) => (
+                <div key={`bundle-child-${item.product.id}-${idx}`}
+                  className="flex items-center gap-2 px-3 py-1 mr-4 border-r-2 border-purple-400/30 dark:border-purple-600/30">
+                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                    {idx === item.bundleChildren!.length - 1 ? '└' : '├'} {child.product.name} × {child.quantity}
+                  </span>
+                </div>
+              ))}
               </div>
             ))
           )}
@@ -807,12 +883,12 @@ export function POSScreen() {
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
             {lastSaleInvoice && (
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-500">رقم الفاتورة</span>
+                <span className="text-gray-500 dark:text-gray-400">رقم الفاتورة</span>
                 <span className="font-mono font-medium">{lastSaleInvoice}</span>
               </div>
             )}
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-500">العميل</span>
+              <span className="text-gray-500 dark:text-gray-400">العميل</span>
               <span className="font-medium">
                 {selectedCustomer?.name || 'عميل نقدي'}
               </span>
@@ -900,8 +976,8 @@ export function POSScreen() {
                   className={cn(
                     'w-full flex items-center gap-3 p-3 rounded-xl text-right transition-colors',
                     selectedCustomer?.id === customer.id
-                      ? 'bg-brand-50 border border-brand-200'
-                      : 'bg-gray-50 hover:bg-gray-100',
+                      ? 'bg-brand-50 dark:bg-brand-950 border border-brand-200 dark:border-brand-800'
+                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
                   )}
                 >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold shrink-0">
@@ -909,7 +985,7 @@ export function POSScreen() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{customer.name}</p>
-                    <p className="text-xs text-gray-400">{customer.phone || '—'}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{customer.phone || '—'}</p>
                   </div>
                   <div className="text-left shrink-0">
                     <Badge variant={customer.balance >= 0 ? 'success' : 'danger'}>
@@ -947,16 +1023,16 @@ export function POSScreen() {
               className={cn(
                 'w-full flex items-center gap-3 p-3 rounded-xl text-right transition-colors',
                 selectedWarehouse === wh.id
-                  ? 'bg-brand-50 border border-brand-200'
-                  : 'bg-gray-50 hover:bg-gray-100',
+                  ? 'bg-brand-50 dark:bg-brand-950 border border-brand-200 dark:border-brand-800'
+                  : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
               )}
             >
               <div
                 className={cn(
                   'w-10 h-10 rounded-full flex items-center justify-center shrink-0',
                   wh.isMain
-                    ? 'bg-brand-100 text-brand-600'
-                    : 'bg-gray-100 text-gray-500',
+                    ? 'bg-brand-100 dark:bg-brand-900 text-brand-600 dark:text-brand-400'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400',
                 )}
               >
                 <Warehouse size={18} />
