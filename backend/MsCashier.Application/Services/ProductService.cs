@@ -54,7 +54,14 @@ public class ProductService : IProductService
                 MaxStock = request.MaxStock,
                 TaxRate = request.TaxRate,
                 IsActive = true,
-                TrackInventory = true
+                TrackInventory = true,
+                IsBundle = request.IsBundle,
+                BundleDiscountType = request.BundleDiscountType,
+                BundleDiscountValue = request.BundleDiscountValue,
+                BundleHasOwnStock = request.BundleHasOwnStock,
+                BundleValidFrom = request.BundleValidFrom,
+                BundleValidTo = request.BundleValidTo,
+                BundlePricingMode = request.BundlePricingMode,
             };
 
             await _uow.Repository<Product>().AddAsync(product);
@@ -91,6 +98,37 @@ public class ProductService : IProductService
                 await _uow.SaveChangesAsync();
             }
 
+            // Save bundle items if this is a bundle
+            if (request.IsBundle && request.BundleItems?.Count > 0)
+            {
+                if (request.BundleItems.Count < 2)
+                    return Result<ProductDto>.Failure("الباقة يجب أن تحتوي على صنفين على الأقل");
+
+                var componentIds = request.BundleItems.Select(bi => bi.ComponentId).ToList();
+                var components = await _uow.Repository<Product>().Query()
+                    .Where(p => componentIds.Contains(p.Id))
+                    .ToListAsync();
+
+                if (components.Any(c => c.IsBundle))
+                    return Result<ProductDto>.Failure("لا يمكن إضافة باقة داخل باقة أخرى");
+
+                if (components.Count != componentIds.Count)
+                    return Result<ProductDto>.Failure("بعض الأصناف المكونة غير موجودة");
+
+                foreach (var bi in request.BundleItems)
+                {
+                    await _uow.Repository<BundleItem>().AddAsync(new BundleItem
+                    {
+                        TenantId = product.TenantId,
+                        ProductId = product.Id,
+                        ComponentId = bi.ComponentId,
+                        Quantity = bi.Quantity,
+                        SortOrder = bi.SortOrder,
+                    });
+                }
+                await _uow.SaveChangesAsync();
+            }
+
             var dto = await BuildProductDto(product.Id);
             return Result<ProductDto>.Success(dto!, "تم إنشاء المنتج بنجاح");
         }
@@ -122,6 +160,10 @@ public class ProductService : IProductService
             if (request.ActiveOnly == true)
                 query = query.Where(p => p.IsActive);
 
+            query = query.Where(p => !p.IsBundle
+                || ((!p.BundleValidFrom.HasValue || p.BundleValidFrom <= DateTime.UtcNow)
+                 && (!p.BundleValidTo.HasValue || p.BundleValidTo >= DateTime.UtcNow)));
+
             var productQuery = query
                 .GroupJoin(
                     _uow.Repository<Inventory>().Query()
@@ -149,7 +191,14 @@ public class ProductService : IProductService
                     x.Product.MinStock,
                     x.Product.IsActive,
                     x.Product.TaxRate,
-                    x.Product.ImageUrl
+                    x.Product.ImageUrl,
+                    x.Product.IsBundle,
+                    x.Product.BundleDiscountType,
+                    x.Product.BundleDiscountValue,
+                    x.Product.BundleHasOwnStock,
+                    x.Product.BundleValidFrom,
+                    x.Product.BundleValidTo,
+                    x.Product.BundlePricingMode
                 })
                 .Select(g => new
                 {
@@ -169,6 +218,13 @@ public class ProductService : IProductService
                     g.Key.IsActive,
                     g.Key.TaxRate,
                     g.Key.ImageUrl,
+                    g.Key.IsBundle,
+                    g.Key.BundleDiscountType,
+                    g.Key.BundleDiscountValue,
+                    g.Key.BundleHasOwnStock,
+                    g.Key.BundleValidFrom,
+                    g.Key.BundleValidTo,
+                    g.Key.BundlePricingMode,
                     CurrentStock = g.Sum(x => x.Inventory != null ? x.Inventory.Quantity : 0)
                 });
 
@@ -198,6 +254,23 @@ public class ProductService : IProductService
                     .ToDictionaryAsync(u => u.Id, u => u.Name)
                 : new Dictionary<int, string>();
 
+            // Load bundle items for bundle products
+            var bundleProductIds = items.Where(p => p.IsBundle).Select(p => p.Id).ToList();
+            var allBundleItems = bundleProductIds.Count > 0
+                ? await _uow.Repository<BundleItem>().Query()
+                    .Include(bi => bi.Component)
+                    .Where(bi => bundleProductIds.Contains(bi.ProductId))
+                    .OrderBy(bi => bi.SortOrder)
+                    .ToListAsync()
+                : new List<BundleItem>();
+
+            var bundleItemsByProduct = allBundleItems
+                .GroupBy(bi => bi.ProductId)
+                .ToDictionary(g => g.Key, g => g.Select(bi => new BundleItemDto(
+                    bi.Id, bi.ComponentId, bi.Component?.Name ?? "", bi.Component?.Barcode,
+                    bi.Quantity, bi.SortOrder, bi.Component?.RetailPrice ?? 0, bi.Component?.CostPrice ?? 0
+                )).ToList());
+
             var dtos = items.Select(p => new ProductDto(
                 p.Id, p.Barcode, p.SKU, p.Name, p.Description,
                 p.CategoryId,
@@ -205,7 +278,10 @@ public class ProductService : IProductService
                 p.UnitId,
                 p.UnitId.HasValue && units.ContainsKey(p.UnitId.Value) ? units[p.UnitId.Value] : null,
                 p.CostPrice, p.RetailPrice, p.HalfWholesalePrice, p.WholesalePrice, p.Price4,
-                (int)p.MinStock, p.CurrentStock, p.IsActive, p.TaxRate, p.ImageUrl
+                (int)p.MinStock, p.CurrentStock, p.IsActive, p.TaxRate, p.ImageUrl,
+                p.IsBundle, p.BundleDiscountType, p.BundleDiscountValue, p.BundleHasOwnStock,
+                p.BundleValidFrom, p.BundleValidTo, p.BundlePricingMode,
+                bundleItemsByProduct.GetValueOrDefault(p.Id)
             )).ToList();
 
             var result = new PagedResult<ProductDto>
@@ -388,6 +464,8 @@ public class ProductService : IProductService
     private async Task<ProductDto?> BuildProductDto(int productId)
     {
         var product = await _uow.Repository<Product>().Query()
+            .Include(p => p.Category)
+            .Include(p => p.Unit)
             .FirstOrDefaultAsync(p =>
                 p.Id == productId &&
                 p.TenantId == _tenant.TenantId &&
@@ -399,28 +477,32 @@ public class ProductService : IProductService
             .Where(i => i.TenantId == _tenant.TenantId && i.ProductId == productId)
             .SumAsync(i => i.Quantity);
 
-        string? categoryName = null;
-        if (product.CategoryId.HasValue)
+        // Load bundle items if this is a bundle
+        List<BundleItemDto>? bundleItems = null;
+        if (product.IsBundle)
         {
-            var cat = await _uow.Repository<Category>().GetByIdAsync(product.CategoryId.Value);
-            categoryName = cat?.Name;
+            var items = await _uow.Repository<BundleItem>().Query()
+                .Include(bi => bi.Component)
+                .Where(bi => bi.ProductId == product.Id)
+                .OrderBy(bi => bi.SortOrder)
+                .ToListAsync();
+
+            bundleItems = items.Select(bi => new BundleItemDto(
+                bi.Id, bi.ComponentId, bi.Component?.Name ?? "", bi.Component?.Barcode,
+                bi.Quantity, bi.SortOrder, bi.Component?.RetailPrice ?? 0, bi.Component?.CostPrice ?? 0
+            )).ToList();
         }
 
-        string? unitName = null;
-        if (product.UnitId.HasValue)
-        {
-            var unit = await _uow.Repository<Unit>().GetByIdAsync(product.UnitId.Value);
-            unitName = unit?.Name;
-        }
-
-        return new ProductDto(
-            product.Id, product.Barcode, product.SKU, product.Name, product.Description,
-            product.CategoryId, categoryName,
-            product.UnitId, unitName,
-            product.CostPrice, product.RetailPrice, product.HalfWholesalePrice,
-            product.WholesalePrice, product.Price4,
-            (int)product.MinStock, stock, product.IsActive, product.TaxRate, product.ImageUrl);
+        return MapToDto(product, stock, bundleItems);
     }
+
+    private static ProductDto MapToDto(Product p, decimal currentStock, List<BundleItemDto>? bundleItems = null) =>
+        new(p.Id, p.Barcode, p.SKU, p.Name, p.Description,
+            p.CategoryId, p.Category?.Name, p.UnitId, p.Unit?.Name,
+            p.CostPrice, p.RetailPrice, p.HalfWholesalePrice, p.WholesalePrice, p.Price4,
+            (int)p.MinStock, currentStock, p.IsActive, p.TaxRate, p.ImageUrl,
+            p.IsBundle, p.BundleDiscountType, p.BundleDiscountValue, p.BundleHasOwnStock,
+            p.BundleValidFrom, p.BundleValidTo, p.BundlePricingMode, bundleItems);
 }
 
 // ════════════════════════════════════════════════════════════════
