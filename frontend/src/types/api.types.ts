@@ -51,6 +51,20 @@ export enum PaymentStatus {
   Unpaid = 3,
 }
 
+export type BundleDiscountType = 1 | 2 | 3;  // FixedPrice | Percent | FlatDiscount
+export type BundlePricingMode = 1 | 2;        // Unified | PerLevel
+
+export interface BundleItemDto {
+  id: number;
+  componentId: number;
+  componentName: string;
+  componentBarcode?: string;
+  quantity: number;
+  sortOrder: number;
+  componentRetailPrice: number;
+  componentCostPrice: number;
+}
+
 export enum InvoiceType {
   Sale = 1,
   SaleReturn = 2,
@@ -126,6 +140,14 @@ export interface ProductDto {
   isActive: boolean;
   taxRate?: number;
   imageUrl?: string;
+  isBundle: boolean;
+  bundleDiscountType?: BundleDiscountType;
+  bundleDiscountValue?: number;
+  bundleHasOwnStock: boolean;
+  bundleValidFrom?: string;
+  bundleValidTo?: string;
+  bundlePricingMode: BundlePricingMode;
+  bundleItems?: BundleItemDto[];
 }
 
 export interface CreateProductRequest {
@@ -171,6 +193,111 @@ export interface ProductSearchRequest {
   pageSize?: number;
 }
 
+// ==================== Unit ====================
+
+export interface UnitDto {
+  id: number;
+  name: string;
+  symbol?: string;
+  isBase: boolean;
+  baseUnitId?: number;
+  baseUnitName?: string;
+  conversionRate?: number;
+}
+
+export interface CreateUnitRequest {
+  name: string;
+  symbol?: string;
+  isBase?: boolean;
+  baseUnitId?: number;
+  conversionRate?: number;
+}
+
+export interface UpdateUnitRequest {
+  name: string;
+  symbol?: string;
+  isBase: boolean;
+  baseUnitId?: number;
+  conversionRate?: number;
+}
+
+// ==================== Sales Rep ====================
+
+export interface SalesRepDto {
+  id: number;
+  userId: string;
+  userName: string;
+  name: string;
+  phone?: string;
+  assignedWarehouseId?: number;
+  assignedWarehouseName?: string;
+  commissionPercent: number;
+  fixedBonus: number;
+  outstandingBalance: number;
+  isActive: boolean;
+}
+
+export interface CreateSalesRepRequest {
+  username: string;
+  password: string;
+  fullName: string;
+  phone?: string;
+  assignedWarehouseId?: number;
+  commissionPercent: number;
+  fixedBonus?: number;
+}
+
+export interface UpdateSalesRepRequest {
+  name: string;
+  phone?: string;
+  assignedWarehouseId?: number;
+  commissionPercent: number;
+  fixedBonus: number;
+  isActive: boolean;
+}
+
+export interface SalesRepTransactionDto {
+  id: number;
+  transactionType: number;
+  transactionTypeLabel: string;
+  amount: number;
+  balanceAfter: number;
+  invoiceId?: number;
+  invoiceNumber?: string;
+  paymentMethod?: number;
+  transactionDate: string;
+  notes?: string;
+}
+
+export interface CollectPaymentRequest {
+  invoiceId: number;
+  amount: number;
+  paymentMethod: number;
+  notes?: string;
+}
+
+export interface SalesRepCommissionDto {
+  id: number;
+  salesRepId: number;
+  salesRepName: string;
+  month: number;
+  year: number;
+  totalPaidSales: number;
+  commissionPercent: number;
+  commissionAmount: number;
+  fixedBonus: number;
+  totalEarned: number;
+  paidAmount: number;
+  status: number;
+}
+
+export interface SalesRepSummaryDto {
+  totalReps: number;
+  activeReps: number;
+  totalOutstanding: number;
+  totalCommissionUnpaid: number;
+}
+
 // ==================== Category ====================
 
 export interface CategoryDto {
@@ -204,6 +331,7 @@ export interface CreateInvoiceRequest {
   paidAmount: number;
   notes?: string;
   items: InvoiceItemRequest[];
+  salesRepId?: number;
 }
 
 export interface InvoiceItemRequest {
@@ -249,6 +377,7 @@ export interface InvoiceItemDto {
   costPrice: number;
   discountAmount: number;
   totalPrice: number;
+  bundleParentId?: number;
 }
 
 // ==================== Contact ====================
@@ -260,6 +389,7 @@ export interface ContactDto {
   phone?: string;
   email?: string;
   address?: string;
+  notes?: string;
   priceType: PriceType;
   creditLimit?: number;
   balance: number;
@@ -272,6 +402,7 @@ export interface CreateContactRequest {
   phone?: string;
   email?: string;
   address?: string;
+  notes?: string;
   priceType: PriceType;
   creditLimit?: number;
 }
@@ -753,4 +884,69 @@ export interface PayslipDto {
 export interface PayslipLineDto {
   description: string;
   amount: number;
+}
+
+// ==================== Product Variants ====================
+
+export interface ProductVariantOptionDto {
+  id: number;
+  productId: number;
+  name: string;
+  sortOrder: number;
+  values: ProductVariantValueDto[];
+}
+
+export interface ProductVariantValueDto {
+  id: number;
+  variantOptionId: number;
+  value: string;
+  sortOrder: number;
+}
+
+export interface ProductVariantDto {
+  id: number;
+  productId: number;
+  sku?: string;
+  barcode?: string;
+  variantCombination: string;
+  displayName?: string;
+  costPrice: number;
+  retailPrice: number;
+  halfWholesalePrice?: number;
+  wholesalePrice?: number;
+  imageUrl?: string;
+  isActive: boolean;
+  currentStock: number;
+}
+
+export interface ProductWithVariantsDto {
+  productId: number;
+  productName: string;
+  hasVariants: boolean;
+  options: ProductVariantOptionDto[];
+  variants: ProductVariantDto[];
+}
+
+export interface SetVariantOptionsRequest {
+  productId: number;
+  options: { name: string; values: string[] }[];
+}
+
+export interface GenerateVariantsRequest {
+  productId: number;
+  defaultCostPrice: number;
+  defaultRetailPrice: number;
+  defaultHalfWholesalePrice?: number;
+  defaultWholesalePrice?: number;
+}
+
+export interface UpdateVariantRequest {
+  sku?: string;
+  barcode?: string;
+  costPrice: number;
+  retailPrice: number;
+  halfWholesalePrice?: number;
+  wholesalePrice?: number;
+  imageUrl?: string;
+  isActive: boolean;
 }

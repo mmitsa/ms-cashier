@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import type { ProductDto, ContactDto } from '@/types/api.types';
+import { getPriceByType } from '@/lib/utils/cn';
 
 export interface CartItem {
   product: ProductDto;
   quantity: number;
   unitPrice: number;
   discount: number;
+  isBundleParent?: boolean;
+  bundleChildren?: CartItem[];
 }
 
 interface POSState {
@@ -36,6 +39,28 @@ interface POSState {
   getQuantityCount: () => number;
 }
 
+export function calcBundlePrice(product: ProductDto, priceType: 'retail' | 'half' | 'wholesale'): number {
+  if (!product.bundleItems?.length) return product.retailPrice;
+
+  if (product.bundleDiscountType === 1) { // FixedPrice
+    if (product.bundlePricingMode === 1) return product.retailPrice; // Unified
+    return getPriceByType(product, priceType);
+  }
+
+  const componentSum = product.bundleItems.reduce((sum, bi) => {
+    return sum + bi.componentRetailPrice * bi.quantity;
+  }, 0);
+
+  if (product.bundleDiscountType === 2) { // Percent
+    return Math.round((componentSum * (1 - (product.bundleDiscountValue ?? 0) / 100)) * 100) / 100;
+  }
+  if (product.bundleDiscountType === 3) { // FlatDiscount
+    return Math.max(0, componentSum - (product.bundleDiscountValue ?? 0));
+  }
+
+  return componentSum;
+}
+
 export const usePOSStore = create<POSState>((set, get) => ({
   cart: [],
   selectedCustomer: null,
@@ -45,6 +70,41 @@ export const usePOSStore = create<POSState>((set, get) => ({
 
   addToCart: (product, price) => {
     set((state) => {
+      // Bundle handling
+      if (product.isBundle && product.bundleItems?.length) {
+        const bundlePrice = calcBundlePrice(product, get().priceType);
+        const existing = state.cart.find((i) => i.product.id === product.id && i.isBundleParent);
+        if (existing) {
+          return {
+            cart: state.cart.map((item) =>
+              item.product.id === product.id && item.isBundleParent
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            ),
+          };
+        }
+        const children: CartItem[] = product.bundleItems!.map((bi) => ({
+          product: { id: bi.componentId, name: bi.componentName, barcode: bi.componentBarcode } as ProductDto,
+          quantity: bi.quantity,
+          unitPrice: 0,
+          discount: 0,
+        }));
+        return {
+          cart: [
+            ...state.cart,
+            {
+              product,
+              quantity: 1,
+              unitPrice: bundlePrice,
+              discount: 0,
+              isBundleParent: true,
+              bundleChildren: children,
+            },
+          ],
+        };
+      }
+
+      // Regular product handling
       const existing = state.cart.find((item) => item.product.id === product.id);
       if (existing) {
         if (existing.quantity >= product.currentStock && product.currentStock > 0) return state;
@@ -72,9 +132,19 @@ export const usePOSStore = create<POSState>((set, get) => ({
     set((state) => ({
       cart: quantity <= 0
         ? state.cart.filter((item) => item.product.id !== productId)
-        : state.cart.map((item) =>
-            item.product.id === productId ? { ...item, quantity } : item
-          ),
+        : state.cart.map((item) => {
+            if (item.product.id !== productId) return item;
+            const updated = { ...item, quantity };
+            // Sync bundle children quantities
+            if (updated.isBundleParent && updated.bundleChildren && updated.product.bundleItems) {
+              updated.bundleChildren = updated.bundleChildren.map((child, idx) => {
+                const bi = updated.product.bundleItems![idx];
+                if (bi) return { ...child, quantity: bi.quantity * updated.quantity };
+                return child;
+              });
+            }
+            return updated;
+          }),
     }));
   },
 
