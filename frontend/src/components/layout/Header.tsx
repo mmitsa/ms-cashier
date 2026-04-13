@@ -38,7 +38,7 @@ export function Header() {
     <header className="h-14 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-6 shrink-0 transition-colors duration-200">
       {/* Left: current module name + breadcrumb */}
       <div className="flex items-center gap-3">
-        <h2 className="font-bold text-gray-900 dark:text-gray-100 text-base">{currentModule?.label || 'MS Cashier'}</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 text-base">{currentModule?.label || 'MPOS'}</h2>
         <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">الكونسول الإداري</span>
       </div>
 

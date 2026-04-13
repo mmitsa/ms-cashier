@@ -25,7 +25,7 @@ export function LoginScreen({ onBack }: { onBack?: () => void }) {
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <ShoppingBag className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">MS Cashier</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">MPOS</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">نظام نقاط البيع المتكامل</p>
         </div>
 

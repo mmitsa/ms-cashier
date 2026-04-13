@@ -109,7 +109,7 @@ export function printReceipt(data: ReceiptData) {
       
       <div class="center footer">
         <div>شكراً لتسوقكم معنا</div>
-        <div>MS Cashier System</div>
+        <div>MPOS System</div>
       </div>
       
       <script>window.onload=function(){window.print();}</script>

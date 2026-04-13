@@ -282,7 +282,7 @@ export function POSScreen() {
         paidAmount: paid,
         change: Math.max(0, paid - total),
         paymentMethod: PAYMENT_METHODS.find((m) => m.id === method)?.label || 'كاش',
-        storeName: 'MS Cashier',
+        storeName: 'MPOS',
         storePhone: '01012345678',
       });
 
@@ -843,7 +843,7 @@ export function POSScreen() {
                   change: Math.max(0, (parseFloat(paidAmount) || total) - total),
                   paymentMethod:
                     PAYMENT_METHODS.find((m) => m.id === selectedPayment)?.label || 'كاش',
-                  storeName: 'MS Cashier',
+                  storeName: 'MPOS',
                   storePhone: '01012345678',
                 });
               }}

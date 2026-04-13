@@ -139,7 +139,7 @@ function Navbar({ onLogin, onGetStarted }: { onLogin: () => void; onGetStarted: 
               M
             </div>
             <span className={`font-bold text-lg transition-colors duration-300 ${scrolled ? 'text-gray-900' : 'text-white'}`}>
-              MS Cashier
+              MPOS
             </span>
           </motion.div>
 
@@ -332,7 +332,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
                   <div className="w-3 h-3 rounded-full bg-red-400" />
                   <div className="w-3 h-3 rounded-full bg-yellow-400" />
                   <div className="w-3 h-3 rounded-full bg-green-400" />
-                  <span className="text-gray-400 text-xs mr-2">MS Cashier — نقطة البيع</span>
+                  <span className="text-gray-400 text-xs mr-2">MPOS — نقطة البيع</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {['مياه معدنية', 'خبز أبيض', 'حليب طازج', 'أرز بسمتي', 'زيت زيتون', 'شاي أخضر'].map((item, i) => (
@@ -472,7 +472,7 @@ function FeaturesSection() {
             مميزات لا تجدها في نظام آخر
           </h2>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
-            صُمم MS Cashier ليكون النظام الأشمل لإدارة نقاط البيع في المملكة العربية السعودية
+            صُمم MPOS ليكون النظام الأشمل لإدارة نقاط البيع في المملكة العربية السعودية
           </p>
         </motion.div>
 
@@ -880,7 +880,7 @@ function ContactSection() {
             <div className="space-y-5">
               {[
                 { icon: Phone, text: '0500 000 000', label: 'هاتف' },
-                { icon: Mail, text: 'info@mscashier.sa', label: 'بريد إلكتروني' },
+                { icon: Mail, text: 'info@mpos.sa', label: 'بريد إلكتروني' },
                 { icon: MapPin, text: 'الرياض، المملكة العربية السعودية', label: 'الموقع' },
                 { icon: HeadphonesIcon, text: 'متاحين 24/7', label: 'دعم فني' },
               ].map((item, i) => (
@@ -1343,7 +1343,7 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
           <motion.div variants={scaleIn} transition={{ duration: 0.5 }}>
             <div className="bg-gray-900 rounded-[2rem] p-3 shadow-2xl">
               <div className="bg-gray-800 rounded-t-[1.5rem] px-5 py-2 flex items-center justify-between">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400" /><span className="text-[10px] text-gray-400 font-medium">MS Cashier — {DEMO_TABS.find(t => t.id === activeTab)?.label}</span></div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400" /><span className="text-[10px] text-gray-400 font-medium">MPOS — {DEMO_TABS.find(t => t.id === activeTab)?.label}</span></div>
                 <div className="flex items-center gap-1.5"><Wifi className="w-3 h-3 text-gray-500" /><span className="text-[9px] text-gray-500 font-mono">{new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</span></div>
               </div>
               <div className="bg-gray-50 min-h-[440px] max-h-[520px] overflow-y-auto p-4 relative">
@@ -1390,7 +1390,7 @@ function CTASection({ onGetStarted }: { onGetStarted: () => void }) {
           جاهز لنقل تجارتك للمستوى التالي؟
         </motion.h2>
         <motion.p variants={fadeUp} transition={{ duration: 0.6 }} className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-          انضم لأكثر من 2,500 متجر يستخدمون MS Cashier لإدارة مبيعاتهم بكفاءة
+          انضم لأكثر من 2,500 متجر يستخدمون MPOS لإدارة مبيعاتهم بكفاءة
         </motion.p>
 
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="flex flex-wrap gap-4 justify-center">
@@ -1438,7 +1438,7 @@ function FooterWithLinks({ onPrivacy, onTerms }: { onPrivacy: () => void; onTerm
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
                 M
               </div>
-              <span className="text-white font-bold text-lg">MS Cashier</span>
+              <span className="text-white font-bold text-lg">MPOS</span>
             </div>
             <p className="text-sm leading-relaxed">
               نظام نقاط البيع الأكثر تكاملاً في المملكة العربية السعودية — متوافق مع زاتكا ويدعم تعدد الفروع.
@@ -1477,14 +1477,14 @@ function FooterWithLinks({ onPrivacy, onTerms }: { onPrivacy: () => void; onTerm
             <h4 className="text-white font-bold mb-4">تواصل معنا</h4>
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> 0500 000 000</li>
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> info@mscashier.sa</li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> info@mpos.sa</li>
               <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> الرياض، المملكة العربية السعودية</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 pt-8 flex flex-wrap justify-between items-center gap-4">
-          <p className="text-sm">&copy; {new Date().getFullYear()} MS Cashier. جميع الحقوق محفوظة.</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} MPOS. جميع الحقوق محفوظة.</p>
           <div className="flex gap-6 text-sm">
             <button onClick={onPrivacy} className="hover:text-white transition">سياسة الخصوصية</button>
             <button onClick={onTerms} className="hover:text-white transition">الشروط والأحكام</button>
@@ -1785,7 +1785,7 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
   const sections = [
     {
       title: 'مقدمة',
-      content: `نحن في MS Cashier نلتزم بحماية خصوصية مستخدمينا وعملائنا. توضح سياسة الخصوصية هذه كيفية جمع واستخدام وحماية المعلومات الشخصية التي تقدمها عند استخدام منصتنا لنقاط البيع. باستخدامك للمنصة، فإنك توافق على الممارسات الموضحة في هذه السياسة.`,
+      content: `نحن في MPOS نلتزم بحماية خصوصية مستخدمينا وعملائنا. توضح سياسة الخصوصية هذه كيفية جمع واستخدام وحماية المعلومات الشخصية التي تقدمها عند استخدام منصتنا لنقاط البيع. باستخدامك للمنصة، فإنك توافق على الممارسات الموضحة في هذه السياسة.`,
     },
     {
       title: 'المعلومات التي نجمعها',
@@ -1859,7 +1859,7 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
     },
     {
       title: 'التواصل',
-      content: `لأي استفسار بخصوص سياسة الخصوصية، تواصل معنا عبر:\n• البريد الإلكتروني: privacy@mscashier.sa\n• الهاتف: 0500 000 000\n• العنوان: الرياض، المملكة العربية السعودية`,
+      content: `لأي استفسار بخصوص سياسة الخصوصية، تواصل معنا عبر:\n• البريد الإلكتروني: privacy@mpos.sa\n• الهاتف: 0500 000 000\n• العنوان: الرياض، المملكة العربية السعودية`,
     },
   ];
 
@@ -1873,7 +1873,7 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
           </button>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">M</div>
-            <span className="font-bold text-gray-900">MS Cashier</span>
+            <span className="font-bold text-gray-900">MPOS</span>
           </div>
         </div>
       </div>
@@ -1943,10 +1943,10 @@ function TermsPage({ onBack }: { onBack: () => void }) {
   const sections = [
     {
       title: 'مقدمة وتعريفات',
-      content: `مرحباً بك في منصة MS Cashier لنقاط البيع. تحكم هذه الشروط والأحكام ("الاتفاقية") استخدامك للمنصة والخدمات المقدمة من خلالها. يرجى قراءتها بعناية قبل استخدام الخدمة.`,
+      content: `مرحباً بك في منصة MPOS لنقاط البيع. تحكم هذه الشروط والأحكام ("الاتفاقية") استخدامك للمنصة والخدمات المقدمة من خلالها. يرجى قراءتها بعناية قبل استخدام الخدمة.`,
       items: [
-        '"المنصة": نظام MS Cashier لنقاط البيع وجميع خدماته.',
-        '"المزود": شركة MS Cashier المالكة والمشغلة للمنصة.',
+        '"المنصة": نظام MPOS لنقاط البيع وجميع خدماته.',
+        '"المزود": شركة MPOS المالكة والمشغلة للمنصة.',
         '"المستخدم" أو "المشترك": أي شخص أو كيان يسجل في المنصة ويستخدم خدماتها.',
         '"المتجر": الحساب التجاري المنشأ على المنصة لإدارة نقطة البيع.',
         '"الفترة التجريبية": المدة المجانية المقدمة للمشترك الجديد (14 يوماً).',
@@ -2050,7 +2050,7 @@ function TermsPage({ onBack }: { onBack: () => void }) {
     },
     {
       title: 'التواصل',
-      content: `لأي استفسار بخصوص الشروط والأحكام:\n• البريد الإلكتروني: legal@mscashier.sa\n• الهاتف: 0500 000 000\n• العنوان: الرياض، المملكة العربية السعودية`,
+      content: `لأي استفسار بخصوص الشروط والأحكام:\n• البريد الإلكتروني: legal@mpos.sa\n• الهاتف: 0500 000 000\n• العنوان: الرياض، المملكة العربية السعودية`,
     },
   ];
 
@@ -2064,7 +2064,7 @@ function TermsPage({ onBack }: { onBack: () => void }) {
           </button>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">M</div>
-            <span className="font-bold text-gray-900">MS Cashier</span>
+            <span className="font-bold text-gray-900">MPOS</span>
           </div>
         </div>
       </div>
@@ -2082,7 +2082,7 @@ function TermsPage({ onBack }: { onBack: () => void }) {
               </div>
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-              <strong>مهم:</strong> باستخدامك لمنصة MS Cashier فإنك توافق على جميع الشروط والأحكام المذكورة أدناه. يرجى قراءتها بعناية.
+              <strong>مهم:</strong> باستخدامك لمنصة MPOS فإنك توافق على جميع الشروط والأحكام المذكورة أدناه. يرجى قراءتها بعناية.
             </div>
           </div>
 

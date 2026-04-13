@@ -221,7 +221,7 @@ function CashierLayout() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-xs">M</div>
-            <span className="font-bold text-sm hidden sm:inline">MS Cashier</span>
+            <span className="font-bold text-sm hidden sm:inline">MPOS</span>
           </div>
           <div className="w-px h-5 bg-gray-700" />
           <div className="flex items-center gap-1.5 text-gray-400 text-xs">

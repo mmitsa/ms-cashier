@@ -51,7 +51,7 @@ export const useUIStore = create<UIState>()(
       },
     }),
     {
-      name: 'ms-cashier-ui',
+      name: 'mpos-ui',
       partialize: (state) => ({ theme: state.theme }),
       onRehydrateStorage: () => (state) => {
         if (state?.theme) applyThemeToDOM(state.theme);

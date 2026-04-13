@@ -1,6 +1,6 @@
 <div align="center">
 
-# MS Cashier
+# MPOS
 
 ### نظام نقاط البيع الأكثر تكاملاً في المملكة
 
@@ -274,6 +274,6 @@ Reports:        GET /reports/sales, /profit, /inventory, /financial-summary
 
 <div align="center">
 
-**MS Cashier** &copy; 2026 — جميع الحقوق محفوظة
+**MPOS** &copy; 2026 — جميع الحقوق محفوظة
 
 </div>

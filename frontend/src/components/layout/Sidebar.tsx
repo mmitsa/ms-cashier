@@ -290,7 +290,7 @@ export function Sidebar() {
         </div>
         {sidebarOpen && (
           <div>
-            <h2 className="text-white font-bold text-sm">MS Cashier</h2>
+            <h2 className="text-white font-bold text-sm">MPOS</h2>
             <p className="text-gray-400 text-xs">نظام المبيعات الشامل</p>
           </div>
         )}

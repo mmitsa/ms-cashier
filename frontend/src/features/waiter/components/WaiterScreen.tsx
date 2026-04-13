@@ -617,7 +617,7 @@ function BillModal({ order, onClose }: { order: any; onClose: () => void }) {
           paidAmount: parseFloat(paidAmount) || finalTotal,
           change,
           paymentMethod: paymentMethod === 1 ? 'كاش' : paymentMethod === 2 ? 'فيزا' : 'انستاباي',
-          storeName: 'MS Cashier',
+          storeName: 'MPOS',
         });
 
         onClose();

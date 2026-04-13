@@ -36,7 +36,7 @@ export const useAuthStore = create<AuthState>()(
         })),
     }),
     {
-      name: 'ms-cashier-auth',
+      name: 'mpos-auth',
       partialize: (state) => ({ token: state.token, user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )
