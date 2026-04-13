@@ -80,17 +80,17 @@
 <p align="center"><em>لوحة التحكم</em></p>
 </td>
 <td width="50%">
-<img src="screenshots/07-sales-light.png" alt="Sales - Light" />
+<img src="screenshots/06-sales-light.png" alt="Sales - Light" />
 <p align="center"><em>إدارة المبيعات</em></p>
 </td>
 </tr>
 <tr>
 <td width="50%">
-<img src="screenshots/08-inventory-light.png" alt="Inventory - Light" />
+<img src="screenshots/07-inventory-light.png" alt="Inventory - Light" />
 <p align="center"><em>إدارة المخزون</em></p>
 </td>
 <td width="50%">
-<img src="screenshots/09-login.png" alt="Login" />
+<img src="screenshots/08-login.png" alt="Login" />
 <p align="center"><em>تسجيل الدخول</em></p>
 </td>
 </tr>
@@ -107,23 +107,6 @@
 <td width="50%">
 <img src="screenshots/05-sales-dark.png" alt="Sales - Dark" />
 <p align="center"><em>إدارة المبيعات</em></p>
-</td>
-</tr>
-<tr>
-<td colspan="2">
-<img src="screenshots/06-inventory-dark.png" alt="Inventory - Dark" />
-<p align="center"><em>إدارة المخزون</em></p>
-</td>
-</tr>
-</table>
-
-### صفحة الهبوط
-
-<table>
-<tr>
-<td>
-<img src="screenshots/02-landing-features.png" alt="Features" />
-<p align="center"><em>المميزات والعرض التفاعلي</em></p>
 </td>
 </tr>
 </table>
