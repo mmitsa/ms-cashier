@@ -15,12 +15,14 @@ public class SocialMediaService : ISocialMediaService
     private readonly IUnitOfWork _uow;
     private readonly ICurrentTenantService _tenant;
     private readonly ILogger<SocialMediaService> _logger;
+    private readonly IEncryptionService _encryption;
 
-    public SocialMediaService(IUnitOfWork uow, ICurrentTenantService tenant, ILogger<SocialMediaService> logger)
+    public SocialMediaService(IUnitOfWork uow, ICurrentTenantService tenant, ILogger<SocialMediaService> logger, IEncryptionService encryption)
     {
         _uow = uow;
         _tenant = tenant;
         _logger = logger;
+        _encryption = encryption;
     }
 
     // ════════════════════════════════════════════════════════
@@ -68,9 +70,9 @@ public class SocialMediaService : ISocialMediaService
                 account.UpdatedAt = DateTime.UtcNow;
 
                 if (!string.IsNullOrWhiteSpace(request.AccessToken))
-                    account.AccessToken = request.AccessToken;
+                    account.AccessToken = _encryption.Encrypt(request.AccessToken);
                 if (!string.IsNullOrWhiteSpace(request.RefreshToken))
-                    account.RefreshToken = request.RefreshToken;
+                    account.RefreshToken = _encryption.Encrypt(request.RefreshToken);
 
                 _uow.Repository<SocialMediaAccount>().Update(account);
             }
@@ -82,8 +84,8 @@ public class SocialMediaService : ISocialMediaService
                     Platform = request.Platform,
                     AccountName = request.AccountName,
                     AccountId = request.AccountId,
-                    AccessToken = request.AccessToken,
-                    RefreshToken = request.RefreshToken,
+                    AccessToken = request.AccessToken != null ? _encryption.Encrypt(request.AccessToken) : null,
+                    RefreshToken = request.RefreshToken != null ? _encryption.Encrypt(request.RefreshToken) : null,
                     PageId = request.PageId,
                     TokenExpiresAt = request.TokenExpiresAt,
                     IsActive = true,

@@ -16,11 +16,13 @@ public class OnlineStoreService : IOnlineStoreService
 {
     private readonly IUnitOfWork _uow;
     private readonly ICurrentTenantService _tenant;
+    private readonly IEncryptionService _encryption;
 
-    public OnlineStoreService(IUnitOfWork uow, ICurrentTenantService tenant)
+    public OnlineStoreService(IUnitOfWork uow, ICurrentTenantService tenant, IEncryptionService encryption)
     {
         _uow = uow;
         _tenant = tenant;
+        _encryption = encryption;
     }
 
     public async Task<Result<OnlineStoreDto>> GetStoreAsync()
@@ -354,7 +356,7 @@ public class OnlineStoreService : IOnlineStoreService
             .Where(c => c.OnlineStoreId == store.Id && !c.IsDeleted)
             .ToListAsync();
 
-        return Result<List<OnlinePaymentConfigDto>>.Success(configs.Select(MapPaymentConfig).ToList());
+        return Result<List<OnlinePaymentConfigDto>>.Success(configs.Select(c => MapPaymentConfig(c, _encryption)).ToList());
     }
 
     public async Task<Result<OnlinePaymentConfigDto>> SavePaymentConfigAsync(OnlinePaymentConfigDto dto)
@@ -371,9 +373,9 @@ public class OnlineStoreService : IOnlineStoreService
                 return Result<OnlinePaymentConfigDto>.Failure("إعدادات الدفع غير موجودة");
 
             config.Provider = dto.Provider;
-            config.ApiKey = dto.ApiKey;
-            config.SecretKey = dto.SecretKey;
-            config.WebhookSecret = dto.WebhookSecret;
+            config.ApiKey = dto.ApiKey != null ? _encryption.Encrypt(dto.ApiKey) : null;
+            config.SecretKey = dto.SecretKey != null ? _encryption.Encrypt(dto.SecretKey) : null;
+            config.WebhookSecret = dto.WebhookSecret != null ? _encryption.Encrypt(dto.WebhookSecret) : null;
             config.Currency = dto.Currency;
             config.IsActive = dto.IsActive;
             config.IsTestMode = dto.IsTestMode;
@@ -388,9 +390,9 @@ public class OnlineStoreService : IOnlineStoreService
                 TenantId = _tenant.TenantId,
                 OnlineStoreId = store.Id,
                 Provider = dto.Provider,
-                ApiKey = dto.ApiKey,
-                SecretKey = dto.SecretKey,
-                WebhookSecret = dto.WebhookSecret,
+                ApiKey = dto.ApiKey != null ? _encryption.Encrypt(dto.ApiKey) : null,
+                SecretKey = dto.SecretKey != null ? _encryption.Encrypt(dto.SecretKey) : null,
+                WebhookSecret = dto.WebhookSecret != null ? _encryption.Encrypt(dto.WebhookSecret) : null,
                 Currency = dto.Currency,
                 IsActive = dto.IsActive,
                 IsTestMode = dto.IsTestMode,
@@ -400,7 +402,7 @@ public class OnlineStoreService : IOnlineStoreService
         }
 
         await _uow.SaveChangesAsync();
-        return Result<OnlinePaymentConfigDto>.Success(MapPaymentConfig(config), "تم حفظ إعدادات الدفع بنجاح");
+        return Result<OnlinePaymentConfigDto>.Success(MapPaymentConfig(config, _encryption), "تم حفظ إعدادات الدفع بنجاح");
     }
 
     // ── Shipping Configs ─────────────────────────────────────
@@ -522,9 +524,11 @@ public class OnlineStoreService : IOnlineStoreService
         i.ProductName, i.VariantDescription,
         i.Quantity, i.UnitPrice, i.TotalPrice, i.Notes);
 
-    private static OnlinePaymentConfigDto MapPaymentConfig(OnlinePaymentConfig c) => new(
+    private static OnlinePaymentConfigDto MapPaymentConfig(OnlinePaymentConfig c, IEncryptionService encryption) => new(
         c.Id, c.OnlineStoreId, c.Provider,
-        c.ApiKey, c.SecretKey, c.WebhookSecret,
+        c.ApiKey != null ? encryption.Decrypt(c.ApiKey) : null,
+        c.SecretKey != null ? encryption.Decrypt(c.SecretKey) : null,
+        c.WebhookSecret != null ? encryption.Decrypt(c.WebhookSecret) : null,
         c.Currency, c.IsActive, c.IsTestMode, c.SupportedMethods);
 
     private static StoreShippingConfigDto MapShippingConfig(StoreShippingConfig c) => new(

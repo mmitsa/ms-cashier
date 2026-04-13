@@ -11,6 +11,7 @@ import {
   Pencil,
   Barcode,
   Trash2,
+  Settings2,
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
@@ -31,6 +32,7 @@ import {
 import type { ProductDto, CreateProductRequest, UpdateProductRequest } from '@/types/api.types';
 import { StockManagementTabs } from './StockManagementTabs';
 import { CsvImportModal } from './CsvImportModal';
+import { VariantManager } from './VariantManager';
 
 type StockStatus = 'low' | 'medium' | 'ok';
 
@@ -109,6 +111,8 @@ export function InventoryScreen() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPrintBarcodeModal, setShowPrintBarcodeModal] = useState(false);
+  const [showVariantManager, setShowVariantManager] = useState(false);
+  const [variantProduct, setVariantProduct] = useState<ProductDto | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductDto | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<ProductDto | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
@@ -209,6 +213,11 @@ export function InventoryScreen() {
         setDeletingProduct(null);
       },
     });
+  };
+
+  const openVariantManager = (product: ProductDto) => {
+    setVariantProduct(product);
+    setShowVariantManager(true);
   };
 
   const openEditModal = (product: ProductDto) => {
@@ -467,6 +476,13 @@ export function InventoryScreen() {
                             onClick={() => openEditModal(product)}
                           >
                             <Pencil size={16} />
+                          </button>
+                          <button
+                            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-purple-600 transition-colors"
+                            title="إدارة المتغيرات"
+                            onClick={() => openVariantManager(product)}
+                          >
+                            <Settings2 size={16} />
                           </button>
                           <button
                             className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-600 transition-colors"
@@ -778,6 +794,18 @@ export function InventoryScreen() {
               className="input"
             />
           </div>
+          {/* Variant Manager shortcut */}
+          {editingProduct && (
+            <button
+              type="button"
+              onClick={() => openVariantManager(editingProduct)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-sm font-medium hover:bg-purple-100 dark:hover:bg-purple-950 transition-colors"
+            >
+              <Settings2 size={16} />
+              إدارة المتغيرات
+            </button>
+          )}
+
           <div className="flex gap-2 pt-4 justify-end">
             <button
               type="button"
@@ -896,6 +924,18 @@ export function InventoryScreen() {
         onClose={() => setShowCsvModal(false)}
         defaultType="Products"
       />
+
+      {/* Variant Manager Modal */}
+      {variantProduct && (
+        <VariantManager
+          open={showVariantManager}
+          onClose={() => {
+            setShowVariantManager(false);
+            setVariantProduct(null);
+          }}
+          product={variantProduct}
+        />
+      )}
     </div>
   );
 }

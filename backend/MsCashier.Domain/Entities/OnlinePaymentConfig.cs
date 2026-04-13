@@ -18,14 +18,14 @@ public class OnlinePaymentConfig : TenantEntity
     [Required, MaxLength(50)]
     public string Provider { get; set; } = default!; // stripe, paytabs, tap, moyasar, fawry
 
-    [MaxLength(500)]
-    public string? ApiKey { get; set; } // encrypted
+    [MaxLength(1000)]
+    public string? ApiKey { get; set; } // encrypted at rest via DataProtection
 
-    [MaxLength(500)]
-    public string? SecretKey { get; set; } // encrypted
+    [MaxLength(1000)]
+    public string? SecretKey { get; set; } // encrypted at rest via DataProtection
 
-    [MaxLength(500)]
-    public string? WebhookSecret { get; set; } // encrypted
+    [MaxLength(1000)]
+    public string? WebhookSecret { get; set; } // encrypted at rest via DataProtection
 
     [MaxLength(10)]
     public string Currency { get; set; } = "SAR";

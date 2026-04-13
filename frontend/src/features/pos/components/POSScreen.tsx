@@ -21,9 +21,11 @@ import { sendToCustomerDisplay } from '@/lib/customerDisplayChannel';
 import { useAuthStore } from '@/store/authStore';
 import { salesRepsApi } from '@/lib/api/endpoints';
 import type {
-  ProductDto, ContactDto, CategoryDto, WarehouseDto,
+  ProductDto, ProductVariantDto, ContactDto, CategoryDto, WarehouseDto,
   PaymentMethod, PriceType, CreateInvoiceRequest,
 } from '@/types/api.types';
+import { VariantSelector } from './VariantSelector';
+import { LoyaltyWidget } from '@/features/loyalty/components/LoyaltyWidget';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -90,6 +92,7 @@ export function POSScreen() {
   const [scannedBarcode, setScannedBarcode] = useState('');
   const [lastSaleInvoice, setLastSaleInvoice] = useState<string | null>(null);
   const [salesRepId, setSalesRepId] = useState<number | null>(null);
+  const [variantProduct, setVariantProduct] = useState<ProductDto | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-detect SalesRep from JWT when logged in as SalesRep role
@@ -280,6 +283,7 @@ export function POSScreen() {
         quantity: item.quantity,
         unitPrice: item.unitPrice,
         discountAmount: item.discount || 0,
+        productVariantId: item.variantId || undefined,
       })),
     };
 
@@ -476,7 +480,13 @@ export function POSScreen() {
               return (
                 <button
                   key={product.id}
-                  onClick={() => addToCart(product, price)}
+                  onClick={() => {
+                    if (product.hasVariants) {
+                      setVariantProduct(product);
+                      return;
+                    }
+                    addToCart(product, price);
+                  }}
                   className={cn(
                     'card p-3 text-right transition-all group relative active:scale-[0.97]',
                     'hover:border-brand-300 hover:shadow-md',
@@ -624,6 +634,13 @@ export function POSScreen() {
             )}
             <ChevronDown size={14} className="text-gray-300 mr-auto" />
           </button>
+
+          {/* Loyalty Widget */}
+          <LoyaltyWidget
+            contactId={selectedCustomer?.id ?? null}
+            contactName={selectedCustomer?.name}
+            onDiscount={(amount) => setDiscount(discount + amount)}
+          />
         </div>
 
         {/* ── Cart Items ──────────────────────────────────────────────────── */}
@@ -635,8 +652,12 @@ export function POSScreen() {
               <p className="text-xs mt-1 text-gray-200">امسح باركود أو اختر صنف</p>
             </div>
           ) : (
-            cart.map((item) => (
-              <div key={item.product.id}>
+            cart.map((item) => {
+              const cartKey = item.variantId
+                ? `${item.product.id}-v${item.variantId}`
+                : `${item.product.id}`;
+              return (
+              <div key={cartKey}>
               <div
                 className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
@@ -644,6 +665,11 @@ export function POSScreen() {
                   <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                     {item.isBundleParent && <span className="text-purple-500 ml-1 text-xs">📦</span>}
                     {item.product.name}
+                    {item.variantName && (
+                      <span className="text-xs font-normal text-brand-500 dark:text-brand-400 mr-1">
+                        ({item.variantName})
+                      </span>
+                    )}
                   </p>
                   <p className="text-xs text-gray-400">
                     {formatCurrency(item.unitPrice)} × {item.quantity}
@@ -653,26 +679,26 @@ export function POSScreen() {
                 {/* Quantity controls */}
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                    onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.variantId)}
                     className="touch-btn w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-200 hover:text-red-500"
                   >
                     {item.quantity === 1 ? <Trash2 size={13} /> : <Minus size={13} />}
                   </button>
 
-                  {editingQty === item.product.id ? (
+                  {editingQty === (item.variantId ?? item.product.id) ? (
                     <input
                       type="number"
                       value={editQtyValue}
                       onChange={(e) => setEditQtyValue(e.target.value)}
                       onBlur={() => {
                         const val = parseFloat(editQtyValue);
-                        if (val > 0) setDirectQuantity(item.product.id, val);
+                        if (val > 0) setDirectQuantity(item.product.id, val, item.variantId);
                         setEditingQty(null);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           const val = parseFloat(editQtyValue);
-                          if (val > 0) setDirectQuantity(item.product.id, val);
+                          if (val > 0) setDirectQuantity(item.product.id, val, item.variantId);
                           setEditingQty(null);
                         }
                       }}
@@ -682,7 +708,7 @@ export function POSScreen() {
                   ) : (
                     <button
                       onClick={() => {
-                        setEditingQty(item.product.id);
+                        setEditingQty(item.variantId ?? item.product.id);
                         setEditQtyValue(item.quantity.toString());
                       }}
                       className="w-10 text-center text-sm font-bold text-gray-900 dark:text-gray-100 py-1 hover:bg-brand-50 dark:hover:bg-brand-950 rounded-lg"
@@ -692,7 +718,7 @@ export function POSScreen() {
                   )}
 
                   <button
-                    onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                    onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.variantId)}
                     className="touch-btn w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-green-50 dark:hover:bg-green-950 hover:border-green-200 hover:text-green-500"
                   >
                     <Plus size={13} />
@@ -712,7 +738,7 @@ export function POSScreen() {
                 </div>
               ))}
               </div>
-            ))
+            );})
           )}
         </div>
 
@@ -1057,6 +1083,24 @@ export function POSScreen() {
           ))}
         </div>
       </Modal>
+
+      {/* ── Variant Selector Modal ──────────────────────────────────────── */}
+      {variantProduct && (
+        <VariantSelector
+          open={!!variantProduct}
+          onClose={() => setVariantProduct(null)}
+          product={variantProduct}
+          priceType={priceType}
+          onSelect={(variant: ProductVariantDto, price: number) => {
+            addToCart(variantProduct, price, {
+              id: variant.id,
+              name: variant.displayName || variant.variantCombination,
+            });
+            toast.success(`تم إضافة: ${variantProduct.name} — ${variant.displayName || variant.variantCombination}`);
+            setVariantProduct(null);
+          }}
+        />
+      )}
 
       {/* ── Discount Modal ────────────────────────────────────────────────── */}
       <Modal

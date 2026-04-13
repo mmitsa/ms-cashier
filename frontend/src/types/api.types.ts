@@ -339,6 +339,7 @@ export interface InvoiceItemRequest {
   quantity: number;
   unitPrice: number;
   discountAmount?: number;
+  productVariantId?: number;
 }
 
 export interface InvoiceDto {

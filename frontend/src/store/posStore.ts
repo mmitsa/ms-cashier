@@ -9,6 +9,8 @@ export interface CartItem {
   discount: number;
   isBundleParent?: boolean;
   bundleChildren?: CartItem[];
+  variantId?: number;
+  variantName?: string;
 }
 
 interface POSState {
@@ -19,11 +21,11 @@ interface POSState {
   notes: string;
   
   // Actions
-  addToCart: (product: ProductDto, price: number) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
-  updateItemDiscount: (productId: number, discount: number) => void;
-  setDirectQuantity: (productId: number, qty: number) => void;
+  addToCart: (product: ProductDto, price: number, variant?: { id: number; name: string }) => void;
+  removeFromCart: (productId: number, variantId?: number) => void;
+  updateQuantity: (productId: number, quantity: number, variantId?: number) => void;
+  updateItemDiscount: (productId: number, discount: number, variantId?: number) => void;
+  setDirectQuantity: (productId: number, qty: number, variantId?: number) => void;
   clearCart: () => void;
   setCustomer: (customer: ContactDto | null) => void;
   setPriceType: (type: 'retail' | 'half' | 'wholesale') => void;
@@ -68,7 +70,7 @@ export const usePOSStore = create<POSState>((set, get) => ({
   discount: 0,
   notes: '',
 
-  addToCart: (product, price) => {
+  addToCart: (product, price, variant) => {
     set((state) => {
       // Bundle handling
       if (product.isBundle && product.bundleItems?.length) {
@@ -104,13 +106,42 @@ export const usePOSStore = create<POSState>((set, get) => ({
         };
       }
 
+      // Variant product handling — keyed by variantId
+      if (variant) {
+        const existing = state.cart.find(
+          (item) => item.product.id === product.id && item.variantId === variant.id,
+        );
+        if (existing) {
+          return {
+            cart: state.cart.map((item) =>
+              item.product.id === product.id && item.variantId === variant.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item,
+            ),
+          };
+        }
+        return {
+          cart: [
+            ...state.cart,
+            {
+              product,
+              quantity: 1,
+              unitPrice: price,
+              discount: 0,
+              variantId: variant.id,
+              variantName: variant.name,
+            },
+          ],
+        };
+      }
+
       // Regular product handling
-      const existing = state.cart.find((item) => item.product.id === product.id);
+      const existing = state.cart.find((item) => item.product.id === product.id && !item.variantId);
       if (existing) {
         if (existing.quantity >= product.currentStock && product.currentStock > 0) return state;
         return {
           cart: state.cart.map((item) =>
-            item.product.id === product.id
+            item.product.id === product.id && !item.variantId
               ? { ...item, quantity: item.quantity + 1 }
               : item
           ),
@@ -122,18 +153,23 @@ export const usePOSStore = create<POSState>((set, get) => ({
     });
   },
 
-  removeFromCart: (productId) => {
+  removeFromCart: (productId, variantId) => {
     set((state) => ({
-      cart: state.cart.filter((item) => item.product.id !== productId),
+      cart: state.cart.filter((item) =>
+        !(item.product.id === productId && item.variantId === variantId),
+      ),
     }));
   },
 
-  updateQuantity: (productId, quantity) => {
+  updateQuantity: (productId, quantity, variantId) => {
+    const match = (item: CartItem) =>
+      item.product.id === productId && item.variantId === variantId;
+
     set((state) => ({
       cart: quantity <= 0
-        ? state.cart.filter((item) => item.product.id !== productId)
+        ? state.cart.filter((item) => !match(item))
         : state.cart.map((item) => {
-            if (item.product.id !== productId) return item;
+            if (!match(item)) return item;
             const updated = { ...item, quantity };
             // Sync bundle children quantities
             if (updated.isBundleParent && updated.bundleChildren && updated.product.bundleItems) {
@@ -148,22 +184,26 @@ export const usePOSStore = create<POSState>((set, get) => ({
     }));
   },
 
-  setDirectQuantity: (productId, qty) => {
+  setDirectQuantity: (productId, qty, variantId) => {
     if (qty <= 0) {
-      get().removeFromCart(productId);
+      get().removeFromCart(productId, variantId);
       return;
     }
     set((state) => ({
       cart: state.cart.map((item) =>
-        item.product.id === productId ? { ...item, quantity: qty } : item
+        item.product.id === productId && item.variantId === variantId
+          ? { ...item, quantity: qty }
+          : item,
       ),
     }));
   },
 
-  updateItemDiscount: (productId, discount) => {
+  updateItemDiscount: (productId, discount, variantId) => {
     set((state) => ({
       cart: state.cart.map((item) =>
-        item.product.id === productId ? { ...item, discount } : item
+        item.product.id === productId && item.variantId === variantId
+          ? { ...item, discount }
+          : item,
       ),
     }));
   },

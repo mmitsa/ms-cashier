@@ -29,13 +29,15 @@ public class InvoiceService : IInvoiceService
 
     public async Task<Result<InvoiceDto>> CreateSaleAsync(CreateInvoiceRequest request)
     {
+        Invoice invoice;
+        var effectiveWarehouseId = request.WarehouseId;
+
         try
         {
             await _uow.BeginTransactionAsync();
 
             // 0. Resolve SalesRep and effective warehouse FIRST (before validation)
             SalesRep? salesRep = null;
-            var effectiveWarehouseId = request.WarehouseId;
 
             if (request.SalesRepId.HasValue)
             {
@@ -208,7 +210,7 @@ public class InvoiceService : IInvoiceService
             }
 
             // 4. Create Invoice entity
-            var invoice = new Invoice
+            invoice = new Invoice
             {
                 TenantId = _tenant.TenantId,
                 InvoiceNumber = invoiceNumber,
@@ -436,27 +438,25 @@ public class InvoiceService : IInvoiceService
 
             // 9. Commit transaction
             await _uow.CommitTransactionAsync();
-
-            // 10. Audit (fire-and-forget, never fail the sale)
-            try
-            {
-                _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
-                    newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}");
-            }
-            catch { /* audit failure must not break a committed sale */ }
-
-            var dto = await BuildInvoiceDto(invoice.Id);
-            return Result<InvoiceDto>.Success(dto!, "تم إنشاء الفاتورة بنجاح");
         }
         catch (Exception ex)
         {
-            try { await _uow.RollbackTransactionAsync(); } catch { /* already committed or no transaction */ }
+            await _uow.RollbackTransactionAsync();
             return Result<InvoiceDto>.Failure($"خطأ أثناء إنشاء فاتورة البيع: {ex.Message}");
         }
+
+        // === Post-commit work (outside transaction, never fails the response) ===
+        try { _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
+            newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}"); } catch { }
+
+        var dto = await BuildInvoiceDto(invoice.Id);
+        return Result<InvoiceDto>.Success(dto!, "تم إنشاء الفاتورة بنجاح");
     }
 
     public async Task<Result<InvoiceDto>> CreatePurchaseAsync(CreateInvoiceRequest request)
     {
+        Invoice invoice;
+
         try
         {
             await _uow.BeginTransactionAsync();
@@ -518,7 +518,7 @@ public class InvoiceService : IInvoiceService
                     ? PaymentStatus.Partial
                     : PaymentStatus.Unpaid;
 
-            var invoice = new Invoice
+            invoice = new Invoice
             {
                 TenantId = _tenant.TenantId,
                 InvoiceNumber = invoiceNumber,
@@ -649,19 +649,22 @@ public class InvoiceService : IInvoiceService
             }
 
             await _uow.CommitTransactionAsync();
-
-            var dto = await BuildInvoiceDto(invoice.Id);
-            return Result<InvoiceDto>.Success(dto!, "تم إنشاء فاتورة الشراء بنجاح");
         }
         catch (Exception ex)
         {
             await _uow.RollbackTransactionAsync();
             return Result<InvoiceDto>.Failure($"خطأ أثناء إنشاء فاتورة الشراء: {ex.Message}");
         }
+
+        // === Post-commit work (outside transaction) ===
+        var dto = await BuildInvoiceDto(invoice.Id);
+        return Result<InvoiceDto>.Success(dto!, "تم إنشاء فاتورة الشراء بنجاح");
     }
 
     public async Task<Result<InvoiceDto>> CreateSaleReturnAsync(long originalInvoiceId, List<InvoiceItemRequest> items)
     {
+        Invoice returnInvoice;
+
         try
         {
             await _uow.BeginTransactionAsync();
@@ -735,7 +738,7 @@ public class InvoiceService : IInvoiceService
 
             var totalAmount = subTotal + totalTax;
 
-            var returnInvoice = new Invoice
+            returnInvoice = new Invoice
             {
                 TenantId = _tenant.TenantId,
                 InvoiceNumber = invoiceNumber,
@@ -849,15 +852,16 @@ public class InvoiceService : IInvoiceService
             }
 
             await _uow.CommitTransactionAsync();
-
-            var dto = await BuildInvoiceDto(returnInvoice.Id);
-            return Result<InvoiceDto>.Success(dto!, "تم إنشاء فاتورة المرتجع بنجاح");
         }
         catch (Exception ex)
         {
             await _uow.RollbackTransactionAsync();
             return Result<InvoiceDto>.Failure($"خطأ أثناء إنشاء فاتورة المرتجع: {ex.Message}");
         }
+
+        // === Post-commit work (outside transaction) ===
+        var dto = await BuildInvoiceDto(returnInvoice.Id);
+        return Result<InvoiceDto>.Success(dto!, "تم إنشاء فاتورة المرتجع بنجاح");
     }
 
     public async Task<Result<PagedResult<InvoiceDto>>> SearchAsync(InvoiceSearchRequest request)

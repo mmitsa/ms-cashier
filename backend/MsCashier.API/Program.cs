@@ -118,6 +118,10 @@ builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHand
 // 3. Dependency Injection
 // ============================================================
 
+// Data Protection & Encryption
+builder.Services.AddDataProtection();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+
 // Infrastructure
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICurrentTenantService, CurrentTenantService>();
@@ -179,6 +183,12 @@ builder.Services.AddScoped<IPublicApiService, PublicApiService>();
 builder.Services.AddScoped<IOnlineStoreService, OnlineStoreService>();
 builder.Services.AddScoped<IStorefrontService, StorefrontService>();
 builder.Services.AddHttpClient();
+
+// Background Jobs
+builder.Services.AddHostedService<LoyaltyPointsExpiryJob>();
+builder.Services.AddHostedService<WebhookRetryJob>();
+builder.Services.AddHostedService<SocialMediaSchedulerJob>();
+builder.Services.AddHostedService<LowStockAlertJob>();
 
 // ============================================================
 // 4. CORS
@@ -409,6 +419,9 @@ app.UseCors();
 
 // 4.5 Rate limiting (must come before auth so 429 is enforced even on AllowAnonymous)
 app.UseRateLimiter();
+
+// 4.6 API key rate limiting for public API endpoints
+app.UseMiddleware<ApiKeyRateLimitMiddleware>();
 
 // 5. Authentication & Authorization
 app.UseAuthentication();

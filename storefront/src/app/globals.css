@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+  --color-primary-950: #1e1b4b;
+  --font-sans: var(--font-ibm-plex-sans-arabic);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1e1b4b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --card-foreground: #1e1b4b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f23;
+    --foreground: #e0e7ff;
+    --muted: #1e1b4b;
+    --muted-foreground: #a5b4fc;
+    --border: #312e81;
+    --card: #1a1744;
+    --card-foreground: #e0e7ff;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ibm-plex-sans-arabic), sans-serif;
+}
+
+* {
+  border-color: var(--border);
+}
+
+input,
+textarea,
+select {
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+::selection {
+  background: var(--color-primary-200);
+  color: var(--color-primary-900);
+}
