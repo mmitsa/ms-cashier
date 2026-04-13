@@ -12,6 +12,7 @@ import {
   UtensilsCrossed, ChefHat, QrCode, Fingerprint, GitBranch,
   Tablet, ConciergeBell, Store, Wallet,
 } from 'lucide-react';
+import { useT, useLocale, useLocaleStore } from '@/lib/i18n';
 
 // ═══════════════════════════════════════════════════════════
 // Animation Utilities
@@ -107,6 +108,8 @@ function scrollTo(id: string) {
 function Navbar({ onLogin, onGetStarted }: { onLogin: () => void; onGetStarted: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const t = useT();
+  const { locale, setLocale } = useLocaleStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -115,12 +118,12 @@ function Navbar({ onLogin, onGetStarted }: { onLogin: () => void; onGetStarted: 
   }, []);
 
   const navLinks = [
-    { label: 'المميزات', id: 'features' },
-    { label: 'جرّب النظام', id: 'demo' },
-    { label: 'زاتكا', id: 'zatca' },
-    { label: 'الأسعار', id: 'pricing' },
-    { label: 'سجّل متجرك', id: 'register' },
-    { label: 'الأسئلة', id: 'faq' },
+    { label: t.nav.features, id: 'features' },
+    { label: t.nav.demo, id: 'demo' },
+    { label: t.nav.compliance, id: 'zatca' },
+    { label: t.nav.pricing, id: 'pricing' },
+    { label: t.nav.register, id: 'register' },
+    { label: t.nav.faq, id: 'faq' },
   ];
 
   return (
@@ -158,12 +161,20 @@ function Navbar({ onLogin, onGetStarted }: { onLogin: () => void; onGetStarted: 
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setLocale(locale === 'ar' ? 'en' : 'ar')}
+              className={`px-3 py-2 rounded-xl font-medium text-xs transition-all ${
+                scrolled ? 'text-gray-600 hover:bg-gray-100' : 'text-white/80 hover:bg-white/10'
+              }`}
+            >
+              {locale === 'ar' ? 'EN' : 'عربي'}
+            </button>
+            <button
               onClick={onLogin}
               className={`hidden sm:block px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
                 scrolled ? 'text-gray-700 hover:bg-gray-100' : 'text-white hover:bg-white/10'
               }`}
             >
-              تسجيل الدخول
+              {t.nav.login}
             </button>
             <motion.button
               whileHover={{ scale: 1.04 }}
@@ -171,7 +182,7 @@ function Navbar({ onLogin, onGetStarted }: { onLogin: () => void; onGetStarted: 
               onClick={onGetStarted}
               className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25"
             >
-              ابدأ الآن
+              {t.nav.startNow}
             </motion.button>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -197,23 +208,29 @@ function Navbar({ onLogin, onGetStarted }: { onLogin: () => void; onGetStarted: 
                 <button
                   key={link.id}
                   onClick={() => { scrollTo(link.id); setMobileOpen(false); }}
-                  className="py-3 px-4 text-right text-gray-700 font-medium hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition"
+                  className={`py-3 px-4 ${locale === 'ar' ? 'text-right' : 'text-left'} text-gray-700 font-medium hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition`}
                 >
                   {link.label}
                 </button>
               ))}
               <hr className="my-2 border-gray-100" />
               <button
-                onClick={() => { onLogin(); setMobileOpen(false); }}
-                className="py-3 px-4 text-right text-gray-700 font-medium hover:bg-gray-50 rounded-xl transition"
+                onClick={() => { setLocale(locale === 'ar' ? 'en' : 'ar'); setMobileOpen(false); }}
+                className={`py-3 px-4 ${locale === 'ar' ? 'text-right' : 'text-left'} text-gray-700 font-medium hover:bg-gray-50 rounded-xl transition`}
               >
-                تسجيل الدخول
+                {locale === 'ar' ? 'EN — English' : 'عربي — Arabic'}
+              </button>
+              <button
+                onClick={() => { onLogin(); setMobileOpen(false); }}
+                className={`py-3 px-4 ${locale === 'ar' ? 'text-right' : 'text-left'} text-gray-700 font-medium hover:bg-gray-50 rounded-xl transition`}
+              >
+                {t.nav.login}
               </button>
               <button
                 onClick={() => { onGetStarted(); setMobileOpen(false); }}
                 className="py-3 px-4 text-center text-white font-bold bg-indigo-600 hover:bg-indigo-700 rounded-xl transition mt-1"
               >
-                ابدأ الآن مجاناً
+                {t.hero.cta}
               </button>
             </div>
           </motion.div>
@@ -231,6 +248,8 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
   const { scrollY } = useScroll();
   const bgY = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0.3]);
+  const t = useT();
+  const locale = useLocale();
 
   return (
     <section id="hero" className="relative overflow-hidden bg-gradient-to-bl from-blue-600 via-indigo-700 to-purple-800 text-white min-h-[100vh] flex items-center">
@@ -248,7 +267,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Text Content */}
           <motion.div
-            className="text-center lg:text-right"
+            className={`text-center ${locale === 'ar' ? 'lg:text-right' : 'lg:text-left'}`}
             initial="hidden"
             animate="visible"
             variants={staggerSlow}
@@ -259,7 +278,7 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
               className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm mb-8 border border-white/20"
             >
               <Zap className="w-4 h-4 text-yellow-300" />
-              <span>معتمد من هيئة الزكاة والضريبة والجمارك (زاتكا)</span>
+              <span>{t.hero.badge}</span>
             </motion.div>
 
             <motion.h1
@@ -267,21 +286,21 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
               transition={{ duration: 0.7 }}
               className="text-4xl lg:text-6xl font-bold leading-tight mb-6"
             >
-              نظام نقاط البيع
+              {t.hero.title}
               <br />
-              <span className="bg-gradient-to-l from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-                الأكثر تكاملاً
+              <span className={`bg-clip-text text-transparent ${locale === 'ar' ? 'bg-gradient-to-l' : 'bg-gradient-to-r'} from-yellow-300 to-orange-300`}>
+                {t.hero.titleHighlight}
               </span>
               <br />
-              في المملكة
+              {t.hero.titleEnd}
             </motion.h1>
 
             <motion.p
               variants={fadeUp}
               transition={{ duration: 0.7 }}
-              className="text-lg lg:text-xl text-blue-100 mb-10 max-w-lg mx-auto lg:mx-0 lg:mr-0 leading-relaxed"
+              className={`text-lg lg:text-xl text-blue-100 mb-10 max-w-lg mx-auto ${locale === 'ar' ? 'lg:mx-0 lg:mr-0' : 'lg:mx-0 lg:ml-0'} leading-relaxed`}
             >
-              كاشير ذكي + ويتر + مطبخ + طلب ذاتي QR + إدارة فروع + ماكينات مدى + بصمة حضور + رواتب + فوترة زاتكا — منصة واحدة لإدارة متجرك ومطعمك بالكامل
+              {t.hero.subtitle}
             </motion.p>
 
             <motion.div variants={fadeUp} transition={{ duration: 0.7 }} className="flex flex-wrap gap-4 justify-center lg:justify-start">
@@ -291,8 +310,8 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
                 onClick={onGetStarted}
                 className="group px-8 py-4 bg-white text-indigo-700 font-bold rounded-2xl shadow-xl flex items-center gap-2"
               >
-                ابدأ الآن مجاناً
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                {t.hero.cta}
+                <ArrowLeft className={`w-5 h-5 transition-transform ${locale === 'ar' ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1 rotate-180'}`} />
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
@@ -301,15 +320,15 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
                 className="px-8 py-4 border-2 border-white/30 text-white font-medium rounded-2xl flex items-center gap-2 backdrop-blur-sm"
               >
                 <Play className="w-5 h-5" />
-                جرّب النظام مباشرة
+                {t.hero.ctaSecondary}
               </motion.button>
             </motion.div>
 
             <motion.div variants={fadeUp} transition={{ duration: 0.7 }} className="flex flex-wrap gap-6 mt-12 justify-center lg:justify-start text-sm text-blue-200">
               {[
-                { icon: Shield, text: 'متوافق مع المرحلة الثانية' },
-                { icon: Lock, text: 'تشفير 256-bit' },
-                { icon: Cloud, text: 'سحابي 99.9% uptime' },
+                { icon: Shield, text: t.hero.trust1 },
+                { icon: Lock, text: t.hero.trust2 },
+                { icon: Cloud, text: t.hero.trust3 },
               ].map((badge, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <badge.icon className="w-4 h-4" />
@@ -409,11 +428,12 @@ function HeroSection({ onGetStarted }: { onGetStarted: () => void }) {
 // ═══════════════════════════════════════════════════════════
 
 function StatsBar() {
+  const t = useT();
   const stats = [
-    { value: 2500, suffix: '+', label: 'متجر نشط' },
-    { value: 1, suffix: 'M+', label: 'فاتورة شهرياً' },
-    { value: 99.9, suffix: '%', label: 'وقت التشغيل' },
-    { value: 24, suffix: '/7', label: 'دعم فني' },
+    { value: 2500, suffix: '+', label: t.stats.stores },
+    { value: 1, suffix: 'M+', label: t.stats.invoices },
+    { value: 99.9, suffix: '%', label: t.stats.uptime },
+    { value: 24, suffix: '/7', label: t.stats.support },
   ];
 
   return (
@@ -442,37 +462,44 @@ function StatsBar() {
 // ═══════════════════════════════════════════════════════════
 
 function FeaturesSection() {
-  const features = [
-    { icon: ShoppingBag, title: 'نقطة بيع ذكية', desc: 'شاشة تاتش بواجهة حديثة تدعم البيع السريع بالباركود والبحث، مع سلة مشتريات ذكية وحساب تلقائي للضريبة والخصومات', color: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50' },
-    { icon: ConciergeBell, title: 'واجهة الويتر', desc: 'واجهة مخصصة لأخذ الطلبات من الطاولات — اختيار الأصناف، إضافة ملاحظات، وإرسال مباشر للمطبخ والكاشير بتكامل تام', color: 'from-amber-500 to-orange-500', bg: 'bg-amber-50' },
-    { icon: ChefHat, title: 'شاشة المطبخ (KDS)', desc: 'شاشة عرض للمطبخ بالوقت الحقيقي — ترتيب الطلبات حسب الأولوية، تتبع وقت التجهيز، وتحديث الحالة تلقائياً للويتر والكاشير', color: 'from-red-500 to-rose-500', bg: 'bg-red-50' },
-    { icon: QrCode, title: 'طلب ذاتي QR للعميل', desc: 'يسكان العميل QR فتفتح له المنيو — يختار ويطلب ويدفع من جواله! مع عداد تجهيز حي وإشعار فوري بإتمام الطلب', color: 'from-violet-500 to-purple-600', bg: 'bg-violet-50' },
-    { icon: Wallet, title: 'ربط ماكينات الدفع (مدى)', desc: 'تكامل مع أجهزة الدفع: Geidea, Nearpay, Ingenico, Verifone, STC Pay — إرسال المبلغ تلقائياً، استلام التأكيد، وتسوية يومية', color: 'from-emerald-500 to-green-600', bg: 'bg-emerald-50' },
-    { icon: Fingerprint, title: 'بصمة حضور وانصراف', desc: 'ربط أجهزة البصمة (ZKTeco وغيرها)، تسجيل حضور وانصراف الموظفين تلقائياً، وإصدار تقارير دوام شاملة', color: 'from-sky-500 to-blue-600', bg: 'bg-sky-50' },
-    { icon: GitBranch, title: 'إدارة فروع متعددة', desc: 'أضف فروع لمتجرك بباقات مرنة — مشاركة المنتجات أو فصلها، توزيع المخازن، وتفعيل فوري بعد الدفع', color: 'from-fuchsia-500 to-pink-600', bg: 'bg-fuchsia-50' },
-    { icon: FileCheck, title: 'فوترة إلكترونية (زاتكا)', desc: 'متوافق بالكامل مع المرحلة الثانية — توليد QR Code, XML بصيغة UBL 2.1, إبلاغ وتصفية الفواتير تلقائياً', color: 'from-green-500 to-emerald-600', bg: 'bg-green-50' },
-    { icon: Barcode, title: 'باركود سكانر + ميزان', desc: 'دعم أجهزة الباركود السلكية واللاسلكية وربط الموازين الرقمية (CAS, DIGI, Toledo) عبر Web Serial API', color: 'from-purple-500 to-pink-500', bg: 'bg-purple-50' },
-    { icon: Package, title: 'مخزون ومخازن متعددة', desc: 'حتى 5 مخازن لكل متجر، تتبع الأصناف، تنبيهات نفاد، نقل بين المخازن، وربط المخازن بالفروع', color: 'from-orange-500 to-amber-500', bg: 'bg-orange-50' },
-    { icon: UserCheck, title: 'موظفين ورواتب', desc: 'إدارة كاملة للموظفين، ضبط الرواتب، مسير شهري تلقائي، إصدار شيكات رواتب، وأرشفة دائمة', color: 'from-teal-500 to-cyan-600', bg: 'bg-teal-50' },
-    { icon: DollarSign, title: 'حسابات وخزينة', desc: 'حسابات متعددة (نقدي، بنكي، رقمي)، تسجيل تلقائي للمعاملات، تقارير مالية شاملة ولحظية', color: 'from-yellow-500 to-orange-500', bg: 'bg-yellow-50' },
-    { icon: Store, title: 'أقسام ومناطق تشغيل', desc: 'قسّم مطعمك لمناطق (داخلي، خارجي، VIP، بار) — كل منطقة بطاولاتها وطلباتها وإدارتها', color: 'from-lime-500 to-green-500', bg: 'bg-lime-50' },
-    { icon: Users, title: 'صلاحيات مفصّلة', desc: 'تحكم كامل بصلاحيات كل مستخدم على كل شاشة — من يرى ماذا ومن يعدّل ماذا', color: 'from-cyan-500 to-blue-500', bg: 'bg-cyan-50' },
-    { icon: CreditCard, title: 'طرق دفع متنوعة', desc: 'نقدي، مدى، فيزا، Apple Pay، STC Pay، تحويل، آجل، تقسيط — مع تسوية تلقائية', color: 'from-pink-500 to-rose-500', bg: 'bg-pink-50' },
-    { icon: Smartphone, title: 'يعمل أوفلاين', desc: 'يحفظ البيانات محلياً ويزامنها تلقائياً عند عودة الإنترنت — لا تفقد أي عملية بيع أبداً', color: 'from-slate-500 to-gray-600', bg: 'bg-slate-50' },
-    { icon: Tablet, title: 'تطبيق موبايل', desc: 'تطبيق نقطة بيع للآيفون والآيباد والأندرويد والتابلت — متوافق ومتزامن مع المنصة بالكامل', color: 'from-indigo-500 to-violet-500', bg: 'bg-indigo-50' },
-    { icon: BarChart3, title: 'تقارير وتحليلات', desc: 'تقارير مبيعات يومية وشهرية، تحليل الأرباح لكل صنف، تصدير CSV، ولوحة تحكم لحظية', color: 'from-blue-500 to-indigo-600', bg: 'bg-blue-50' },
-  ];
+  const t = useT();
+  const featureKeys = ['pos', 'waiter', 'kitchen', 'qr', 'payment', 'attendance', 'branches', 'einvoice', 'barcode', 'inventory', 'hr', 'finance', 'zones', 'permissions', 'payments', 'offline', 'mobile', 'reports'] as const;
+  const featureMeta: Record<string, { icon: typeof ShoppingBag; color: string; bg: string }> = {
+    pos: { icon: ShoppingBag, color: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50' },
+    waiter: { icon: ConciergeBell, color: 'from-amber-500 to-orange-500', bg: 'bg-amber-50' },
+    kitchen: { icon: ChefHat, color: 'from-red-500 to-rose-500', bg: 'bg-red-50' },
+    qr: { icon: QrCode, color: 'from-violet-500 to-purple-600', bg: 'bg-violet-50' },
+    payment: { icon: Wallet, color: 'from-emerald-500 to-green-600', bg: 'bg-emerald-50' },
+    attendance: { icon: Fingerprint, color: 'from-sky-500 to-blue-600', bg: 'bg-sky-50' },
+    branches: { icon: GitBranch, color: 'from-fuchsia-500 to-pink-600', bg: 'bg-fuchsia-50' },
+    einvoice: { icon: FileCheck, color: 'from-green-500 to-emerald-600', bg: 'bg-green-50' },
+    barcode: { icon: Barcode, color: 'from-purple-500 to-pink-500', bg: 'bg-purple-50' },
+    inventory: { icon: Package, color: 'from-orange-500 to-amber-500', bg: 'bg-orange-50' },
+    hr: { icon: UserCheck, color: 'from-teal-500 to-cyan-600', bg: 'bg-teal-50' },
+    finance: { icon: DollarSign, color: 'from-yellow-500 to-orange-500', bg: 'bg-yellow-50' },
+    zones: { icon: Store, color: 'from-lime-500 to-green-500', bg: 'bg-lime-50' },
+    permissions: { icon: Users, color: 'from-cyan-500 to-blue-500', bg: 'bg-cyan-50' },
+    payments: { icon: CreditCard, color: 'from-pink-500 to-rose-500', bg: 'bg-pink-50' },
+    offline: { icon: Smartphone, color: 'from-slate-500 to-gray-600', bg: 'bg-slate-50' },
+    mobile: { icon: Tablet, color: 'from-indigo-500 to-violet-500', bg: 'bg-indigo-50' },
+    reports: { icon: BarChart3, color: 'from-blue-500 to-indigo-600', bg: 'bg-blue-50' },
+  };
+  const features = featureKeys.map(key => ({
+    ...featureMeta[key]!,
+    title: t.features[key].title,
+    desc: t.features[key].desc,
+  }));
 
   return (
     <AnimatedSection className="py-20 bg-gray-50" id="features">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
-          <span className="text-indigo-600 font-semibold text-sm">كل ما تحتاجه في مكان واحد</span>
+          <span className="text-indigo-600 font-semibold text-sm">{t.features.sectionLabel}</span>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mt-3">
-            مميزات لا تجدها في نظام آخر
+            {t.features.sectionTitle}
           </h2>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
-            صُمم MPOS ليكون النظام الأشمل لإدارة نقاط البيع في المملكة العربية السعودية
+            {t.features.sectionSubtitle}
           </p>
         </motion.div>
 
@@ -503,12 +530,16 @@ function FeaturesSection() {
 // ═══════════════════════════════════════════════════════════
 
 function ZatcaSection() {
-  const phases = [
-    { step: '1', title: 'التسجيل', desc: 'أدخل رقم ضريبة القيمة المضافة وبيانات المنشأة', icon: Building2 },
-    { step: '2', title: 'الربط', desc: 'ربط تلقائي مع بوابة زاتكا واستلام شهادة CSID', icon: Wifi },
-    { step: '3', title: 'التفعيل', desc: 'يتم إبلاغ الفواتير تلقائياً لزاتكا مع كل عملية بيع', icon: Zap },
-    { step: '4', title: 'المتابعة', desc: 'لوحة تحكم لمراقبة حالة الفواتير وتاريخ الإرسال', icon: BarChart3 },
-  ];
+  const t = useT();
+  const locale = useLocale();
+  const stepKeys = ['s1', 's2', 's3', 's4'] as const;
+  const stepIcons = [Building2, Wifi, Zap, BarChart3];
+  const phases = stepKeys.map((key, i) => ({
+    step: String(i + 1),
+    title: t.compliance.steps[key].title,
+    desc: t.compliance.steps[key].desc,
+    icon: stepIcons[i]!,
+  }));
 
   return (
     <AnimatedSection className="py-20 bg-white" id="zatca">
@@ -517,29 +548,19 @@ function ZatcaSection() {
           <motion.div variants={fadeInLeft} transition={{ duration: 0.7 }}>
             <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
               <FileCheck className="w-4 h-4" />
-              متوافق مع هيئة الزكاة والضريبة
+              {t.compliance.badge}
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-              الفوترة الإلكترونية
-              <br />
-              <span className="text-green-600">بضغطة زر واحدة</span>
+              {t.compliance.title}
             </h2>
 
             <p className="text-gray-500 text-lg mb-8 leading-relaxed">
-              النظام متوافق بالكامل مع متطلبات المرحلة الثانية (مرحلة الربط والتكامل).
-              يتم توليد الفواتير بصيغة XML/UBL 2.1 وإرسالها لمنصة فاتورة تلقائياً.
+              {t.compliance.subtitle}
             </p>
 
             <motion.div variants={staggerContainer} className="space-y-3 mb-8">
-              {[
-                'توليد QR Code تلقائياً على كل فاتورة (TLV Format)',
-                'هاش SHA-256 لضمان سلامة الفاتورة',
-                'إبلاغ فوري للفواتير المبسطة (B2C)',
-                'تصفية الفواتير الضريبية (B2B)',
-                'أرشفة كاملة بصيغة XML',
-                'لوحة تحكم لمراقبة حالة الإرسال',
-              ].map((item, i) => (
+              {t.compliance.features.map((item, i) => (
                 <motion.div key={i} variants={fadeUp} transition={{ duration: 0.3 }} className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
                   <span className="text-gray-700">{item}</span>
@@ -549,11 +570,11 @@ function ZatcaSection() {
           </motion.div>
 
           <motion.div variants={fadeInRight} transition={{ duration: 0.7 }} className="space-y-5">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">خطوات الربط مع زاتكا</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-6">{t.compliance.steps.title}</h3>
             {phases.map((phase, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, x: -30 }}
+                initial={{ opacity: 0, x: locale === 'ar' ? -30 : 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.15, duration: 0.5 }}
                 viewport={{ once: true }}
@@ -574,13 +595,13 @@ function ZatcaSection() {
 
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-l from-green-500 to-emerald-600 rounded-2xl p-6 text-white mt-6"
+              className={`bg-gradient-to-${locale === 'ar' ? 'l' : 'r'} from-green-500 to-emerald-600 rounded-2xl p-6 text-white mt-6`}
             >
               <div className="flex items-center gap-3 mb-2">
                 <Shield className="w-8 h-8" />
                 <div>
-                  <h4 className="font-bold text-lg">جاهز للتفعيل فوراً</h4>
-                  <p className="text-green-100 text-sm">البنية التحتية مكتملة — فقط أدخل بيانات التفعيل</p>
+                  <h4 className="font-bold text-lg">{t.compliance.readyTitle}</h4>
+                  <p className="text-green-100 text-sm">{t.compliance.readyDesc}</p>
                 </div>
               </div>
             </motion.div>
@@ -596,33 +617,23 @@ function ZatcaSection() {
 // ═══════════════════════════════════════════════════════════
 
 function MultiTenantSection() {
-  const cards = [
-    {
-      icon: Layers, title: 'فصل كامل للبيانات',
-      desc: 'كل متجر يعمل في بيئة معزولة تماماً — لا يمكن لأي متجر الوصول لبيانات متجر آخر.',
-      items: ['تشفير بيانات كل متجر', 'JWT Token لكل مستأجر', 'Global Query Filters', 'عزل كامل للبيانات'],
-    },
-    {
-      icon: Database, title: 'إدارة مركزية',
-      desc: 'لوحة تحكم للمدير تتيح إنشاء متاجر جديدة، إدارة الاشتراكات، ومراقبة الأداء.',
-      items: ['إنشاء متجر بدقيقة واحدة', 'خطط اشتراك مرنة', 'تفعيل/إيقاف فوري', 'إحصائيات مركزية'],
-    },
-    {
-      icon: Globe, title: 'مرونة كاملة',
-      desc: 'كل متجر يمكنه تخصيص إعداداته — المنتجات، الأسعار، المستخدمين، وربط زاتكا.',
-      items: ['إعدادات مستقلة', 'مستخدمين غير محدودين', 'تفعيل زاتكا لكل متجر', 'تقارير منفصلة'],
-    },
-  ];
+  const t = useT();
+  const cardKeys = ['isolation', 'central', 'flexible'] as const;
+  const cardIcons = [Layers, Database, Globe];
+  const cards = cardKeys.map((key, i) => ({
+    icon: cardIcons[i]!,
+    title: t.multiTenant[key].title,
+    desc: t.multiTenant[key].desc,
+    items: t.multiTenant[key].features,
+  }));
 
   return (
     <AnimatedSection className="py-20 bg-gradient-to-bl from-indigo-50 via-white to-purple-50" id="multi-tenant">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
-          <span className="text-purple-600 font-semibold text-sm">منصة SaaS متكاملة</span>
+          <span className="text-purple-600 font-semibold text-sm">{t.multiTenant.badge}</span>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mt-3">
-            إدارة متاجر متعددة
-            <br />
-            <span className="text-purple-600">من لوحة تحكم واحدة</span>
+            {t.multiTenant.title}
           </h2>
         </motion.div>
 
@@ -669,25 +680,27 @@ function MultiTenantSection() {
 
 function PricingSection({ onGetStarted }: { onGetStarted: () => void }) {
   const [yearly, setYearly] = useState(false);
+  const t = useT();
+  const locale = useLocale();
   const plans = [
-    { name: 'أساسي', monthly: 1400, yearly: 14000, desc: 'مثالي للمتاجر الصغيرة', popular: false, features: ['مستخدمين: 3', 'مخزن واحد', 'نقطة بيع واحدة', 'إدارة المخزون', 'الفوترة الإلكترونية (زاتكا)', 'ربط ماكينات مدى', 'تقارير أساسية', 'يعمل أوفلاين', 'دعم فني بالإيميل'] },
-    { name: 'متقدم', monthly: 2800, yearly: 28000, desc: 'للمطاعم والكافيهات والفروع', popular: true, features: ['مستخدمين: 10', '3 مخازن • 3 نقاط بيع', 'كل مميزات الأساسي', 'واجهة الويتر + شاشة المطبخ', 'طلب QR ذاتي للعميل', 'أقسام ومناطق التشغيل', 'تعدد الفروع', 'بصمة حضور + مسير رواتب', 'صلاحيات مفصّلة', 'دعم فني بالهاتف'] },
-    { name: 'احترافي', monthly: 4200, yearly: 42000, desc: 'للشركات والسلاسل التجارية', popular: false, features: ['مستخدمين وفروع: غير محدود', 'مخازن ونقاط بيع: غير محدود', 'كل مميزات المتقدم', 'تطبيق موبايل مخصص', 'API مفتوح', 'تخصيص كامل', 'مدير حساب مخصص', 'دعم فني 24/7', 'SLA 99.9%'] },
+    { key: 'basic' as const, popular: false },
+    { key: 'pro' as const, popular: true },
+    { key: 'enterprise' as const, popular: false },
   ];
 
   return (
     <AnimatedSection className="py-20 bg-white" id="pricing">
       <div className="max-w-7xl mx-auto px-6">
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="text-center mb-12">
-          <span className="text-indigo-600 font-semibold text-sm">خطط واضحة بدون مفاجآت</span>
+          <span className="text-indigo-600 font-semibold text-sm">{t.pricing.label}</span>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mt-3">
-            اختر الخطة المناسبة لتجارتك
+            {t.pricing.title}
           </h2>
-          <p className="text-gray-500 mt-4">جميع الخطط تشمل الفوترة الإلكترونية والتحديثات المجانية</p>
+          <p className="text-gray-500 mt-4">{t.pricing.subtitle}</p>
 
           {/* Yearly / Monthly toggle */}
           <div className="mt-8 flex items-center justify-center gap-4">
-            <span className={`text-sm font-medium ${!yearly ? 'text-gray-900' : 'text-gray-400'}`}>شهري</span>
+            <span className={`text-sm font-medium ${!yearly ? 'text-gray-900' : 'text-gray-400'}`}>{t.pricing.monthly}</span>
             <button
               onClick={() => setYearly(!yearly)}
               className={`relative w-14 h-7 rounded-full transition-colors ${yearly ? 'bg-indigo-600' : 'bg-gray-300'}`}
@@ -699,77 +712,80 @@ function PricingSection({ onGetStarted }: { onGetStarted: () => void }) {
               />
             </button>
             <span className={`text-sm font-medium ${yearly ? 'text-gray-900' : 'text-gray-400'}`}>
-              سنوي
-              <span className="mr-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">وفّر 17%</span>
+              {t.pricing.yearly}
+              <span className={`${locale === 'ar' ? 'mr-1' : 'ml-1'} text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full`}>{t.pricing.save}</span>
             </span>
           </div>
         </motion.div>
 
         <motion.div variants={staggerContainer} className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan, i) => (
-            <motion.div
-              key={i}
-              variants={scaleIn}
-              transition={{ duration: 0.5 }}
-              whileHover={{ y: -6 }}
-              className={`relative rounded-2xl p-8 transition-all ${
-                plan.popular
-                  ? 'bg-gradient-to-b from-indigo-600 to-purple-700 text-white shadow-2xl scale-105 border-0 z-10'
-                  : 'bg-white border-2 border-gray-100'
-              }`}
-            >
-              {plan.popular && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{ type: 'spring', delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold"
-                >
-                  <Star className="w-3 h-3 inline ml-1" />
-                  الأكثر طلباً
-                </motion.div>
-              )}
-
-              <h3 className={`text-xl font-bold ${plan.popular ? 'text-white' : 'text-gray-900'}`}>{plan.name}</h3>
-              <p className={`text-sm mt-1 ${plan.popular ? 'text-indigo-200' : 'text-gray-500'}`}>{plan.desc}</p>
-
-              <div className="mt-6 mb-8">
-                <AnimatePresence mode="wait">
-                  <motion.div key={yearly ? 'yearly' : 'monthly'} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
-                    <span className={`text-4xl font-bold ${plan.popular ? 'text-white' : 'text-gray-900'}`}>
-                      {(yearly ? plan.yearly : plan.monthly).toLocaleString('en-US')}
-                    </span>
-                    <span className={`text-sm ${plan.popular ? 'text-indigo-200' : 'text-gray-500'}`}>
-                      {' '}ر.س / {yearly ? 'سنوياً' : 'شهرياً'}
-                    </span>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${plan.popular ? 'text-green-300' : 'text-green-500'}`} />
-                    <span className={plan.popular ? 'text-indigo-100' : 'text-gray-600'}>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={onGetStarted}
-                className={`w-full py-3 rounded-xl font-bold transition-all ${
+          {plans.map((plan, i) => {
+            const p = t.pricing.plans[plan.key];
+            return (
+              <motion.div
+                key={i}
+                variants={scaleIn}
+                transition={{ duration: 0.5 }}
+                whileHover={{ y: -6 }}
+                className={`relative rounded-2xl p-8 transition-all ${
                   plan.popular
-                    ? 'bg-white text-indigo-700 hover:bg-yellow-50 shadow-lg'
-                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    ? 'bg-gradient-to-b from-indigo-600 to-purple-700 text-white shadow-2xl scale-105 border-0 z-10'
+                    : 'bg-white border-2 border-gray-100'
                 }`}
               >
-                ابدأ الآن
-              </motion.button>
-            </motion.div>
-          ))}
+                {plan.popular && 'popular' in p && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    transition={{ type: 'spring', delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold"
+                  >
+                    <Star className={`w-3 h-3 inline ${locale === 'ar' ? 'ml-1' : 'mr-1'}`} />
+                    {(p as typeof t.pricing.plans.pro).popular}
+                  </motion.div>
+                )}
+
+                <h3 className={`text-xl font-bold ${plan.popular ? 'text-white' : 'text-gray-900'}`}>{p.name}</h3>
+                <p className={`text-sm mt-1 ${plan.popular ? 'text-indigo-200' : 'text-gray-500'}`}>{p.desc}</p>
+
+                <div className="mt-6 mb-8">
+                  <AnimatePresence mode="wait">
+                    <motion.div key={yearly ? 'yearly' : 'monthly'} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+                      <span className={`text-4xl font-bold ${plan.popular ? 'text-white' : 'text-gray-900'}`}>
+                        {t.pricing.currencySymbol}{yearly ? p.yearlyPrice : p.price}
+                      </span>
+                      <span className={`text-sm ${plan.popular ? 'text-indigo-200' : 'text-gray-500'}`}>
+                        {' '}{t.pricing.perMonth}
+                      </span>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {p.features.map((f, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${plan.popular ? 'text-green-300' : 'text-green-500'}`} />
+                      <span className={plan.popular ? 'text-indigo-100' : 'text-gray-600'}>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={onGetStarted}
+                  className={`w-full py-3 rounded-xl font-bold transition-all ${
+                    plan.popular
+                      ? 'bg-white text-indigo-700 hover:bg-yellow-50 shadow-lg'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  {t.common.startNow}
+                </motion.button>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </AnimatedSection>
@@ -782,21 +798,16 @@ function PricingSection({ onGetStarted }: { onGetStarted: () => void }) {
 
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const faqs = [
-    { q: 'هل النظام متوافق مع هيئة الزكاة والضريبة؟', a: 'نعم، النظام متوافق بالكامل مع المرحلة الثانية (مرحلة الربط والتكامل). يتم توليد الفواتير بصيغة XML/UBL 2.1 وإرسالها لمنصة فاتورة تلقائياً مع كل عملية بيع.' },
-    { q: 'هل يمكنني إدارة أكثر من فرع؟', a: 'بالتأكيد. النظام مصمم لتعدد المتاجر (Multi-Tenant) حيث يعمل كل فرع بشكل مستقل تماماً مع بياناته ومستخدميه الخاصين، ويمكنك إدارتهم جميعاً من لوحة تحكم مركزية.' },
-    { q: 'ما الأجهزة المدعومة؟', a: 'يعمل النظام على أي جهاز يحتوي متصفح ويب حديث — كمبيوتر، لابتوب، تابلت، أو حتى جوال. كما يدعم أجهزة الباركود، الموازين الرقمية (CAS, DIGI, Toledo)، والطابعات الحرارية.' },
-    { q: 'هل البيانات آمنة؟', a: 'نعم. النظام يستخدم تشفير 256-bit SSL، مصادقة JWT، وعزل كامل للبيانات بين المتاجر على مستوى قاعدة البيانات. بالإضافة لنسخ احتياطية يومية وحماية ضد تغيير TenantId.' },
-    { q: 'كيف يتم إنشاء حساب جديد؟', a: 'يقوم مدير المنصة بإنشاء حسابك من لوحة التحكم المركزية. يتم تجهيز المتجر تلقائياً بمستودع رئيسي وصندوق نقدي وحساب مدير. بعدها يمكنك تسجيل الدخول مباشرة وبدء العمل.' },
-    { q: 'ماذا لو احتجت مساعدة؟', a: 'فريق الدعم الفني متواجد على مدار الساعة عبر الهاتف، البريد الإلكتروني، والمحادثة المباشرة. كما نوفر قاعدة معرفة شاملة وفيديوهات تعليمية.' },
-  ];
+  const t = useT();
+  const locale = useLocale();
+  const faqs = t.faq.items;
 
   return (
     <AnimatedSection className="py-20 bg-gray-50" id="faq">
       <div className="max-w-3xl mx-auto px-6">
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">الأسئلة الشائعة</h2>
-          <p className="text-gray-500 mt-3">إجابات سريعة على الأسئلة التي تهمك</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">{t.faq.title}</h2>
+          <p className="text-gray-500 mt-3">{t.faq.subtitle}</p>
         </motion.div>
 
         <motion.div variants={staggerContainer} className="space-y-3">
@@ -809,13 +820,13 @@ function FAQSection() {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="w-full flex items-center justify-between p-5 text-right hover:bg-gray-50/70 transition"
+                className={`w-full flex items-center justify-between p-5 ${locale === 'ar' ? 'text-right' : 'text-left'} hover:bg-gray-50/70 transition`}
               >
                 <span className="font-semibold text-gray-900 text-sm sm:text-base">{faq.q}</span>
                 <motion.div
                   animate={{ rotate: openIndex === i ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
-                  className="mr-4 shrink-0"
+                  className={`${locale === 'ar' ? 'mr-4' : 'ml-4'} shrink-0`}
                 >
                   <ChevronDown className="w-5 h-5 text-gray-400" />
                 </motion.div>
@@ -851,6 +862,8 @@ function ContactSection() {
   const [form, setForm] = useState({ name: '', phone: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
+  const t = useT();
+  const locale = useLocale();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -868,21 +881,20 @@ function ContactSection() {
       <div className="max-w-5xl mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-16 items-start">
           <motion.div variants={fadeInLeft} transition={{ duration: 0.7 }}>
-            <span className="text-indigo-600 font-semibold text-sm">تواصل معنا</span>
+            <span className="text-indigo-600 font-semibold text-sm">{t.contact.label}</span>
             <h2 className="text-3xl font-bold text-gray-900 mt-3 mb-4">
-              نحن هنا لمساعدتك
+              {t.contact.title}
             </h2>
             <p className="text-gray-500 mb-8 leading-relaxed">
-              أرسل لنا استفسارك وسيتواصل معك فريقنا خلال 24 ساعة كحد أقصى.
-              نسعد بالإجابة على أي سؤال حول النظام.
+              {t.contact.subtitle}
             </p>
 
             <div className="space-y-5">
               {[
-                { icon: Phone, text: '0500 000 000', label: 'هاتف' },
-                { icon: Mail, text: 'info@mpos.sa', label: 'بريد إلكتروني' },
-                { icon: MapPin, text: 'الرياض، المملكة العربية السعودية', label: 'الموقع' },
-                { icon: HeadphonesIcon, text: 'متاحين 24/7', label: 'دعم فني' },
+                { icon: Phone, text: t.contact.phone, label: t.contact.fields.phone.label },
+                { icon: Mail, text: t.contact.email, label: t.contact.fields.email.label },
+                { icon: MapPin, text: t.contact.location, label: t.contact.fields.name.label },
+                { icon: HeadphonesIcon, text: t.contact.supportValue, label: t.contact.supportLabel },
               ].map((item, i) => (
                 <motion.div
                   key={i}
@@ -920,13 +932,13 @@ function ContactSection() {
                   >
                     <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
                   </motion.div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">تم إرسال رسالتك بنجاح!</h3>
-                  <p className="text-gray-500">سيتواصل معك فريقنا خلال 24 ساعة.</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{locale === 'ar' ? 'تم إرسال رسالتك بنجاح!' : 'Message sent successfully!'}</h3>
+                  <p className="text-gray-500">{locale === 'ar' ? 'سيتواصل معك فريقنا خلال 24 ساعة.' : 'Our team will contact you within 24 hours.'}</p>
                   <button
                     onClick={() => setSent(false)}
                     className="mt-6 px-6 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition"
                   >
-                    إرسال رسالة أخرى
+                    {locale === 'ar' ? 'إرسال رسالة أخرى' : 'Send another message'}
                   </button>
                 </motion.div>
               ) : (
@@ -938,47 +950,47 @@ function ContactSection() {
                   className="bg-gray-50 rounded-2xl p-8 border border-gray-100 space-y-5"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">الاسم <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.contact.fields.name.label} <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       value={form.name}
                       onChange={e => setForm({ ...form, name: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white"
-                      placeholder="الاسم الكامل"
+                      placeholder={t.contact.fields.name.placeholder}
                       required
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">الهاتف <span className="text-red-500">*</span></label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.contact.fields.phone.label} <span className="text-red-500">*</span></label>
                       <input
                         type="tel"
                         value={form.phone}
                         onChange={e => setForm({ ...form, phone: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white"
-                        placeholder="05xxxxxxxx"
+                        placeholder={t.contact.fields.phone.placeholder}
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">البريد</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.contact.fields.email.label}</label>
                       <input
                         type="email"
                         value={form.email}
                         onChange={e => setForm({ ...form, email: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white"
-                        placeholder="اختياري"
+                        placeholder={t.contact.fields.email.placeholder}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">الرسالة</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.contact.fields.message.label}</label>
                     <textarea
                       value={form.message}
                       onChange={e => setForm({ ...form, message: e.target.value })}
                       rows={4}
                       className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white resize-none"
-                      placeholder="كيف يمكننا مساعدتك؟"
+                      placeholder={t.contact.fields.message.placeholder}
                     />
                   </div>
                   <motion.button
@@ -989,9 +1001,9 @@ function ContactSection() {
                     className="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {sending ? (
-                      <><Loader2 className="w-5 h-5 animate-spin" /> جارٍ الإرسال...</>
+                      <><Loader2 className="w-5 h-5 animate-spin" /> {t.common.loading}</>
                     ) : (
-                      <><Send className="w-5 h-5" /> إرسال</>
+                      <><Send className="w-5 h-5" /> {t.contact.send}</>
                     )}
                   </motion.button>
                 </motion.form>
@@ -1019,15 +1031,15 @@ const DEMO_PRODUCTS = [
   { name: 'جبنة بيضاء', price: 15.00, barcode: '6281000000008', stock: 40, cat: 'ألبان' },
 ];
 
-const DEMO_TABS = [
-  { id: 'pos', label: 'نقطة البيع', icon: ShoppingBag, color: 'indigo' },
-  { id: 'waiter', label: 'الويتر', icon: ConciergeBell, color: 'amber' },
-  { id: 'kitchen', label: 'المطبخ', icon: ChefHat, color: 'red' },
-  { id: 'qr', label: 'طلب QR', icon: QrCode, color: 'violet' },
-  { id: 'terminal', label: 'مدى / دفع', icon: Wallet, color: 'emerald' },
-  { id: 'fingerprint', label: 'البصمة', icon: Fingerprint, color: 'sky' },
-  { id: 'branches', label: 'الفروع', icon: GitBranch, color: 'fuchsia' },
-  { id: 'reports', label: 'التقارير', icon: BarChart3, color: 'blue' },
+const DEMO_TAB_META = [
+  { id: 'pos', tabKey: 'pos' as const, icon: ShoppingBag, color: 'indigo' },
+  { id: 'waiter', tabKey: 'waiter' as const, icon: ConciergeBell, color: 'amber' },
+  { id: 'kitchen', tabKey: 'kitchen' as const, icon: ChefHat, color: 'red' },
+  { id: 'qr', tabKey: 'qr' as const, icon: QrCode, color: 'violet' },
+  { id: 'terminal', tabKey: 'payment' as const, icon: Wallet, color: 'emerald' },
+  { id: 'fingerprint', tabKey: 'attendance' as const, icon: Fingerprint, color: 'sky' },
+  { id: 'branches', tabKey: 'branches' as const, icon: GitBranch, color: 'fuchsia' },
+  { id: 'reports', tabKey: 'reports' as const, icon: BarChart3, color: 'blue' },
 ] as const;
 
 const DEMO_STEPS = [
@@ -1042,6 +1054,8 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
   const [activeTab, setActiveTab] = useState<string>('pos');
   const [demoCart, setDemoCart] = useState<{ name: string; price: number; qty: number }[]>([]);
   const [scanAnim, setScanAnim] = useState(false);
+  const t = useT();
+  const locale = useLocale();
 
   const cartTotal = demoCart.reduce((s, i) => s + i.price * i.qty, 0);
   const tax = +(cartTotal * 0.15).toFixed(2);
@@ -1304,20 +1318,19 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-sm font-semibold mb-5">
             <Play className="w-4 h-4" />
-            عرض تفاعلي مباشر
+            {t.demo.label}
           </div>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900">
-            شاهد كل خدمة
-            <span className="text-indigo-600"> بالتفصيل</span>
+            {t.demo.title}
           </h2>
           <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">
-            تنقّل بين التبويبات لاستكشاف نقطة البيع، واجهة الويتر، شاشة المطبخ، طلب العميل، ماكينات الدفع، البصمة، والفروع
+            {t.demo.subtitle}
           </p>
         </motion.div>
 
         {/* ═══ Tabs ═══ */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
-          {DEMO_TABS.map((tab) => {
+          {DEMO_TAB_META.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const c = colorMap[tab.color] ?? colorMap.indigo!;
@@ -1332,7 +1345,7 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                {tab.label}
+                {t.demo.tabs[tab.tabKey]}
               </motion.button>
             );
           })}
@@ -1343,7 +1356,7 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
           <motion.div variants={scaleIn} transition={{ duration: 0.5 }}>
             <div className="bg-gray-900 rounded-[2rem] p-3 shadow-2xl">
               <div className="bg-gray-800 rounded-t-[1.5rem] px-5 py-2 flex items-center justify-between">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400" /><span className="text-[10px] text-gray-400 font-medium">MPOS — {DEMO_TABS.find(t => t.id === activeTab)?.label}</span></div>
+                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-400" /><span className="text-[10px] text-gray-400 font-medium">MPOS — {t.demo.tabs[DEMO_TAB_META.find(tb => tb.id === activeTab)?.tabKey ?? 'pos']}</span></div>
                 <div className="flex items-center gap-1.5"><Wifi className="w-3 h-3 text-gray-500" /><span className="text-[9px] text-gray-500 font-mono">{new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</span></div>
               </div>
               <div className="bg-gray-50 min-h-[440px] max-h-[520px] overflow-y-auto p-4 relative">
@@ -1358,13 +1371,13 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
           </motion.div>
 
           {/* CTA */}
-          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className="bg-gradient-to-l from-indigo-600 to-purple-600 rounded-2xl p-6 text-white text-center mt-8">
+          <motion.div variants={fadeUp} transition={{ duration: 0.5 }} className={`bg-gradient-to-${locale === 'ar' ? 'l' : 'r'} from-indigo-600 to-purple-600 rounded-2xl p-6 text-white text-center mt-8`}>
             <Sparkles className="w-7 h-7 mx-auto mb-2 text-yellow-300" />
-            <h3 className="text-lg font-bold mb-1">أعجبك ما رأيت؟</h3>
-            <p className="text-indigo-200 text-sm mb-4">ابدأ الآن واحصل على 14 يوم تجربة مجانية</p>
+            <h3 className="text-lg font-bold mb-1">{t.demo.liked}</h3>
+            <p className="text-indigo-200 text-sm mb-4">{t.demo.ctaSubtitle}</p>
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} onClick={onGetStarted}
               className="px-8 py-3 bg-white text-indigo-700 font-bold rounded-xl shadow-lg text-sm inline-flex items-center gap-2">
-              ابدأ الآن <ArrowLeft className="w-4 h-4" />
+              {t.demo.cta} <ArrowLeft className={`w-4 h-4 ${locale === 'en' ? 'rotate-180' : ''}`} />
             </motion.button>
           </motion.div>
         </div>
@@ -1378,6 +1391,8 @@ function InteractiveDemoSection({ onGetStarted }: { onGetStarted: () => void }) 
 // ═══════════════════════════════════════════════════════════
 
 function CTASection({ onGetStarted }: { onGetStarted: () => void }) {
+  const t = useT();
+  const locale = useLocale();
   return (
     <AnimatedSection className="py-20 bg-gradient-to-bl from-indigo-600 via-purple-600 to-blue-700 text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
@@ -1387,10 +1402,10 @@ function CTASection({ onGetStarted }: { onGetStarted: () => void }) {
 
       <div className="relative max-w-4xl mx-auto px-6 text-center">
         <motion.h2 variants={fadeUp} transition={{ duration: 0.6 }} className="text-3xl lg:text-5xl font-bold mb-6">
-          جاهز لنقل تجارتك للمستوى التالي؟
+          {t.cta.title}
         </motion.h2>
         <motion.p variants={fadeUp} transition={{ duration: 0.6 }} className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
-          انضم لأكثر من 2,500 متجر يستخدمون MPOS لإدارة مبيعاتهم بكفاءة
+          {t.cta.subtitle}
         </motion.p>
 
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="flex flex-wrap gap-4 justify-center">
@@ -1400,24 +1415,29 @@ function CTASection({ onGetStarted }: { onGetStarted: () => void }) {
             onClick={onGetStarted}
             className="group px-10 py-4 bg-white text-indigo-700 font-bold rounded-2xl shadow-xl text-lg flex items-center gap-2"
           >
-            ابدأ الآن
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            {t.cta.primary}
+            <ArrowLeft className={`w-5 h-5 transition-transform ${locale === 'ar' ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1 rotate-180'}`} />
           </motion.button>
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.97 }}
-            href="tel:+966500000000"
+            href={`tel:${t.contact.phone.replace(/\s/g, '')}`}
             className="px-10 py-4 border-2 border-white/30 text-white font-medium rounded-2xl flex items-center gap-2 text-lg"
           >
             <Phone className="w-5 h-5" />
-            تحدث مع مستشار
+            {t.cta.secondary}
           </motion.a>
         </motion.div>
 
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="flex flex-wrap gap-8 justify-center mt-12 text-sm text-blue-200">
-          <span className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> بدون بطاقة ائتمان</span>
-          <span className="flex items-center gap-2"><Clock className="w-4 h-4" /> إعداد في دقائق</span>
-          <span className="flex items-center gap-2"><TrendingUp className="w-4 h-4" /> دعم فني مجاني</span>
+          {t.cta.trust.map((text, i) => (
+            <span key={i} className="flex items-center gap-2">
+              {i === 0 && <CheckCircle2 className="w-4 h-4" />}
+              {i === 1 && <Clock className="w-4 h-4" />}
+              {i === 2 && <TrendingUp className="w-4 h-4" />}
+              {text}
+            </span>
+          ))}
         </motion.div>
       </div>
     </AnimatedSection>
@@ -1429,6 +1449,7 @@ function CTASection({ onGetStarted }: { onGetStarted: () => void }) {
 // ═══════════════════════════════════════════════════════════
 
 function FooterWithLinks({ onPrivacy, onTerms }: { onPrivacy: () => void; onTerms: () => void }) {
+  const t = useT();
   return (
     <footer className="bg-gray-900 text-gray-400 py-16">
       <div className="max-w-7xl mx-auto px-6">
@@ -1441,18 +1462,18 @@ function FooterWithLinks({ onPrivacy, onTerms }: { onPrivacy: () => void; onTerm
               <span className="text-white font-bold text-lg">MPOS</span>
             </div>
             <p className="text-sm leading-relaxed">
-              نظام نقاط البيع الأكثر تكاملاً في المملكة العربية السعودية — متوافق مع زاتكا ويدعم تعدد الفروع.
+              {t.footer.desc}
             </p>
           </div>
 
           <div>
-            <h4 className="text-white font-bold mb-4">المنتج</h4>
+            <h4 className="text-white font-bold mb-4">{t.footer.product}</h4>
             <ul className="space-y-2 text-sm">
               {[
-                { label: 'المميزات', id: 'features' },
-                { label: 'الأسعار', id: 'pricing' },
-                { label: 'الفوترة الإلكترونية', id: 'zatca' },
-                { label: 'الأسئلة الشائعة', id: 'faq' },
+                { label: t.footer.links.features, id: 'features' },
+                { label: t.footer.links.pricing, id: 'pricing' },
+                { label: t.footer.links.einvoice, id: 'zatca' },
+                { label: t.footer.links.faq, id: 'faq' },
               ].map(link => (
                 <li key={link.id}>
                   <button onClick={() => scrollTo(link.id)} className="hover:text-white transition">
@@ -1464,30 +1485,30 @@ function FooterWithLinks({ onPrivacy, onTerms }: { onPrivacy: () => void; onTerm
           </div>
 
           <div>
-            <h4 className="text-white font-bold mb-4">الدعم والقانونية</h4>
+            <h4 className="text-white font-bold mb-4">{t.footer.legal}</h4>
             <ul className="space-y-2 text-sm">
-              <li><button onClick={() => scrollTo('contact')} className="hover:text-white transition">تواصل معنا</button></li>
-              <li><button onClick={() => scrollTo('faq')} className="hover:text-white transition">الأسئلة الشائعة</button></li>
-              <li><button onClick={onPrivacy} className="hover:text-white transition">سياسة الخصوصية</button></li>
-              <li><button onClick={onTerms} className="hover:text-white transition">الشروط والأحكام</button></li>
+              <li><button onClick={() => scrollTo('contact')} className="hover:text-white transition">{t.footer.links.contact}</button></li>
+              <li><button onClick={() => scrollTo('faq')} className="hover:text-white transition">{t.footer.links.faq}</button></li>
+              <li><button onClick={onPrivacy} className="hover:text-white transition">{t.footer.links.privacy}</button></li>
+              <li><button onClick={onTerms} className="hover:text-white transition">{t.footer.links.terms}</button></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-bold mb-4">تواصل معنا</h4>
+            <h4 className="text-white font-bold mb-4">{t.footer.contactUs}</h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> 0500 000 000</li>
-              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> info@mpos.sa</li>
-              <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> الرياض، المملكة العربية السعودية</li>
+              <li className="flex items-center gap-2"><Phone className="w-4 h-4" /> {t.contact.phone}</li>
+              <li className="flex items-center gap-2"><Mail className="w-4 h-4" /> {t.contact.email}</li>
+              <li className="flex items-center gap-2"><MapPin className="w-4 h-4" /> {t.contact.location}</li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-gray-800 pt-8 flex flex-wrap justify-between items-center gap-4">
-          <p className="text-sm">&copy; {new Date().getFullYear()} MPOS. جميع الحقوق محفوظة.</p>
+          <p className="text-sm">&copy; {new Date().getFullYear()} {t.footer.copyright}</p>
           <div className="flex gap-6 text-sm">
-            <button onClick={onPrivacy} className="hover:text-white transition">سياسة الخصوصية</button>
-            <button onClick={onTerms} className="hover:text-white transition">الشروط والأحكام</button>
+            <button onClick={onPrivacy} className="hover:text-white transition">{t.footer.links.privacy}</button>
+            <button onClick={onTerms} className="hover:text-white transition">{t.footer.links.terms}</button>
           </div>
         </div>
       </div>
@@ -1499,21 +1520,22 @@ function FooterWithLinks({ onPrivacy, onTerms }: { onPrivacy: () => void; onTerm
 // Subscription Request Form (Real API integration)
 // ═══════════════════════════════════════════════════════════
 
-const BUSINESS_TYPES = ['تجزئة', 'جملة', 'مطعم', 'مقهى', 'صيدلية', 'بقالة', 'أخرى'];
-const PLAN_OPTIONS = [
-  { id: 1, name: 'أساسي', price: '1,400 ر.س/شهر' },
-  { id: 2, name: 'متقدم', price: '2,800 ر.س/شهر' },
-  { id: 3, name: 'احترافي', price: '4,200 ر.س/شهر' },
-];
-
 function SubscriptionFormSection() {
+  const t = useT();
+  const locale = useLocale();
+  const BUSINESS_TYPES = t.register.businessTypes;
+  const PLAN_OPTIONS = [
+    { id: 1, name: t.pricing.plans.basic.name, price: `${t.pricing.currencySymbol}${t.pricing.plans.basic.price}${t.pricing.perMonth}` },
+    { id: 2, name: t.pricing.plans.pro.name, price: `${t.pricing.currencySymbol}${t.pricing.plans.pro.price}${t.pricing.perMonth}` },
+    { id: 3, name: t.pricing.plans.enterprise.name, price: `${t.pricing.currencySymbol}${t.pricing.plans.enterprise.price}${t.pricing.perMonth}` },
+  ];
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   const [form, setForm] = useState({
-    storeName: '', businessType: 'تجزئة', ownerName: '', phone: '', email: '',
+    storeName: '', businessType: BUSINESS_TYPES[0] || '', ownerName: '', phone: '', email: '',
     address: '', city: '', vatNumber: '', planId: 2, adminUsername: '',
     adminPassword: '', adminFullName: '', notes: '',
   });
@@ -1538,10 +1560,10 @@ function SubscriptionFormSection() {
       if (data.success) {
         setSuccess(true);
       } else {
-        setError(data.errors?.[0] || 'حدث خطأ. حاول مرة أخرى.');
+        setError(data.errors?.[0] || (locale === 'ar' ? 'حدث خطأ. حاول مرة أخرى.' : 'An error occurred. Please try again.'));
       }
     } catch {
-      setError('تعذر الاتصال بالخادم. حاول لاحقاً.');
+      setError(locale === 'ar' ? 'تعذر الاتصال بالخادم. حاول لاحقاً.' : 'Could not connect to server. Please try later.');
     } finally {
       setSubmitting(false);
     }
@@ -1551,12 +1573,12 @@ function SubscriptionFormSection() {
     <AnimatedSection className="py-20 bg-gradient-to-bl from-indigo-50 via-white to-blue-50" id="register">
       <div className="max-w-3xl mx-auto px-6">
         <motion.div variants={fadeUp} transition={{ duration: 0.6 }} className="text-center mb-12">
-          <span className="text-indigo-600 font-semibold text-sm">سجّل متجرك الآن</span>
+          <span className="text-indigo-600 font-semibold text-sm">{t.register.label}</span>
           <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mt-3">
-            طلب اشتراك جديد
+            {t.register.title}
           </h2>
           <p className="text-gray-500 mt-3 max-w-xl mx-auto">
-            أرسل طلبك وسيتم مراجعته وتفعيل حسابك مع فترة تجريبية مجانية 14 يوماً
+            {t.register.subtitle}
           </p>
         </motion.div>
 
@@ -1572,15 +1594,15 @@ function SubscriptionFormSection() {
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}>
                   <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-5" />
                 </motion.div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">تم إرسال طلبك بنجاح!</h3>
-                <p className="text-gray-500 text-lg mb-2">سيتم مراجعة طلبك خلال 24 ساعة كحد أقصى.</p>
-                <p className="text-gray-400 text-sm">بعد الموافقة ستتلقى بيانات الدخول وفترة تجريبية مجانية 14 يوماً.</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">{locale === 'ar' ? 'تم إرسال طلبك بنجاح!' : 'Request submitted successfully!'}</h3>
+                <p className="text-gray-500 text-lg mb-2">{locale === 'ar' ? 'سيتم مراجعة طلبك خلال 24 ساعة كحد أقصى.' : 'Your request will be reviewed within 24 hours.'}</p>
+                <p className="text-gray-400 text-sm">{locale === 'ar' ? 'بعد الموافقة ستتلقى بيانات الدخول وفترة تجريبية مجانية 14 يوماً.' : 'After approval, you will receive login credentials and a 14-day free trial.'}</p>
                 <div className="mt-8 flex gap-3 justify-center">
                   <button
-                    onClick={() => { setSuccess(false); setStep(1); setForm({ storeName: '', businessType: 'تجزئة', ownerName: '', phone: '', email: '', address: '', city: '', vatNumber: '', planId: 2, adminUsername: '', adminPassword: '', adminFullName: '', notes: '' }); }}
+                    onClick={() => { setSuccess(false); setStep(1); setForm({ storeName: '', businessType: BUSINESS_TYPES[0] || '', ownerName: '', phone: '', email: '', address: '', city: '', vatNumber: '', planId: 2, adminUsername: '', adminPassword: '', adminFullName: '', notes: '' }); }}
                     className="px-6 py-2.5 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition"
                   >
-                    إرسال طلب آخر
+                    {locale === 'ar' ? 'إرسال طلب آخر' : 'Submit another request'}
                   </button>
                 </div>
               </motion.div>
@@ -1595,7 +1617,7 @@ function SubscriptionFormSection() {
               >
                 {/* Progress */}
                 <div className="flex bg-gray-50 border-b border-gray-100">
-                  {[{ n: 1, t: 'بيانات المتجر' }, { n: 2, t: 'حساب المدير' }, { n: 3, t: 'الباقة والإرسال' }].map(s => (
+                  {t.register.steps.map((stepLabel, idx) => ({ n: idx + 1, t: stepLabel })).map(s => (
                     <button
                       key={s.n}
                       type="button"
@@ -1620,48 +1642,48 @@ function SubscriptionFormSection() {
                       <motion.div key="s1" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="space-y-5">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المتجر <span className="text-red-500">*</span></label>
-                            <input type="text" value={form.storeName} onChange={e => set('storeName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white" placeholder="مثال: سوبرماركت النور" required />
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.storeName.label} <span className="text-red-500">*</span></label>
+                            <input type="text" value={form.storeName} onChange={e => set('storeName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white" placeholder={t.register.fields.storeName.placeholder} required />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">نوع النشاط</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.businessType}</label>
                             <select value={form.businessType} onChange={e => set('businessType', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white">
-                              {BUSINESS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                              {BUSINESS_TYPES.map(bt => <option key={bt} value={bt}>{bt}</option>)}
                             </select>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المالك <span className="text-red-500">*</span></label>
-                            <input type="text" value={form.ownerName} onChange={e => set('ownerName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white" placeholder="الاسم الكامل" required />
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.ownerName.label} <span className="text-red-500">*</span></label>
+                            <input type="text" value={form.ownerName} onChange={e => set('ownerName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white" placeholder={t.register.fields.ownerName.placeholder} required />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">الهاتف <span className="text-red-500">*</span></label>
-                            <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="05xxxxxxxx" required />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">البريد الإلكتروني</label>
-                            <input type="email" value={form.email} onChange={e => set('email', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="اختياري" />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">المدينة <span className="text-red-500">*</span></label>
-                            <input type="text" value={form.city} onChange={e => set('city', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="مثال: الرياض" required />
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.phone.label} <span className="text-red-500">*</span></label>
+                            <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={t.register.fields.phone.placeholder} required />
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">الرقم الضريبي <span className="text-red-500">*</span></label>
-                            <input type="text" value={form.vatNumber} onChange={e => set('vatNumber', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="3XXXXXXXXXXXXXXX" required dir="ltr" />
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.email.label}</label>
+                            <input type="email" value={form.email} onChange={e => set('email', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={t.register.fields.email.placeholder} />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">العنوان</label>
-                            <input type="text" value={form.address} onChange={e => set('address', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="اختياري" />
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.city.label} <span className="text-red-500">*</span></label>
+                            <input type="text" value={form.city} onChange={e => set('city', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={t.register.fields.city.placeholder} required />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.taxId.label} <span className="text-red-500">*</span></label>
+                            <input type="text" value={form.vatNumber} onChange={e => set('vatNumber', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={t.register.fields.taxId.placeholder} required dir="ltr" />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{t.register.fields.address.label}</label>
+                            <input type="text" value={form.address} onChange={e => set('address', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={t.register.fields.address.placeholder} />
                           </div>
                         </div>
                         <button type="button" onClick={() => setStep(2)} disabled={!step1Valid} className="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition disabled:opacity-40 flex items-center justify-center gap-2">
-                          التالي <ChevronLeft className="w-4 h-4" />
+                          {t.register.next} <ChevronLeft className={`w-4 h-4 ${locale === 'en' ? 'rotate-180' : ''}`} />
                         </button>
                       </motion.div>
                     )}
@@ -1669,35 +1691,35 @@ function SubscriptionFormSection() {
                     {step === 2 && (
                       <motion.div key="s2" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="space-y-5">
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                          <strong>تنبيه:</strong> اختر اسم مستخدم وكلمة مرور قوية. ستستخدمها لتسجيل الدخول لمتجرك.
+                          <strong>{locale === 'ar' ? 'تنبيه:' : 'Note:'}</strong> {locale === 'ar' ? 'اختر اسم مستخدم وكلمة مرور قوية. ستستخدمها لتسجيل الدخول لمتجرك.' : 'Choose a strong username and password. You will use them to sign in to your store.'}
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">الاسم الكامل للمدير <span className="text-red-500">*</span></label>
-                          <input type="text" value={form.adminFullName} onChange={e => set('adminFullName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white" placeholder="مثال: أحمد محمد" required />
+                          <label className="block text-sm font-medium text-gray-700 mb-1.5">{locale === 'ar' ? 'الاسم الكامل للمدير' : 'Admin Full Name'} <span className="text-red-500">*</span></label>
+                          <input type="text" value={form.adminFullName} onChange={e => set('adminFullName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none text-sm bg-white" placeholder={locale === 'ar' ? 'مثال: أحمد محمد' : 'e.g. John Smith'} required />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">اسم المستخدم <span className="text-red-500">*</span></label>
-                            <input type="text" value={form.adminUsername} onChange={e => set('adminUsername', e.target.value.replace(/\s/g, ''))} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="3 أحرف على الأقل" required dir="ltr" minLength={3} />
-                            {form.adminUsername && form.adminUsername.length < 3 && <p className="text-xs text-red-500 mt-1">يجب 3 أحرف على الأقل</p>}
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{locale === 'ar' ? 'اسم المستخدم' : 'Username'} <span className="text-red-500">*</span></label>
+                            <input type="text" value={form.adminUsername} onChange={e => set('adminUsername', e.target.value.replace(/\s/g, ''))} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={locale === 'ar' ? '3 أحرف على الأقل' : 'Min 3 characters'} required dir="ltr" minLength={3} />
+                            {form.adminUsername && form.adminUsername.length < 3 && <p className="text-xs text-red-500 mt-1">{locale === 'ar' ? 'يجب 3 أحرف على الأقل' : 'Minimum 3 characters'}</p>}
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">كلمة المرور <span className="text-red-500">*</span></label>
-                            <input type="password" value={form.adminPassword} onChange={e => set('adminPassword', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder="6 أحرف على الأقل" required dir="ltr" minLength={6} />
-                            {form.adminPassword && form.adminPassword.length < 6 && <p className="text-xs text-red-500 mt-1">يجب 6 أحرف على الأقل</p>}
-                            {form.adminPassword.length >= 6 && <p className="text-xs text-green-600 mt-1">كلمة المرور مقبولة</p>}
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">{locale === 'ar' ? 'كلمة المرور' : 'Password'} <span className="text-red-500">*</span></label>
+                            <input type="password" value={form.adminPassword} onChange={e => set('adminPassword', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white" placeholder={locale === 'ar' ? '6 أحرف على الأقل' : 'Min 6 characters'} required dir="ltr" minLength={6} />
+                            {form.adminPassword && form.adminPassword.length < 6 && <p className="text-xs text-red-500 mt-1">{locale === 'ar' ? 'يجب 6 أحرف على الأقل' : 'Minimum 6 characters'}</p>}
+                            {form.adminPassword.length >= 6 && <p className="text-xs text-green-600 mt-1">{locale === 'ar' ? 'كلمة المرور مقبولة' : 'Password accepted'}</p>}
                           </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">ملاحظات إضافية</label>
-                          <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white resize-none" placeholder="أي متطلبات خاصة أو ملاحظات..." />
+                          <label className="block text-sm font-medium text-gray-700 mb-1.5">{locale === 'ar' ? 'ملاحظات إضافية' : 'Additional Notes'}</label>
+                          <textarea value={form.notes} onChange={e => set('notes', e.target.value)} rows={2} className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm bg-white resize-none" placeholder={locale === 'ar' ? 'أي متطلبات خاصة أو ملاحظات...' : 'Any special requirements or notes...'} />
                         </div>
                         <div className="flex gap-3">
                           <button type="button" onClick={() => setStep(3)} disabled={!step2Valid} className="flex-1 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition disabled:opacity-40 flex items-center justify-center gap-2">
-                            التالي <ChevronLeft className="w-4 h-4" />
+                            {t.register.next} <ChevronLeft className={`w-4 h-4 ${locale === 'en' ? 'rotate-180' : ''}`} />
                           </button>
                           <button type="button" onClick={() => setStep(1)} className="px-6 py-3.5 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition">
-                            السابق
+                            {t.register.back}
                           </button>
                         </div>
                       </motion.div>
@@ -1705,7 +1727,7 @@ function SubscriptionFormSection() {
 
                     {step === 3 && (
                       <motion.div key="s3" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} className="space-y-5">
-                        <label className="block text-sm font-medium text-gray-700 mb-3">اختر الباقة</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">{locale === 'ar' ? 'اختر الباقة' : 'Select a plan'}</label>
                         <div className="grid grid-cols-3 gap-3">
                           {PLAN_OPTIONS.map(plan => (
                             <button
@@ -1729,16 +1751,16 @@ function SubscriptionFormSection() {
 
                         {/* Summary */}
                         <div className="bg-gray-50 rounded-xl p-5 space-y-2 text-sm">
-                          <h4 className="font-bold text-gray-900 mb-3">ملخص الطلب</h4>
-                          <div className="flex justify-between"><span className="text-gray-500">المتجر:</span><span className="font-medium text-gray-900">{form.storeName}</span></div>
-                          <div className="flex justify-between"><span className="text-gray-500">المالك:</span><span className="font-medium text-gray-900">{form.ownerName}</span></div>
-                          <div className="flex justify-between"><span className="text-gray-500">المدير:</span><span className="font-medium text-gray-900">{form.adminFullName}</span></div>
-                          <div className="flex justify-between"><span className="text-gray-500">اسم المستخدم:</span><span className="font-medium text-gray-900" dir="ltr">{form.adminUsername}</span></div>
-                          <div className="flex justify-between"><span className="text-gray-500">الباقة:</span><span className="font-medium text-gray-900">{PLAN_OPTIONS.find(p => p.id === form.planId)?.name}</span></div>
+                          <h4 className="font-bold text-gray-900 mb-3">{locale === 'ar' ? 'ملخص الطلب' : 'Order Summary'}</h4>
+                          <div className="flex justify-between"><span className="text-gray-500">{t.register.fields.storeName.label}:</span><span className="font-medium text-gray-900">{form.storeName}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">{t.register.fields.ownerName.label}:</span><span className="font-medium text-gray-900">{form.ownerName}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">{locale === 'ar' ? 'المدير' : 'Admin'}:</span><span className="font-medium text-gray-900">{form.adminFullName}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">{locale === 'ar' ? 'اسم المستخدم' : 'Username'}:</span><span className="font-medium text-gray-900" dir="ltr">{form.adminUsername}</span></div>
+                          <div className="flex justify-between"><span className="text-gray-500">{locale === 'ar' ? 'الباقة' : 'Plan'}:</span><span className="font-medium text-gray-900">{PLAN_OPTIONS.find(p => p.id === form.planId)?.name}</span></div>
                           <hr className="border-gray-200" />
                           <div className="flex justify-between text-green-700 font-bold">
-                            <span>الفترة التجريبية:</span>
-                            <span>14 يوم مجاناً</span>
+                            <span>{locale === 'ar' ? 'الفترة التجريبية:' : 'Trial Period:'}</span>
+                            <span>{locale === 'ar' ? '14 يوم مجاناً' : '14 days free'}</span>
                           </div>
                         </div>
 
@@ -1754,12 +1776,12 @@ function SubscriptionFormSection() {
                             whileTap={{ scale: 0.97 }}
                             type="submit"
                             disabled={submitting}
-                            className="flex-1 py-3.5 bg-gradient-to-l from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+                            className={`flex-1 py-3.5 bg-gradient-to-${locale === 'ar' ? 'l' : 'r'} from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg`}
                           >
-                            {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> جارٍ الإرسال...</> : <><Send className="w-5 h-5" /> إرسال طلب الاشتراك</>}
+                            {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> {t.common.loading}</> : <><Send className="w-5 h-5" /> {t.register.submit}</>}
                           </motion.button>
                           <button type="button" onClick={() => setStep(2)} className="px-6 py-3.5 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition">
-                            السابق
+                            {t.register.back}
                           </button>
                         </div>
                       </motion.div>
@@ -1781,6 +1803,8 @@ function SubscriptionFormSection() {
 
 function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
   useEffect(() => { window.scrollTo(0, 0); }, []);
+  const t = useT();
+  const locale = useLocale();
 
   const sections = [
     {
@@ -1864,12 +1888,13 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
   ];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 scroll-smooth" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" }}>
+    <div dir={t.dir} className="min-h-screen bg-gray-50 scroll-smooth" style={{ fontFamily: locale === 'ar' ? "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" : "'Inter', 'system-ui', sans-serif" }}>
       {/* Top bar */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <button onClick={onBack} className="flex items-center gap-2 text-indigo-600 font-medium text-sm hover:text-indigo-700 transition">
-            <ArrowRight className="w-4 h-4" /> العودة للرئيسية
+            {locale === 'ar' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+            {locale === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
           </button>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">M</div>
@@ -1886,13 +1911,18 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
                 <Shield className="w-6 h-6 text-indigo-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">سياسة الخصوصية</h1>
-                <p className="text-sm text-gray-400 mt-1">آخر تحديث: {new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <h1 className="text-3xl font-bold text-gray-900">{t.footer.links.privacy}</h1>
+                <p className="text-sm text-gray-400 mt-1">{locale === 'ar' ? 'آخر تحديث' : 'Last updated'}: {new Date().toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
             </div>
+            {locale === 'en' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                This document is available in Arabic only. Please use the language switcher to view in Arabic.
+              </div>
+            )}
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-8" dir="rtl">
             {sections.map((section, idx) => (
               <motion.div
                 key={idx}
@@ -1924,7 +1954,7 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
 
           <div className="mt-12 text-center">
             <button onClick={onBack} className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">
-              العودة للرئيسية
+              {locale === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
             </button>
           </div>
         </motion.div>
@@ -1939,6 +1969,8 @@ function PrivacyPolicyPage({ onBack }: { onBack: () => void }) {
 
 function TermsPage({ onBack }: { onBack: () => void }) {
   useEffect(() => { window.scrollTo(0, 0); }, []);
+  const t = useT();
+  const locale = useLocale();
 
   const sections = [
     {
@@ -2055,12 +2087,13 @@ function TermsPage({ onBack }: { onBack: () => void }) {
   ];
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 scroll-smooth" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" }}>
+    <div dir={t.dir} className="min-h-screen bg-gray-50 scroll-smooth" style={{ fontFamily: locale === 'ar' ? "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" : "'Inter', 'system-ui', sans-serif" }}>
       {/* Top bar */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <button onClick={onBack} className="flex items-center gap-2 text-indigo-600 font-medium text-sm hover:text-indigo-700 transition">
-            <ArrowRight className="w-4 h-4" /> العودة للرئيسية
+            {locale === 'ar' ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+            {locale === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
           </button>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs">M</div>
@@ -2077,16 +2110,22 @@ function TermsPage({ onBack }: { onBack: () => void }) {
                 <FileCheck className="w-6 h-6 text-amber-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">الشروط والأحكام</h1>
-                <p className="text-sm text-gray-400 mt-1">آخر تحديث: {new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <h1 className="text-3xl font-bold text-gray-900">{t.footer.links.terms}</h1>
+                <p className="text-sm text-gray-400 mt-1">{locale === 'ar' ? 'آخر تحديث' : 'Last updated'}: {new Date().toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
               </div>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-              <strong>مهم:</strong> باستخدامك لمنصة MPOS فإنك توافق على جميع الشروط والأحكام المذكورة أدناه. يرجى قراءتها بعناية.
-            </div>
+            {locale === 'en' ? (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                This document is available in Arabic only. Please use the language switcher to view in Arabic.
+              </div>
+            ) : (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                <strong>مهم:</strong> باستخدامك لمنصة MPOS فإنك توافق على جميع الشروط والأحكام المذكورة أدناه. يرجى قراءتها بعناية.
+              </div>
+            )}
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-8" dir="rtl">
             {sections.map((section, idx) => (
               <motion.div
                 key={idx}
@@ -2118,7 +2157,7 @@ function TermsPage({ onBack }: { onBack: () => void }) {
 
           <div className="mt-12 text-center">
             <button onClick={onBack} className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition">
-              العودة للرئيسية
+              {locale === 'ar' ? 'العودة للرئيسية' : 'Back to Home'}
             </button>
           </div>
         </motion.div>
@@ -2133,6 +2172,8 @@ function TermsPage({ onBack }: { onBack: () => void }) {
 
 export function LandingPage({ onLogin }: { onLogin: () => void }) {
   const [activePage, setActivePage] = useState<'home' | 'privacy' | 'terms'>('home');
+  const t = useT();
+  const locale = useLocale();
 
   const handleGetStarted = () => {
     scrollTo('register');
@@ -2147,7 +2188,7 @@ export function LandingPage({ onLogin }: { onLogin: () => void }) {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen scroll-smooth" style={{ fontFamily: "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" }}>
+    <div dir={t.dir} className="min-h-screen scroll-smooth" style={{ fontFamily: locale === 'ar' ? "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" : "'Inter', 'system-ui', sans-serif" }}>
       <Navbar onLogin={onLogin} onGetStarted={handleGetStarted} />
       <HeroSection onGetStarted={handleGetStarted} />
       <StatsBar />
