@@ -12,6 +12,10 @@ public class InvoiceItem
 
     public long InvoiceId { get; set; }
     public int ProductId { get; set; }
+    public int? ProductVariantId { get; set; }
+
+    [MaxLength(300)]
+    public string? VariantDescription { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal Quantity { get; set; }
@@ -34,9 +38,15 @@ public class InvoiceItem
     [MaxLength(500)]
     public string? Notes { get; set; }
 
+    public long? BundleParentId { get; set; }
+
+    public InvoiceItem? BundleParent { get; set; }
+    public ICollection<InvoiceItem> BundleChildren { get; set; } = new List<InvoiceItem>();
+
     // Navigation
     public Invoice? Invoice { get; set; }
     public Product? Product { get; set; }
+    public ProductVariant? ProductVariant { get; set; }
 }
 
 // ============================================================

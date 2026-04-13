@@ -60,10 +60,31 @@ public class Product : TenantEntity
     public bool TrackInventory { get; set; } = true;
     public bool AllowNegativeStock { get; set; } = false;
 
+    /// <summary>True if product has variants (sizes, colors, etc.)</summary>
+    public bool HasVariants { get; set; } = false;
+
+    // Bundle
+    public bool IsBundle { get; set; } = false;
+
+    public BundleDiscountType? BundleDiscountType { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? BundleDiscountValue { get; set; }
+
+    public bool BundleHasOwnStock { get; set; } = false;
+
+    public DateTime? BundleValidFrom { get; set; }
+    public DateTime? BundleValidTo { get; set; }
+
+    public BundlePricingMode BundlePricingMode { get; set; } = BundlePricingMode.Unified;
+
     // Navigation
     public Category? Category { get; set; }
     public Unit? Unit { get; set; }
     public ICollection<Inventory> InventoryItems { get; set; } = new List<Inventory>();
+    public ICollection<ProductVariantOption> VariantOptions { get; set; } = new List<ProductVariantOption>();
+    public ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
+    public ICollection<BundleItem> BundleItems { get; set; } = new List<BundleItem>();
 }
 
 // ============================================================
