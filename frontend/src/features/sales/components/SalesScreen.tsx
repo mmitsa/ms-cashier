@@ -127,8 +127,8 @@ export function SalesScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة المبيعات</h1>
-          <p className="text-gray-500 text-sm mt-1">عرض وإدارة فواتير المبيعات</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">إدارة المبيعات</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">عرض وإدارة فواتير المبيعات</p>
         </div>
         <button onClick={handleNewSale} className="btn-primary shrink-0">
           <Plus size={18} />
@@ -175,13 +175,13 @@ export function SalesScreen() {
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
+              className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-              showFilters ? 'bg-brand-50 border-brand-200 text-brand-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+              showFilters ? 'bg-brand-50 dark:bg-brand-950 border-brand-200 dark:border-brand-800 text-brand-700 dark:text-brand-300' : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
             <Filter size={16} />
@@ -195,14 +195,14 @@ export function SalesScreen() {
 
         {/* Expandable Filters */}
         {showFilters && (
-          <div className="flex flex-wrap gap-3 pt-2 border-t border-gray-100">
+          <div className="flex flex-wrap gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-gray-400" />
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-brand-500 outline-none"
+                className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:border-brand-500 outline-none"
                 placeholder="من تاريخ"
               />
               <span className="text-gray-400 text-sm">إلى</span>
@@ -210,7 +210,7 @@ export function SalesScreen() {
                 type="date"
                 value={dateTo}
                 onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-brand-500 outline-none"
+                className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:border-brand-500 outline-none"
                 placeholder="إلى تاريخ"
               />
             </div>
@@ -232,7 +232,7 @@ export function SalesScreen() {
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 activeTab === tab.key
                   ? 'bg-brand-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               {tab.label}
@@ -244,7 +244,7 @@ export function SalesScreen() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : isError ? (
@@ -260,14 +260,14 @@ export function SalesScreen() {
             <div className="overflow-x-auto">
               <table className="w-full text-right">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">رقم الفاتورة</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">التاريخ</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">العميل</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">طريقة الدفع</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الحالة</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">المبلغ</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">إجراءات</th>
+                  <tr className="border-b border-gray-100 dark:border-gray-800">
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">رقم الفاتورة</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">التاريخ</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">العميل</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">طريقة الدفع</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الحالة</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المبلغ</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">إجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -281,15 +281,15 @@ export function SalesScreen() {
                     invoices.map((sale) => (
                       <tr
                         key={sale.id}
-                        className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                        className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <td className="py-3 px-4">
-                          <span className="font-medium text-gray-900">{sale.invoiceNumber}</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{sale.invoiceNumber}</span>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-600">
+                        <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                           {formatDate(sale.invoiceDate)}
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-700">
+                        <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
                           {sale.contactName || 'عميل نقدي'}
                         </td>
                         <td className="py-3 px-4">
@@ -302,28 +302,28 @@ export function SalesScreen() {
                             {getPaymentStatusLabel(sale.paymentStatus)}
                           </Badge>
                         </td>
-                        <td className="py-3 px-4 font-semibold text-gray-900">
+                        <td className="py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">
                           {formatCurrency(sale.totalAmount)}
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-1 justify-end">
                             <button
                               onClick={() => setViewInvoiceId(sale.id)}
-                              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-brand-600 transition-colors"
+                              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-brand-600 transition-colors"
                               title="عرض"
                             >
                               <Eye size={17} />
                             </button>
                             <button
                               onClick={() => handlePrint(sale)}
-                              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-brand-600 transition-colors"
+                              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-brand-600 transition-colors"
                               title="طباعة"
                             >
                               <Printer size={17} />
                             </button>
                             <button
                               onClick={() => setReturnInvoiceId(sale.id)}
-                              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-orange-600 transition-colors"
+                              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-orange-600 transition-colors"
                               title="مرتجع"
                             >
                               <RotateCcw size={17} />
@@ -331,7 +331,7 @@ export function SalesScreen() {
                             <button
                               onClick={() => handleZatcaReport(sale.id)}
                               disabled={reportToZatca.isPending}
-                              className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-green-600 transition-colors disabled:opacity-50"
+                              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-green-600 transition-colors disabled:opacity-50"
                               title="إرسال لزاتكا"
                             >
                               <Send size={17} />
@@ -347,25 +347,25 @@ export function SalesScreen() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   عرض {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, totalCount)} من {totalCount}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight size={18} />
                   </button>
-                  <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[80px] text-center">
                     {page} / {totalPages}
                   </span>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -403,13 +403,13 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">تفاصيل الفاتورة</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">تفاصيل الفاتورة</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -442,7 +442,7 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
               <div className="overflow-x-auto">
                 <table className="w-full text-right text-sm">
                   <thead>
-                    <tr className="border-b border-gray-200 bg-gray-50">
+                    <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
                       <th className="py-2 px-3 font-semibold">الصنف</th>
                       <th className="py-2 px-3 font-semibold">الكمية</th>
                       <th className="py-2 px-3 font-semibold">السعر</th>
@@ -452,7 +452,7 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
                   </thead>
                   <tbody>
                     {invoice.items.map((item) => (
-                      <tr key={item.id} className="border-b border-gray-50">
+                      <tr key={item.id} className="border-b border-gray-50 dark:border-gray-800">
                         <td className="py-2 px-3">{item.productName}</td>
                         <td className="py-2 px-3">{item.quantity} {item.unitName}</td>
                         <td className="py-2 px-3">{formatCurrency(item.unitPrice)}</td>
@@ -466,9 +466,9 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
             )}
 
             {/* Totals */}
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">المجموع الفرعي</span>
+                <span className="text-gray-600 dark:text-gray-400">المجموع الفرعي</span>
                 <span className="font-medium">{formatCurrency(invoice.subTotal)}</span>
               </div>
               {invoice.discountAmount > 0 && (
@@ -479,21 +479,21 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
               )}
               {invoice.taxAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">الضريبة</span>
+                  <span className="text-gray-600 dark:text-gray-400">الضريبة</span>
                   <span>{formatCurrency(invoice.taxAmount)}</span>
                 </div>
               )}
-              <div className="flex justify-between border-t border-gray-200 pt-2 text-base font-bold">
+              <div className="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2 text-base font-bold">
                 <span>الإجمالي</span>
-                <span className="text-brand-700">{formatCurrency(invoice.totalAmount)}</span>
+                <span className="text-brand-700 dark:text-brand-300">{formatCurrency(invoice.totalAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">المدفوع</span>
+                <span className="text-gray-600 dark:text-gray-400">المدفوع</span>
                 <span className="text-emerald-600 font-medium">{formatCurrency(invoice.paidAmount)}</span>
               </div>
               {invoice.dueAmount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">المتبقي</span>
+                  <span className="text-gray-600 dark:text-gray-400">المتبقي</span>
                   <span className="text-red-600 font-medium">{formatCurrency(invoice.dueAmount)}</span>
                 </div>
               )}
@@ -501,8 +501,8 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
 
             {invoice.notes && (
               <div className="text-sm">
-                <span className="font-semibold text-gray-700">ملاحظات: </span>
-                <span className="text-gray-600">{invoice.notes}</span>
+                <span className="font-semibold text-gray-700 dark:text-gray-300">ملاحظات: </span>
+                <span className="text-gray-600 dark:text-gray-400">{invoice.notes}</span>
               </div>
             )}
           </div>
@@ -515,8 +515,8 @@ function InvoiceDetailModal({ invoiceId, onClose }: { invoiceId: number; onClose
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <span className="text-gray-500">{label}: </span>
-      <span className="font-medium text-gray-900">{value}</span>
+      <span className="text-gray-500 dark:text-gray-400">{label}: </span>
+      <span className="font-medium text-gray-900 dark:text-gray-100">{value}</span>
     </div>
   );
 }
@@ -556,13 +556,13 @@ function ReturnInvoiceModal({ invoiceId, onClose }: { invoiceId: number; onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">مرتجع فاتورة</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">مرتجع فاتورة</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -573,17 +573,17 @@ function ReturnInvoiceModal({ invoiceId, onClose }: { invoiceId: number; onClose
           </div>
         ) : (
           <div className="p-5 space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               فاتورة رقم: <span className="font-semibold">{invoice.invoiceNumber}</span>
             </p>
-            <p className="text-sm text-gray-500">حدد الأصناف والكميات المراد إرجاعها:</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">حدد الأصناف والكميات المراد إرجاعها:</p>
 
             <div className="space-y-3">
               {invoice.items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl">
+                <div key={item.id} className="flex items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{item.productName}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{item.productName}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       الكمية الأصلية: {item.quantity} • السعر: {formatCurrency(item.unitPrice)}
                     </p>
                   </div>
@@ -593,13 +593,13 @@ function ReturnInvoiceModal({ invoiceId, onClose }: { invoiceId: number; onClose
                     max={item.quantity}
                     value={returnItems[item.productId] ?? 0}
                     onChange={(e) => handleQuantityChange(item.productId, Math.min(item.quantity, Math.max(0, Number(e.target.value))))}
-                    className="w-20 px-3 py-2 rounded-lg border border-gray-200 text-center text-sm focus:border-brand-500 outline-none"
+                    className="w-20 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 text-center text-sm focus:border-brand-500 outline-none"
                   />
                 </div>
               ))}
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
               <button
                 onClick={handleSubmitReturn}
                 disabled={createReturn.isPending || Object.values(returnItems).every((q) => !q)}

@@ -435,7 +435,7 @@ export function POSScreen() {
                   )}
                 >
                   {/* Product image / placeholder */}
-                  <div className="w-full h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg mb-2 flex items-center justify-center">
+                  <div className="w-full h-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-lg mb-2 flex items-center justify-center">
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
@@ -450,10 +450,10 @@ export function POSScreen() {
                     )}
                   </div>
 
-                  <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate leading-tight">
                     {product.name}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5 font-mono">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 font-mono">
                     {product.barcode || '—'}
                   </p>
 
@@ -461,7 +461,7 @@ export function POSScreen() {
                     <Badge variant={isLowStock ? 'danger' : 'success'}>
                       {product.currentStock} {product.unitName}
                     </Badge>
-                    <span className="text-sm font-bold text-brand-700">
+                    <span className="text-sm font-bold text-brand-700 dark:text-brand-300">
                       {formatCurrency(price)}
                     </span>
                   </div>
@@ -489,9 +489,9 @@ export function POSScreen() {
       {/* ═══ RIGHT PANEL: Cart (40%) ═══ */}
       <div className="flex-[2] card flex flex-col shrink-0 max-w-[420px] min-w-[340px]">
         {/* ── Cart Header ─────────────────────────────────────────────────── */}
-        <div className="p-3 border-b border-gray-100 space-y-2">
+        <div className="p-3 border-b border-gray-100 dark:border-gray-800 space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-gray-900 flex items-center gap-2">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <ShoppingCart size={18} /> الفاتورة
             </h3>
             <div className="flex items-center gap-2">
@@ -513,7 +513,7 @@ export function POSScreen() {
                     }));
                   });
                 }}
-                className="text-xs px-2 py-1.5 border border-gray-200 rounded-lg bg-white cursor-pointer"
+                className="text-xs px-2 py-1.5 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 cursor-pointer"
               >
                 <option value="retail">قطاعي</option>
                 <option value="half">نصف جملة</option>
@@ -525,10 +525,10 @@ export function POSScreen() {
           {/* Warehouse Selector */}
           <button
             onClick={() => setShowWarehousePicker(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-sm hover:bg-gray-100 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <Warehouse size={15} className="text-gray-400" />
-            <span className="text-gray-900 font-medium">
+            <span className="text-gray-900 dark:text-gray-100 font-medium">
               {selectedWarehouseObj?.name || 'المخزن الرئيسي'}
             </span>
             <ChevronDown size={14} className="text-gray-300 mr-auto" />
@@ -537,11 +537,11 @@ export function POSScreen() {
           {/* Customer Selector */}
           <button
             onClick={() => setShowCustomerPicker(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-sm hover:bg-gray-100 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <User size={15} className="text-gray-400" />
             <span
-              className={selectedCustomer ? 'text-gray-900 font-medium' : 'text-gray-400'}
+              className={selectedCustomer ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-400'}
             >
               {selectedCustomer?.name || 'عميل نقدي (اضغط لاختيار عميل)'}
             </span>
@@ -572,10 +572,10 @@ export function POSScreen() {
             cart.map((item) => (
               <div
                 key={item.product.id}
-                className="flex items-center gap-2 p-2.5 bg-gray-50 rounded-xl group hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                     {item.product.name}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -632,7 +632,7 @@ export function POSScreen() {
                   </button>
                 </div>
 
-                <span className="text-sm font-bold text-gray-900 w-20 text-left tabular-nums">
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100 w-20 text-left tabular-nums">
                   {formatCurrency(item.unitPrice * item.quantity - item.discount)}
                 </span>
               </div>
@@ -641,14 +641,14 @@ export function POSScreen() {
         </div>
 
         {/* ── Cart Footer: Totals & Payment ───────────────────────────────── */}
-        <div className="p-3 border-t border-gray-100 space-y-3">
+        <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-3">
           {/* Totals */}
           <div className="space-y-1 text-sm">
-            <div className="flex justify-between text-gray-500">
+            <div className="flex justify-between text-gray-500 dark:text-gray-400">
               <span>عدد الأصناف</span>
               <span>{getItemCount()}</span>
             </div>
-            <div className="flex justify-between text-gray-500">
+            <div className="flex justify-between text-gray-500 dark:text-gray-400">
               <span>عدد القطع</span>
               <span>{getQuantityCount()}</span>
             </div>
@@ -662,7 +662,7 @@ export function POSScreen() {
               <span>الربح المتوقع</span>
               <span>{formatCurrency(profit)}</span>
             </div>
-            <div className="flex justify-between text-xl font-bold text-gray-900 pt-2 border-t border-gray-100">
+            <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-gray-100 pt-2 border-t border-gray-100 dark:border-gray-800">
               <span>الإجمالي</span>
               <span className="tabular-nums">{formatCurrency(total)}</span>
             </div>
@@ -723,15 +723,15 @@ export function POSScreen() {
         size="sm"
       >
         <div className="space-y-4">
-          <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-sm text-gray-500">المبلغ المطلوب</p>
-            <p className="text-3xl font-bold text-brand-700 mt-1">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">المبلغ المطلوب</p>
+            <p className="text-3xl font-bold text-brand-700 dark:text-brand-300 mt-1">
               {formatCurrency(total)}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               المبلغ المدفوع
             </label>
             <input
@@ -755,7 +755,7 @@ export function POSScreen() {
               <button
                 key={i}
                 onClick={() => setPaidAmount(amount.toString())}
-                className="py-2 bg-gray-50 rounded-lg text-sm font-medium text-gray-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+                className="py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-brand-50 dark:hover:bg-brand-950 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
               >
                 {formatCurrency(amount)}
               </button>
@@ -801,10 +801,10 @@ export function POSScreen() {
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
             <CheckCircle size={40} className="text-emerald-600" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900">تمت العملية بنجاح!</h3>
-          <p className="text-gray-500">تم تسجيل الفاتورة وطباعة الإيصال</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">تمت العملية بنجاح!</h3>
+          <p className="text-gray-500 dark:text-gray-400">تم تسجيل الفاتورة وطباعة الإيصال</p>
 
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
             {lastSaleInvoice && (
               <div className="flex justify-between text-sm mb-1">
                 <span className="text-gray-500">رقم الفاتورة</span>
@@ -817,9 +817,9 @@ export function POSScreen() {
                 {selectedCustomer?.name || 'عميل نقدي'}
               </span>
             </div>
-            <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-2 mt-2">
+            <div className="flex justify-between text-lg font-bold border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
               <span>الإجمالي</span>
-              <span className="text-brand-700">{formatCurrency(total)}</span>
+              <span className="text-brand-700 dark:text-brand-300">{formatCurrency(total)}</span>
             </div>
           </div>
 
@@ -908,7 +908,7 @@ export function POSScreen() {
                     {customer.name[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{customer.name}</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{customer.name}</p>
                     <p className="text-xs text-gray-400">{customer.phone || '—'}</p>
                   </div>
                   <div className="text-left shrink-0">
@@ -962,7 +962,7 @@ export function POSScreen() {
                 <Warehouse size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-gray-900 dark:text-gray-100">
                   {wh.name}
                   {wh.isMain && (
                     <span className="text-xs text-brand-500 font-normal mr-2">
@@ -991,7 +991,7 @@ export function POSScreen() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               مبلغ الخصم
             </label>
             <input
@@ -1008,7 +1008,7 @@ export function POSScreen() {
               <button
                 key={pct}
                 onClick={() => setDiscount(Math.round((subTotal * pct) / 100))}
-                className="py-2 bg-gray-50 rounded-lg text-sm font-medium hover:bg-brand-50 hover:text-brand-700"
+                className="py-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm font-medium hover:bg-brand-50 dark:hover:bg-brand-950 hover:text-brand-700 dark:hover:text-brand-300"
               >
                 {pct}%
               </button>

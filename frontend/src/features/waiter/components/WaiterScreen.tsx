@@ -98,14 +98,14 @@ export function WaiterScreen() {
   return (
     <div className="h-full flex flex-col">
       {/* Top Bar */}
-      <div className="bg-white border-b px-6 py-4 flex items-center justify-between shrink-0">
+      <div className="bg-white dark:bg-gray-900 border-b dark:border-gray-700 px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
             <UtensilsCrossed size={22} className="text-orange-600" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">واجهة الويتر</h1>
-            <p className="text-xs text-gray-500">إدارة الطاولات والطلبات</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">واجهة الويتر</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">إدارة الطاولات والطلبات</p>
           </div>
         </div>
 
@@ -115,7 +115,7 @@ export function WaiterScreen() {
             <select
               value={sectionFilter}
               onChange={e => setSectionFilter(e.target.value)}
-              className="px-3 py-2 border rounded-xl text-sm bg-white focus:ring-2 focus:ring-orange-500 focus:outline-none"
+              className="px-3 py-2 border dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-orange-500 focus:outline-none"
             >
               <option value="all">كل المناطق</option>
               {floorSections.map((s: any) => (
@@ -130,7 +130,7 @@ export function WaiterScreen() {
               key={v}
               onClick={() => setView(v)}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                view === v ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                view === v ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               {v === 'tables' ? `الطاولات (${tables.length})` : v === 'orders' ? `الطلبات (${orders.length})` : 'طلب جديد'}
@@ -196,7 +196,7 @@ function TableGrid({ tables, loading, onTableClick, onEditTable }: {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="h-32 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -206,8 +206,8 @@ function TableGrid({ tables, loading, onTableClick, onEditTable }: {
     return (
       <div className="text-center py-20">
         <UtensilsCrossed size={56} className="text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد طاولات</h3>
-        <p className="text-sm text-gray-500">أضف طاولات لبدء استقبال الطلبات</p>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد طاولات</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">أضف طاولات لبدء استقبال الطلبات</p>
       </div>
     );
   }
@@ -216,7 +216,7 @@ function TableGrid({ tables, loading, onTableClick, onEditTable }: {
     <div className="space-y-8">
       {[...sections.entries()].map(([section, sectionTables]) => (
         <div key={section}>
-          <h3 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3 flex items-center gap-2">
             <Users size={16} /> {section}
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -265,7 +265,7 @@ function ActiveOrdersList({ orders, selectedTableId, onViewOrder, onBill }: {
     return (
       <div className="text-center py-20">
         <Clock size={48} className="text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد طلبات نشطة</h3>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد طلبات نشطة</h3>
       </div>
     );
   }
@@ -275,11 +275,11 @@ function ActiveOrdersList({ orders, selectedTableId, onViewOrder, onBill }: {
       {filtered.map((o: any) => {
         const Icon = orderTypeIcons[o.orderType] || UtensilsCrossed;
         return (
-          <div key={o.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+          <div key={o.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div className="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Icon size={18} className="text-orange-600" />
-                <span className="font-bold text-gray-900">{o.orderNumber}</span>
+                <span className="font-bold text-gray-900 dark:text-gray-100">{o.orderNumber}</span>
                 {o.tableNumber && <span className="text-xs bg-white px-2 py-0.5 rounded-full border">T{o.tableNumber}</span>}
               </div>
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${orderStatusColors[o.status]}`}>
@@ -291,20 +291,20 @@ function ActiveOrdersList({ orders, selectedTableId, onViewOrder, onBill }: {
               <div className="space-y-1.5 mb-3 max-h-32 overflow-auto">
                 {o.items?.map((item: any) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-gray-700">{item.quantity}x {item.productName}</span>
-                    <span className="text-gray-500">{formatCurrency(item.totalPrice)}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{item.quantity}x {item.productName}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{formatCurrency(item.totalPrice)}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="flex justify-between items-center pt-3 border-t">
-                <span className="text-sm text-gray-500">{o.waiterName}</span>
+              <div className="flex justify-between items-center pt-3 border-t dark:border-gray-700">
+                <span className="text-sm text-gray-500 dark:text-gray-400">{o.waiterName}</span>
                 <span className="font-bold text-lg">{formatCurrency(o.totalAmount)}</span>
               </div>
             </div>
 
-            <div className="p-3 bg-gray-50 border-t flex gap-2">
-              <button onClick={() => onViewOrder(o)} className="flex-1 py-2 rounded-lg bg-gray-200 text-gray-700 text-xs font-medium hover:bg-gray-300">تفاصيل</button>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2">
+              <button onClick={() => onViewOrder(o)} className="flex-1 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-600">تفاصيل</button>
               {o.status === 'New' && (
                 <button onClick={() => sendMut.mutate(o.id)} className="flex-1 py-2 rounded-lg bg-orange-600 text-white text-xs font-medium hover:bg-orange-700 flex items-center justify-center gap-1">
                   <ChefHat size={14} /> أرسل للمطبخ
@@ -385,15 +385,15 @@ function NewOrderForm({ table, onSuccess, onCancel }: { table: any; onSuccess: (
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
       {/* Products panel */}
-      <div className="lg:col-span-2 flex flex-col bg-white rounded-2xl border shadow-sm overflow-hidden">
-        <div className="p-4 border-b space-y-3">
+      <div className="lg:col-span-2 flex flex-col bg-white dark:bg-gray-900 rounded-2xl border dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="p-4 border-b dark:border-gray-700 space-y-3">
           <div className="flex gap-2">
             {[{ id: 'DineIn', label: 'محلي', icon: UtensilsCrossed },
               { id: 'TakeAway', label: 'تيك اواي', icon: ShoppingBag },
               { id: 'Delivery', label: 'توصيل', icon: Truck }].map(t => (
               <button key={t.id} onClick={() => setOrderType(t.id)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  orderType === t.id ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-600'
+                  orderType === t.id ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}>
                 <t.icon size={16} /> {t.label}
               </button>
@@ -402,12 +402,12 @@ function NewOrderForm({ table, onSuccess, onCancel }: { table: any; onSuccess: (
           <div className="relative">
             <Search size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث عن صنف..."
-              className="w-full pr-10 pl-4 py-2.5 border rounded-xl text-sm" />
+              className="w-full pr-10 pl-4 py-2.5 border dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 dark:text-gray-100" />
           </div>
           <div className="flex gap-1.5 overflow-x-auto pb-1">
-            <button onClick={() => setCatFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${!catFilter ? 'bg-orange-600 text-white' : 'bg-gray-100'}`}>الكل</button>
+            <button onClick={() => setCatFilter(null)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${!catFilter ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-800 dark:text-gray-300'}`}>الكل</button>
             {categories.map((c: any) => (
-              <button key={c.id} onClick={() => setCatFilter(c.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${catFilter === c.id ? 'bg-orange-600 text-white' : 'bg-gray-100'}`}>{c.name}</button>
+              <button key={c.id} onClick={() => setCatFilter(c.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${catFilter === c.id ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-800 dark:text-gray-300'}`}>{c.name}</button>
             ))}
           </div>
         </div>
@@ -415,9 +415,9 @@ function NewOrderForm({ table, onSuccess, onCancel }: { table: any; onSuccess: (
         <div className="flex-1 overflow-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 content-start">
           {filtered.map((p: any) => (
             <button key={p.id} onClick={() => addToCart(p)}
-              className="bg-gray-50 rounded-xl p-3 text-right hover:bg-orange-50 hover:border-orange-200 border border-transparent transition-all active:scale-95">
-              <div className="font-medium text-sm text-gray-900 truncate">{p.name}</div>
-              <div className="text-xs text-gray-500 mt-1">{p.barcode}</div>
+              className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-right hover:bg-orange-50 dark:hover:bg-gray-700 hover:border-orange-200 border border-transparent transition-all active:scale-95">
+              <div className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{p.name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{p.barcode}</div>
               <div className="text-sm font-bold text-orange-600 mt-1">{formatCurrency(p.retailPrice)}</div>
             </button>
           ))}
@@ -425,14 +425,14 @@ function NewOrderForm({ table, onSuccess, onCancel }: { table: any; onSuccess: (
       </div>
 
       {/* Cart panel */}
-      <div className="flex flex-col bg-white rounded-2xl border shadow-sm overflow-hidden">
-        <div className="p-4 border-b">
-          <h3 className="font-bold text-gray-900">الطلب</h3>
-          {table && <p className="text-xs text-gray-500">طاولة {table.tableNumber}</p>}
+      <div className="flex flex-col bg-white dark:bg-gray-900 rounded-2xl border dark:border-gray-700 shadow-sm overflow-hidden">
+        <div className="p-4 border-b dark:border-gray-700">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100">الطلب</h3>
+          {table && <p className="text-xs text-gray-500 dark:text-gray-400">طاولة {table.tableNumber}</p>}
         </div>
 
         {/* Order info */}
-        <div className="p-3 space-y-2 border-b text-sm">
+        <div className="p-3 space-y-2 border-b dark:border-gray-700 text-sm">
           {orderType === 'DineIn' && (
             <div className="flex items-center gap-2">
               <span className="text-gray-500 w-20">الضيوف:</span>
@@ -457,9 +457,9 @@ function NewOrderForm({ table, onSuccess, onCancel }: { table: any; onSuccess: (
             <div className="text-center py-10 text-gray-400 text-sm">أضف أصناف من القائمة</div>
           ) : (
             cart.map((item, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-xl p-3">
+              <div key={idx} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-sm">{item.name}</span>
+                  <span className="font-medium text-sm dark:text-gray-100">{item.name}</span>
                   <button onClick={() => setCart(prev => prev.filter((_, i) => i !== idx))} className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
                 </div>
                 <div className="flex items-center justify-between">
@@ -484,14 +484,14 @@ function NewOrderForm({ table, onSuccess, onCancel }: { table: any; onSuccess: (
         </div>
 
         {/* Totals + Submit */}
-        <div className="p-4 border-t space-y-3">
+        <div className="p-4 border-t dark:border-gray-700 space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600">الإجمالي</span>
+            <span className="text-gray-600 dark:text-gray-400">الإجمالي</span>
             <span className="text-xl font-bold text-orange-600">{formatCurrency(total)}</span>
           </div>
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="ملاحظات عامة..." className="w-full px-3 py-2 border rounded-xl text-sm resize-none" />
           <div className="flex gap-2">
-            <button onClick={onCancel} className="flex-1 py-3 rounded-xl border text-gray-700 font-medium text-sm">إلغاء</button>
+            <button onClick={onCancel} className="flex-1 py-3 rounded-xl border dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium text-sm">إلغاء</button>
             <button onClick={handleSubmit} disabled={cart.length === 0 || createMut.isPending}
               className="flex-1 py-3 rounded-xl bg-orange-600 text-white font-medium text-sm hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2">
               <Send size={16} /> {createMut.isPending ? 'جاري الإنشاء...' : 'أنشئ الطلب'}
@@ -514,16 +514,16 @@ function OrderDetailModal({ order, onClose, onBill }: { order: any; onClose: () 
     <Modal open={true} onClose={onClose} title={`طلب ${order.orderNumber}`} size="lg">
       <div className="space-y-4">
         <div className="grid grid-cols-3 gap-3 text-sm">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">النوع</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">النوع</p>
             <p className="font-medium">{orderTypeLabels[order.orderType]}</p>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">الحالة</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">الحالة</p>
             <span className={`text-xs px-2 py-0.5 rounded-full ${orderStatusColors[order.status]}`}>{orderStatusLabels[order.status]}</span>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-500">الويتر</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400">الويتر</p>
             <p className="font-medium">{order.waiterName}</p>
           </div>
         </div>
@@ -548,7 +548,7 @@ function OrderDetailModal({ order, onClose, onBill }: { order: any; onClose: () 
           </div>
         </div>
 
-        <div className="flex justify-between items-center text-lg font-bold border-t pt-3">
+        <div className="flex justify-between items-center text-lg font-bold border-t dark:border-gray-700 pt-3">
           <span>الإجمالي</span>
           <span className="text-orange-600">{formatCurrency(order.totalAmount)}</span>
         </div>
@@ -634,12 +634,12 @@ function BillModal({ order, onClose }: { order: any; onClose: () => void }) {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">طريقة الدفع</label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">طريقة الدفع</label>
           <div className="grid grid-cols-3 gap-2">
             {[{ id: 1, label: 'كاش', icon: Banknote }, { id: 2, label: 'فيزا', icon: CreditCard }, { id: 3, label: 'انستاباي', icon: RefreshCw }].map(m => (
               <button key={m.id} onClick={() => setPaymentMethod(m.id)}
                 className={`py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5 transition-colors ${
-                  paymentMethod === m.id ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-600'
+                  paymentMethod === m.id ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}>
                 <m.icon size={16} /> {m.label}
               </button>
@@ -649,11 +649,11 @@ function BillModal({ order, onClose }: { order: any; onClose: () => void }) {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-600">خصم</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400">خصم</label>
             <input type="number" value={discountAmt} onChange={e => setDiscountAmt(e.target.value)} className="w-full px-3 py-2.5 border rounded-xl text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-600">المدفوع</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400">المدفوع</label>
             <input type="number" value={paidAmount} onChange={e => setPaidAmount(e.target.value)} className="w-full px-3 py-2.5 border rounded-xl text-sm" />
           </div>
         </div>
@@ -665,7 +665,7 @@ function BillModal({ order, onClose }: { order: any; onClose: () => void }) {
         )}
 
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border text-gray-700 font-medium text-sm">إلغاء</button>
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium text-sm">إلغاء</button>
           <button onClick={handleBill} disabled={billMut.isPending}
             className="flex-1 py-3 rounded-xl bg-green-600 text-white font-medium text-sm hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2">
             <Printer size={16} /> {billMut.isPending ? 'جاري الفوترة...' : 'فوتر واطبع'}
@@ -705,11 +705,11 @@ function TableEditorModal({ table, onClose }: { table: any; onClose: () => void 
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-600 mb-1 block">رقم الطاولة *</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">رقم الطاولة *</label>
             <input type="text" value={form.tableNumber} onChange={e => setForm(f => ({ ...f, tableNumber: e.target.value }))} className="w-full px-3 py-2.5 border rounded-xl text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-600 mb-1 block">المنطقة</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">المنطقة</label>
             {flSections.length > 0 ? (
               <select
                 value={form.sectionId || ''}
@@ -730,15 +730,15 @@ function TableEditorModal({ table, onClose }: { table: any; onClose: () => void 
             )}
           </div>
           <div>
-            <label className="text-xs text-gray-600 mb-1 block">عدد المقاعد</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">عدد المقاعد</label>
             <input type="number" value={form.capacity} onChange={e => setForm(f => ({ ...f, capacity: parseInt(e.target.value) || 4 }))} className="w-full px-3 py-2.5 border rounded-xl text-sm" />
           </div>
           <div>
-            <label className="text-xs text-gray-600 mb-1 block">الشكل</label>
+            <label className="text-xs text-gray-600 dark:text-gray-400 mb-1 block">الشكل</label>
             <div className="flex gap-2">
               {[{ id: 'square', icon: Square }, { id: 'circle', icon: CircleDot }, { id: 'rectangle', icon: RectangleHorizontal }].map(s => (
                 <button key={s.id} onClick={() => setForm(f => ({ ...f, shape: s.id }))}
-                  className={`flex-1 py-2.5 rounded-xl flex items-center justify-center ${form.shape === s.id ? 'bg-orange-600 text-white' : 'bg-gray-100'}`}>
+                  className={`flex-1 py-2.5 rounded-xl flex items-center justify-center ${form.shape === s.id ? 'bg-orange-600 text-white' : 'bg-gray-100 dark:bg-gray-800 dark:text-gray-300'}`}>
                   <s.icon size={18} />
                 </button>
               ))}
@@ -750,7 +750,7 @@ function TableEditorModal({ table, onClose }: { table: any; onClose: () => void 
           {table?.id && (
             <button onClick={() => deleteMut.mutate(table.id, { onSuccess: onClose })} className="py-2.5 px-4 rounded-xl bg-red-100 text-red-700 text-sm font-medium hover:bg-red-200">حذف</button>
           )}
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border text-gray-700 text-sm font-medium">إلغاء</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium">إلغاء</button>
           <button onClick={handleSave} disabled={saveMut.isPending}
             className="flex-1 py-2.5 rounded-xl bg-orange-600 text-white text-sm font-medium hover:bg-orange-700 disabled:opacity-50">
             {saveMut.isPending ? 'جاري الحفظ...' : 'حفظ'}

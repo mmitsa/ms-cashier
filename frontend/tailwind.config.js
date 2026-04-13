@@ -25,6 +25,8 @@ export default {
       boxShadow: {
         'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
         'card': '0 0 0 1px rgba(0,0,0,.03), 0 2px 4px rgba(0,0,0,.05)',
+        'dark-soft': '0 2px 15px -3px rgba(0, 0, 0, 0.3), 0 10px 20px -2px rgba(0, 0, 0, 0.2)',
+        'dark-card': '0 0 0 1px rgba(255,255,255,.03), 0 2px 4px rgba(0,0,0,.2)',
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',

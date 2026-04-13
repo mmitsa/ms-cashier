@@ -65,8 +65,8 @@ export function BranchesScreen() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة الفروع</h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة فروع متجرك والتحكم في المخازن والبيانات لكل فرع</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">إدارة الفروع</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة فروع متجرك والتحكم في المخازن والبيانات لكل فرع</p>
         </div>
       </div>
 
@@ -74,14 +74,14 @@ export function BranchesScreen() {
       <SummaryCards />
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="flex border-b">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="flex border-b dark:border-gray-800">
           {tabs.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-medium transition-colors
-                ${tab === t.id ? 'text-brand-600 border-b-2 border-brand-600 bg-brand-50/50' : 'text-gray-500 hover:text-gray-700'}`}
+                ${tab === t.id ? 'text-brand-600 dark:text-brand-400 border-b-2 border-brand-600 bg-brand-50/50 dark:bg-brand-950/50' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
             >
               <t.icon size={18} />
               {t.label}
@@ -120,20 +120,20 @@ function SummaryCards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {cards.map((c, i) => (
-        <div key={i} className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+        <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${c.color}`}>
               <c.icon size={20} />
             </div>
             <div>
-              <p className="text-xs text-gray-500">{c.label}</p>
-              <p className="text-lg font-bold text-gray-900">{c.value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{c.label}</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-gray-100">{c.value}</p>
             </div>
           </div>
         </div>
       ))}
       {p && !p.canAddMore && (
-        <div className="col-span-full bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+        <div className="col-span-full bg-amber-50 dark:bg-amber-950 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
           <AlertCircle size={20} className="text-amber-600 shrink-0" />
           <p className="text-sm text-amber-800">
             وصلت للحد الأقصى من الفروع في باقة <strong>{p.planName}</strong>. يمكنك ترقية الباقة لإضافة المزيد.
@@ -153,7 +153,7 @@ function BranchesList({ onEdit, onManageWarehouse }: { onEdit: (b: any) => void;
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-48 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-48 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -165,8 +165,8 @@ function BranchesList({ onEdit, onManageWarehouse }: { onEdit: (b: any) => void;
     return (
       <div className="text-center py-16">
         <Building2 size={48} className="text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد فروع</h3>
-        <p className="text-sm text-gray-500">اطلب فرعاً جديداً من تبويب "طلب فرع جديد"</p>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد فروع</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">اطلب فرعاً جديداً من تبويب "طلب فرع جديد"</p>
       </div>
     );
   }
@@ -174,16 +174,16 @@ function BranchesList({ onEdit, onManageWarehouse }: { onEdit: (b: any) => void;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {branches.map((b: any) => (
-        <div key={b.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
+        <div key={b.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950 flex items-center justify-center">
                 <Building2 size={20} className="text-brand-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">{b.name}</h3>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100">{b.name}</h3>
                 {b.isMainBranch && (
-                  <span className="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full">الفرع الرئيسي</span>
+                  <span className="text-xs bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 px-2 py-0.5 rounded-full">الفرع الرئيسي</span>
                 )}
               </div>
             </div>
@@ -192,7 +192,7 @@ function BranchesList({ onEdit, onManageWarehouse }: { onEdit: (b: any) => void;
             </span>
           </div>
 
-          <div className="space-y-2 text-sm text-gray-600 mb-4">
+          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
             {b.address && (
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-gray-400" />
@@ -221,8 +221,8 @@ function BranchesList({ onEdit, onManageWarehouse }: { onEdit: (b: any) => void;
             </div>
           </div>
 
-          <div className="flex gap-2 pt-3 border-t">
-            <button onClick={() => onEdit(b)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-50 text-gray-700 text-xs font-medium hover:bg-gray-100 transition-colors">
+          <div className="flex gap-2 pt-3 border-t dark:border-gray-800">
+            <button onClick={() => onEdit(b)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               <Edit2 size={14} /> تعديل
             </button>
             <button onClick={() => onManageWarehouse(b)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium hover:bg-blue-100 transition-colors">
@@ -249,7 +249,7 @@ function RequestsList({ onPay }: { onPay: (r: any) => void }) {
   const { data, isLoading } = useMyBranchRequests();
 
   if (isLoading) {
-    return <div className="space-y-3">{[1, 2].map(i => <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />)}</div>;
+    return <div className="space-y-3">{[1, 2].map(i => <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}</div>;
   }
 
   const requests = data?.data ?? [];
@@ -258,8 +258,8 @@ function RequestsList({ onPay }: { onPay: (r: any) => void }) {
     return (
       <div className="text-center py-16">
         <Clock size={48} className="text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد طلبات</h3>
-        <p className="text-sm text-gray-500">اطلب فرعاً جديداً لإدارة أعمالك بشكل أفضل</p>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد طلبات</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">اطلب فرعاً جديداً لإدارة أعمالك بشكل أفضل</p>
       </div>
     );
   }
@@ -267,18 +267,18 @@ function RequestsList({ onPay }: { onPay: (r: any) => void }) {
   return (
     <div className="space-y-3">
       {requests.map((r: any) => (
-        <div key={r.id} className="bg-white border border-gray-200 rounded-xl p-5">
+        <div key={r.id} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h3 className="font-bold text-gray-900">{r.branchName}</h3>
-              <p className="text-xs text-gray-500 mt-1">{new Date(r.createdAt).toLocaleDateString('ar-SA')}</p>
+              <h3 className="font-bold text-gray-900 dark:text-gray-100">{r.branchName}</h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{new Date(r.createdAt).toLocaleDateString('ar-SA')}</p>
             </div>
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${requestStatusColors[r.status] ?? 'bg-gray-100'}`}>
               {requestStatusLabels[r.status] ?? r.status}
             </span>
           </div>
 
-          <div className="text-sm text-gray-600 space-y-1 mb-3">
+          <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-3">
             {r.address && <p>العنوان: {r.address}{r.city ? ` - ${r.city}` : ''}</p>}
             <p>النمط: {dataModeLabels[r.dataMode] ?? r.dataMode}</p>
             <p>الرسوم المطلوبة: {r.requestedFee?.toFixed(2)} ر.س / شهر</p>
@@ -341,81 +341,81 @@ function NewBranchRequest({ onSuccess }: { onSuccess: () => void }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">اسم الفرع *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم الفرع *</label>
           <input
             type="text" required value={form.branchName}
             onChange={e => setForm(f => ({ ...f, branchName: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
             placeholder="مثال: فرع الرياض"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">المدينة</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">المدينة</label>
           <input
             type="text" value={form.city}
             onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
             placeholder="الرياض"
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">العنوان</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
           <input
             type="text" value={form.address}
             onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
             placeholder="عنوان الفرع بالتفصيل"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">هاتف الفرع</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">هاتف الفرع</label>
           <input
             type="text" value={form.phone}
             onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
             placeholder="05xxxxxxxx"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">اسم المدير</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم المدير</label>
           <input
             type="text" value={form.managerName}
             onChange={e => setForm(f => ({ ...f, managerName: e.target.value }))}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
+            className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
             placeholder="اسم مدير الفرع"
           />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">نمط البيانات</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">نمط البيانات</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setForm(f => ({ ...f, dataMode: 'SharedCatalog' }))}
               className={`p-4 rounded-xl border-2 text-right transition-all ${
                 form.dataMode === 'SharedCatalog'
-                  ? 'border-brand-500 bg-brand-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-950'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
               }`}
             >
-              <h4 className="font-semibold text-gray-900 mb-1">كتالوج مشترك</h4>
-              <p className="text-xs text-gray-500">يستخدم نفس قوائم المنتجات والأصناف من المتجر الأساسي ويسحب من نفس المخازن</p>
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">كتالوج مشترك</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400">يستخدم نفس قوائم المنتجات والأصناف من المتجر الأساسي ويسحب من نفس المخازن</p>
             </button>
             <button
               type="button"
               onClick={() => setForm(f => ({ ...f, dataMode: 'IndependentCatalog' }))}
               className={`p-4 rounded-xl border-2 text-right transition-all ${
                 form.dataMode === 'IndependentCatalog'
-                  ? 'border-brand-500 bg-brand-50'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-950'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
               }`}
             >
-              <h4 className="font-semibold text-gray-900 mb-1">كتالوج مستقل</h4>
-              <p className="text-xs text-gray-500">يمكنه إنشاء قوائم منتجات خاصة به مع إمكانية إضافة مخزن مستقل</p>
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">كتالوج مستقل</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400">يمكنه إنشاء قوائم منتجات خاصة به مع إمكانية إضافة مخزن مستقل</p>
             </button>
           </div>
         </div>
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">ملاحظات</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ملاحظات</label>
           <textarea
             value={form.notes}
             onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
@@ -592,7 +592,7 @@ function PaymentModal({ request, onClose }: { request: any; onClose: () => void 
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">رقم مرجع الدفع *</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">رقم مرجع الدفع *</label>
           <input
             type="text" value={paymentRef}
             onChange={e => setPaymentRef(e.target.value)}

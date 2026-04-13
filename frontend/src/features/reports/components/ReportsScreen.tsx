@@ -31,8 +31,8 @@ export function ReportsScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">التقارير</h1>
-          <p className="text-gray-500 text-sm mt-1">تحليل المبيعات والأرباح</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">التقارير</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">تحليل المبيعات والأرباح</p>
         </div>
       </div>
 
@@ -41,21 +41,21 @@ export function ReportsScreen() {
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <Calendar size={18} className="text-brand-600" />
-            <span className="text-sm font-medium text-gray-700">الفترة:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">الفترة:</span>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
+              className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
             />
             <span className="text-gray-400">إلى</span>
             <input
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
+              className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
             />
           </div>
           <button
@@ -74,7 +74,7 @@ export function ReportsScreen() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'sales'
               ? 'bg-brand-600 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           <BarChart3 size={16} />
@@ -85,7 +85,7 @@ export function ReportsScreen() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'profit'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           <TrendingUp size={16} />
@@ -147,7 +147,7 @@ function SalesReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string })
     return (
       <div className="card p-5 space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -172,27 +172,27 @@ function SalesReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string })
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="card p-5 bg-gradient-to-l from-brand-50 to-white">
-          <p className="text-sm text-gray-500">إجمالي المبيعات</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(totalSales)}</p>
+        <div className="card p-5 bg-gradient-to-l from-brand-50 to-white dark:from-brand-950 dark:to-gray-900">
+          <p className="text-sm text-gray-500 dark:text-gray-400">إجمالي المبيعات</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{formatCurrency(totalSales)}</p>
         </div>
-        <div className="card p-5 bg-gradient-to-l from-amber-50 to-white">
-          <p className="text-sm text-gray-500">إجمالي الفواتير</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{totalInvoices}</p>
+        <div className="card p-5 bg-gradient-to-l from-amber-50 to-white dark:from-amber-950 dark:to-gray-900">
+          <p className="text-sm text-gray-500 dark:text-gray-400">إجمالي الفواتير</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{totalInvoices}</p>
         </div>
       </div>
 
       {/* Table */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <BarChart3 size={20} className="text-brand-600" />
             التفاصيل اليومية
           </h3>
           <button
             onClick={handleExportCSV}
             disabled={!Array.isArray(salesData) || salesData.length === 0}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-sm font-medium transition-colors disabled:opacity-40"
           >
             <Download size={16} />
             تصدير CSV
@@ -208,11 +208,11 @@ function SalesReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string })
           <div className="overflow-x-auto">
             <table className="w-full text-right">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">التاريخ</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">عدد الفواتير</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الإجمالي</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 w-48">النسبة</th>
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">التاريخ</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">عدد الفواتير</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الإجمالي</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400 w-48">النسبة</th>
                 </tr>
               </thead>
               <tbody>
@@ -221,14 +221,14 @@ function SalesReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string })
                   const dayCount = day.invoiceCount ?? day.count ?? 0;
                   const percentage = totalSales > 0 ? (dayTotal / totalSales) * 100 : 0;
                   return (
-                    <tr key={day.date ?? i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                    <tr key={day.date ?? i} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {day.date ? formatDate(day.date) : `#${i + 1}`}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{dayCount}</td>
-                      <td className="py-3 px-4 text-sm font-semibold text-brand-700">{formatCurrency(dayTotal)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{dayCount}</td>
+                      <td className="py-3 px-4 text-sm font-semibold text-brand-700 dark:text-brand-300">{formatCurrency(dayTotal)}</td>
                       <td className="py-3 px-4">
-                        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full bg-gradient-to-l from-brand-400 to-brand-600 transition-all duration-500"
                             style={{ width: `${percentage}%` }}
@@ -240,10 +240,10 @@ function SalesReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string })
                 })}
               </tbody>
               <tfoot>
-                <tr className="bg-gray-50 font-bold">
+                <tr className="bg-gray-50 dark:bg-gray-800/50 font-bold">
                   <td className="py-3 px-4 text-sm">الإجمالي</td>
                   <td className="py-3 px-4 text-sm">{totalInvoices}</td>
-                  <td className="py-3 px-4 text-sm text-brand-700">{formatCurrency(totalSales)}</td>
+                  <td className="py-3 px-4 text-sm text-brand-700 dark:text-brand-300">{formatCurrency(totalSales)}</td>
                   <td />
                 </tr>
               </tfoot>
@@ -305,7 +305,7 @@ function ProfitReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string }
     return (
       <div className="card p-5 space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -332,20 +332,20 @@ function ProfitReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string }
     <div className="space-y-4">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="card p-5 bg-gradient-to-l from-brand-50 to-white">
-          <p className="text-sm text-gray-500">الإيرادات</p>
-          <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(totalRevenue)}</p>
+        <div className="card p-5 bg-gradient-to-l from-brand-50 to-white dark:from-brand-950 dark:to-gray-900">
+          <p className="text-sm text-gray-500 dark:text-gray-400">الإيرادات</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mt-1">{formatCurrency(totalRevenue)}</p>
         </div>
-        <div className="card p-5 bg-gradient-to-l from-red-50 to-white">
-          <p className="text-sm text-gray-500">التكلفة</p>
+        <div className="card p-5 bg-gradient-to-l from-red-50 to-white dark:from-red-950 dark:to-gray-900">
+          <p className="text-sm text-gray-500 dark:text-gray-400">التكلفة</p>
           <p className="text-xl font-bold text-red-600 mt-1">{formatCurrency(totalCost)}</p>
         </div>
-        <div className="card p-5 bg-gradient-to-l from-emerald-50 to-white">
-          <p className="text-sm text-gray-500">صافي الربح</p>
+        <div className="card p-5 bg-gradient-to-l from-emerald-50 to-white dark:from-emerald-950 dark:to-gray-900">
+          <p className="text-sm text-gray-500 dark:text-gray-400">صافي الربح</p>
           <p className="text-xl font-bold text-emerald-600 mt-1">{formatCurrency(totalProfit)}</p>
         </div>
-        <div className="card p-5 bg-gradient-to-l from-amber-50 to-white">
-          <p className="text-sm text-gray-500">هامش الربح</p>
+        <div className="card p-5 bg-gradient-to-l from-amber-50 to-white dark:from-amber-950 dark:to-gray-900">
+          <p className="text-sm text-gray-500 dark:text-gray-400">هامش الربح</p>
           <p className="text-xl font-bold text-amber-600 mt-1">{profitMargin}%</p>
         </div>
       </div>
@@ -353,14 +353,14 @@ function ProfitReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string }
       {/* Table */}
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <TrendingUp size={20} className="text-emerald-600" />
             الربح حسب المنتج
           </h3>
           <button
             onClick={handleExportCSV}
             disabled={!Array.isArray(profitData) || profitData.length === 0}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-sm font-medium transition-colors disabled:opacity-40"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 text-sm font-medium transition-colors disabled:opacity-40"
           >
             <Download size={16} />
             تصدير CSV
@@ -376,14 +376,14 @@ function ProfitReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string }
           <div className="overflow-x-auto">
             <table className="w-full text-right">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">#</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المنتج</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الكمية</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الإيراد</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">التكلفة</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الربح</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الهامش</th>
+                <tr className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">#</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المنتج</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الكمية</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الإيراد</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">التكلفة</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الربح</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الهامش</th>
                 </tr>
               </thead>
               <tbody>
@@ -395,13 +395,13 @@ function ProfitReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string }
                   const isPositive = profit >= 0;
 
                   return (
-                    <tr key={item.productId ?? item.id ?? i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <tr key={item.productId ?? item.id ?? i} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                       <td className="py-3 px-4 text-sm text-gray-400 font-bold">#{i + 1}</td>
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {item.productName ?? item.name ?? '—'}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{item.quantity ?? item.totalQty ?? 0}</td>
-                      <td className="py-3 px-4 text-sm font-semibold text-brand-700">{formatCurrency(revenue)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{item.quantity ?? item.totalQty ?? 0}</td>
+                      <td className="py-3 px-4 text-sm font-semibold text-brand-700 dark:text-brand-300">{formatCurrency(revenue)}</td>
                       <td className="py-3 px-4 text-sm text-red-600">{formatCurrency(cost)}</td>
                       <td className="py-3 px-4">
                         <span className={`text-sm font-bold ${isPositive ? 'text-emerald-600' : 'text-red-600'}`}>
@@ -418,9 +418,9 @@ function ProfitReport({ dateFrom, dateTo }: { dateFrom: string; dateTo: string }
                 })}
               </tbody>
               <tfoot>
-                <tr className="bg-gray-50 font-bold">
+                <tr className="bg-gray-50 dark:bg-gray-800/50 font-bold">
                   <td className="py-3 px-4 text-sm" colSpan={3}>الإجمالي</td>
-                  <td className="py-3 px-4 text-sm text-brand-700">{formatCurrency(totalRevenue)}</td>
+                  <td className="py-3 px-4 text-sm text-brand-700 dark:text-brand-300">{formatCurrency(totalRevenue)}</td>
                   <td className="py-3 px-4 text-sm text-red-600">{formatCurrency(totalCost)}</td>
                   <td className="py-3 px-4 text-sm text-emerald-600">{formatCurrency(totalProfit)}</td>
                   <td className="py-3 px-4 text-sm text-amber-600">{profitMargin}%</td>

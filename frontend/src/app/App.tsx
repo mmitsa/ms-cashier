@@ -212,7 +212,7 @@ function CashierLayout() {
   const dateStr = now.toLocaleDateString('ar-SA', { weekday: 'short', day: 'numeric', month: 'short' });
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden" dir="rtl"
+    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden transition-colors duration-200" dir="rtl"
       style={{ fontFamily: "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" }}>
 
       {/* ── Cashier Top Bar ── */}
@@ -311,14 +311,14 @@ function ConsoleLayout() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden" dir="rtl"
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden transition-colors duration-200" dir="rtl"
       style={{ fontFamily: "'IBM Plex Sans Arabic', 'Noto Sans Arabic', sans-serif" }}>
       <Sidebar />
       <main className="flex-1 flex flex-col overflow-hidden min-w-0">
         <OfflineStatusBar />
         <TrialBanner />
         <Header />
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
           <ActiveComponent />
         </div>
       </main>

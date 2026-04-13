@@ -70,8 +70,8 @@ export function FinanceScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">المالية</h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة الحسابات والمعاملات المالية</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">المالية</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة الحسابات والمعاملات المالية</p>
         </div>
         <button onClick={() => setShowAddTx(true)} className="btn-primary shrink-0">
           <Plus size={18} />
@@ -80,14 +80,14 @@ export function FinanceScreen() {
       </div>
 
       {/* Total Balance */}
-      <div className="card p-5 bg-gradient-to-l from-brand-50 to-white">
+      <div className="card p-5 bg-gradient-to-l from-brand-50 to-white dark:from-brand-950 dark:to-gray-900">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center">
             <Wallet size={24} className="text-white" />
           </div>
           <div>
-            <p className="text-sm text-gray-500">الرصيد الإجمالي</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-sm text-gray-500 dark:text-gray-400">الرصيد الإجمالي</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {accountsLoading ? '...' : formatCurrency(totalBalance)}
             </p>
           </div>
@@ -98,7 +98,7 @@ export function FinanceScreen() {
       {accountsLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />
+            <div key={i} className="h-28 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
           ))}
         </div>
       ) : accountsError ? (
@@ -135,7 +135,7 @@ export function FinanceScreen() {
       {/* Transactions */}
       <div className="card p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h3 className="font-bold text-gray-900 text-lg">المعاملات المالية</h3>
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg">المعاملات المالية</h3>
 
           <div className="flex flex-wrap gap-2">
             {(['all', 'income', 'expense'] as TxFilter[]).map((f) => (
@@ -149,7 +149,7 @@ export function FinanceScreen() {
                       : f === 'expense'
                         ? 'bg-red-500 text-white'
                         : 'bg-brand-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {f === 'all' ? 'الكل' : f === 'income' ? 'إيرادات' : 'مصروفات'}
@@ -165,14 +165,14 @@ export function FinanceScreen() {
             type="date"
             value={dateFrom}
             onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-            className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-brand-500 outline-none"
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:border-brand-500 outline-none"
           />
           <span className="text-gray-400 text-sm">إلى</span>
           <input
             type="date"
             value={dateTo}
             onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-            className="px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-brand-500 outline-none"
+            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 text-sm focus:border-brand-500 outline-none"
           />
           {(dateFrom || dateTo || filterAccountId) && (
             <button
@@ -188,7 +188,7 @@ export function FinanceScreen() {
         {txLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : txError ? (
@@ -222,8 +222,8 @@ export function FinanceScreen() {
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{tx.description || tx.category || '—'}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{tx.description || tx.category || '—'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {tx.accountName} • {formatDateTime(tx.createdAt)} • {tx.createdByName}
                         </p>
                       </div>
@@ -243,25 +243,25 @@ export function FinanceScreen() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   عرض {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, totalCount)} من {totalCount}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
                   >
                     <ChevronRight size={18} />
                   </button>
-                  <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[80px] text-center">
                     {page} / {totalPages}
                   </span>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -314,13 +314,13 @@ function AddTransactionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">معاملة مالية جديدة</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">معاملة مالية جديدة</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -334,7 +334,7 @@ function AddTransactionModal({
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 form.transactionType === TransactionType.Income
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               <ArrowDownCircle size={16} className="inline ml-1" />
@@ -346,7 +346,7 @@ function AddTransactionModal({
               className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 form.transactionType === TransactionType.Expense
                   ? 'bg-red-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
               <ArrowUpCircle size={16} className="inline ml-1" />
@@ -355,13 +355,13 @@ function AddTransactionModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               الحساب <span className="text-red-500">*</span>
             </label>
             <select
               value={form.accountId}
               onChange={(e) => updateField('accountId', Number(e.target.value))}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
               required
             >
               <option value={0}>اختر الحساب</option>
@@ -375,7 +375,7 @@ function AddTransactionModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 المبلغ <span className="text-red-500">*</span>
               </label>
               <input
@@ -384,25 +384,25 @@ function AddTransactionModal({
                 step={0.01}
                 value={form.amount || ''}
                 onChange={(e) => updateField('amount', Number(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
                 placeholder="0.00"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">التصنيف</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">التصنيف</label>
               <input
                 type="text"
                 value={form.category}
                 onChange={(e) => updateField('category', e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
                 placeholder="مثال: إيجار، رواتب"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الوصف</label>
             <textarea
               value={form.description}
               onChange={(e) => updateField('description', e.target.value)}
@@ -412,7 +412,7 @@ function AddTransactionModal({
             />
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <button
               type="submit"
               disabled={recordTx.isPending || form.amount <= 0 || form.accountId <= 0}

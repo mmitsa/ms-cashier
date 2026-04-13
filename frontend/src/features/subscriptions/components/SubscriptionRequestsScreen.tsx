@@ -87,11 +87,11 @@ export function SubscriptionRequestsScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">طلبات الاشتراك</h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة ومراجعة طلبات الاشتراك الجديدة</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">طلبات الاشتراك</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة ومراجعة طلبات الاشتراك الجديدة</p>
         </div>
         {pendingCount > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 flex items-center gap-2 text-amber-800 text-sm font-medium">
+          <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2.5 flex items-center gap-2 text-amber-800 dark:text-amber-200 text-sm font-medium">
             <Clock size={16} />
             {pendingCount} طلب بانتظار المراجعة
           </div>
@@ -105,7 +105,7 @@ export function SubscriptionRequestsScreen() {
           <select
             value={statusFilter ?? ''}
             onChange={(e) => { setStatusFilter(e.target.value ? Number(e.target.value) : undefined); setPage(1); }}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm bg-white min-w-[160px]"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-brand-500 outline-none text-sm bg-white dark:bg-gray-900 dark:text-gray-100 min-w-[160px]"
           >
             <option value="">كل الطلبات</option>
             <option value={1}>في الانتظار</option>
@@ -121,7 +121,7 @@ export function SubscriptionRequestsScreen() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : isError ? (
@@ -133,23 +133,23 @@ export function SubscriptionRequestsScreen() {
         ) : requests.length === 0 ? (
           <div className="py-12 text-center">
             <FileText size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 font-medium">لا توجد طلبات اشتراك</p>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">لا توجد طلبات اشتراك</p>
           </div>
         ) : (
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-right">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">#</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">المتجر</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">المالك</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الهاتف</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">المدينة</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الباقة</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الحالة</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">التاريخ</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الإجراءات</th>
+                  <tr className="border-b border-gray-100 dark:border-gray-800">
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">#</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المتجر</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المالك</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الهاتف</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المدينة</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الباقة</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الحالة</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">التاريخ</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -157,7 +157,7 @@ export function SubscriptionRequestsScreen() {
                     const status = STATUS_MAP[req.status] ?? STATUS_FALLBACK;
                     const StatusIcon = status.icon;
                     return (
-                      <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                      <tr key={req.id} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                         <td className="py-3 px-4 text-sm text-gray-400">#{req.id}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
@@ -165,15 +165,15 @@ export function SubscriptionRequestsScreen() {
                               {req.storeName.charAt(0)}
                             </div>
                             <div>
-                              <span className="font-medium text-gray-900 text-sm block">{req.storeName}</span>
+                              <span className="font-medium text-gray-900 dark:text-gray-100 text-sm block">{req.storeName}</span>
                               <span className="text-xs text-gray-400">{req.businessType}</span>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-sm text-gray-700">{req.ownerName}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500" dir="ltr">{req.phone}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{req.city}</td>
-                        <td className="py-3 px-4 text-sm text-gray-500">{req.planName}</td>
+                        <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{req.ownerName}</td>
+                        <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400" dir="ltr">{req.phone}</td>
+                        <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{req.city}</td>
+                        <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400">{req.planName}</td>
                         <td className="py-3 px-4">
                           <Badge variant={status.variant} className="flex items-center gap-1 w-fit">
                             <StatusIcon size={12} />
@@ -210,13 +210,13 @@ export function SubscriptionRequestsScreen() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-500">صفحة {page} من {totalPages}</p>
+              <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-sm text-gray-500 dark:text-gray-400">صفحة {page} من {totalPages}</p>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition">
+                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition">
                     <ChevronRight size={18} />
                   </button>
-                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition">
+                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition">
                     <ChevronLeft size={18} />
                   </button>
                 </div>
@@ -249,10 +249,10 @@ function DetailDrawer({ request: r, onClose, onReview }: { request: Subscription
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-16" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto" dir="rtl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto" dir="rtl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 rounded-t-2xl z-10">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">تفاصيل الطلب #{r.id}</h2>
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">تفاصيل الطلب #{r.id}</h2>
             <Badge variant={status.variant} className="mt-1">{status.label}</Badge>
           </div>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
@@ -269,13 +269,13 @@ function DetailDrawer({ request: r, onClose, onReview }: { request: Subscription
             <Info icon={User} label="اسم المستخدم" value={r.adminUsername} />
           </div>
           {r.notes && (
-            <div className="bg-gray-50 rounded-xl p-3">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
               <p className="text-xs text-gray-400 mb-1"><MessageSquare size={12} className="inline ml-1" />ملاحظات العميل</p>
-              <p className="text-gray-700">{r.notes}</p>
+              <p className="text-gray-700 dark:text-gray-300">{r.notes}</p>
             </div>
           )}
           {r.adminNotes && (
-            <div className="bg-blue-50 rounded-xl p-3">
+            <div className="bg-blue-50 dark:bg-blue-950 rounded-xl p-3">
               <p className="text-xs text-blue-400 mb-1">ملاحظات المدير</p>
               <p className="text-blue-700">{r.adminNotes}</p>
             </div>
@@ -298,7 +298,7 @@ function Info({ icon: Icon, label, value }: { icon: typeof Store; label: string;
   return (
     <div>
       <p className="text-xs text-gray-400 flex items-center gap-1 mb-0.5"><Icon size={12} />{label}</p>
-      <p className="font-medium text-gray-900">{value}</p>
+      <p className="font-medium text-gray-900 dark:text-gray-100">{value}</p>
     </div>
   );
 }
@@ -349,18 +349,18 @@ function ReviewModal({ request: r, onClose }: { request: SubscriptionRequestDto;
   if (tempPassword) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" dir="rtl" onClick={e => e.stopPropagation()}>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md" dir="rtl" onClick={e => e.stopPropagation()}>
           <div className="p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">تم تفعيل المتجر بنجاح!</h3>
-            <p className="text-gray-500 text-sm mb-6">أرسل بيانات الدخول لصاحب المتجر:</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">تم تفعيل المتجر بنجاح!</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">أرسل بيانات الدخول لصاحب المتجر:</p>
 
-            <div className="bg-gray-50 rounded-xl p-4 text-right space-y-2 mb-6">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-right space-y-2 mb-6">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">المتجر:</span>
-                <span className="font-bold text-gray-900">{r.storeName}</span>
+                <span className="text-gray-500 dark:text-gray-400">المتجر:</span>
+                <span className="font-bold text-gray-900 dark:text-gray-100">{r.storeName}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">اسم المستخدم:</span>
@@ -381,7 +381,7 @@ function ReviewModal({ request: r, onClose }: { request: SubscriptionRequestDto;
                 <Copy size={16} />
                 نسخ بيانات الدخول
               </button>
-              <button onClick={onClose} className="px-6 py-3 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition">
+              <button onClick={onClose} className="px-6 py-3 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
                 إغلاق
               </button>
             </div>
@@ -393,26 +393,26 @@ function ReviewModal({ request: r, onClose }: { request: SubscriptionRequestDto;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" dir="rtl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">مراجعة طلب #{r.id}</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md" dir="rtl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">مراجعة طلب #{r.id}</h2>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-5">
-          <div className="bg-gray-50 rounded-xl p-4 text-sm space-y-2">
-            <div className="flex justify-between"><span className="text-gray-500">المتجر:</span><span className="font-bold">{r.storeName}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">المالك:</span><span className="font-bold">{r.ownerName}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">الباقة:</span><span className="font-bold">{r.planName}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">اسم المستخدم:</span><span className="font-mono font-bold" dir="ltr">{r.adminUsername}</span></div>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-sm space-y-2">
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">المتجر:</span><span className="font-bold dark:text-gray-100">{r.storeName}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">المالك:</span><span className="font-bold dark:text-gray-100">{r.ownerName}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">الباقة:</span><span className="font-bold dark:text-gray-100">{r.planName}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">اسم المستخدم:</span><span className="font-mono font-bold dark:text-gray-100" dir="ltr">{r.adminUsername}</span></div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">ملاحظات المدير (اختياري)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">ملاحظات المدير (اختياري)</label>
             <textarea
               value={adminNotes}
               onChange={e => setAdminNotes(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 outline-none text-sm resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-100 focus:border-indigo-500 outline-none text-sm resize-none"
               placeholder="أي ملاحظات..."
             />
           </div>

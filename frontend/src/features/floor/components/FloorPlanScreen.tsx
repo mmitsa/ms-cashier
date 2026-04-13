@@ -83,18 +83,18 @@ export default function FloorPlanScreen() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 rounded-xl">
-              <MapPin size={24} className="text-indigo-600" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-xl">
+              <MapPin size={24} className="text-indigo-600 dark:text-indigo-400" />
             </div>
             مناطق التشغيل
           </h1>
-          <p className="text-sm text-gray-500 mt-1">إدارة أقسام ومناطق المطعم أو الكافيه</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">إدارة أقسام ومناطق المطعم أو الكافيه</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => { refetchOverview(); refetchSections(); }}
-            className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition"
+            className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition"
           >
             <RefreshCw size={18} />
           </button>
@@ -108,7 +108,7 @@ export default function FloorPlanScreen() {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-white rounded-xl p-1 shadow-sm border gap-1">
+      <div className="flex bg-white dark:bg-gray-900 rounded-xl p-1 shadow-sm border dark:border-gray-700 gap-1">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -116,7 +116,7 @@ export default function FloorPlanScreen() {
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
               activeTab === tab.id
                 ? 'bg-indigo-600 text-white shadow'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}
           >
             <tab.Icon size={16} />
@@ -182,7 +182,7 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="h-28 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-28 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -214,14 +214,14 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
 
       {/* Rates */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-5 shadow-sm border">
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm border dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-gray-600">نسبة إشغال الطاولات</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">نسبة إشغال الطاولات</span>
             <span className={`text-2xl font-bold ${occupancyRate > 80 ? 'text-red-600' : occupancyRate > 50 ? 'text-amber-600' : 'text-green-600'}`}>
               {occupancyRate}%
             </span>
           </div>
-          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${occupancyRate > 80 ? 'bg-red-500' : occupancyRate > 50 ? 'bg-amber-500' : 'bg-green-500'}`}
               style={{ width: `${occupancyRate}%` }}
@@ -229,14 +229,14 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border">
+        <div className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm border dark:border-gray-700">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-gray-600">نسبة إشغال المقاعد</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">نسبة إشغال المقاعد</span>
             <span className={`text-2xl font-bold ${capacityRate > 80 ? 'text-red-600' : capacityRate > 50 ? 'text-amber-600' : 'text-green-600'}`}>
               {capacityRate}%
             </span>
           </div>
-          <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${capacityRate > 80 ? 'bg-red-500' : capacityRate > 50 ? 'bg-amber-500' : 'bg-green-500'}`}
               style={{ width: `${capacityRate}%` }}
@@ -251,7 +251,7 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
           const SectionIcon = sectionIcons[s.icon] || MapPin;
           const sOccRate = s.tableCount > 0 ? Math.round((s.occupiedCount / s.tableCount) * 100) : 0;
           return (
-            <div key={s.id} className="bg-white rounded-xl p-5 shadow-sm border hover:shadow-md transition-all group">
+            <div key={s.id} className="bg-white dark:bg-gray-900 rounded-xl p-5 shadow-sm border dark:border-gray-700 hover:shadow-md transition-all group">
               <div className="flex items-start gap-3 mb-4">
                 <div
                   className="p-3 rounded-xl"
@@ -260,8 +260,8 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
                   <SectionIcon size={24} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 truncate">{s.name}</h3>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mt-1 flex-wrap">
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 truncate">{s.name}</h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap">
                     {s.isOutdoor && <span className="flex items-center gap-1"><Sun size={12} /> خارجي</span>}
                     {s.isVIP && <span className="flex items-center gap-1 text-amber-600"><Crown size={12} /> VIP</span>}
                     {s.hasAC && <span className="flex items-center gap-1"><Wind size={12} /> مكيف</span>}
@@ -274,27 +274,27 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center mb-3">
-                <div className="bg-gray-50 rounded-lg p-2">
-                  <div className="text-lg font-bold text-gray-900">{s.tableCount}</div>
-                  <div className="text-[10px] text-gray-500">طاولات</div>
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                  <div className="text-lg font-bold text-gray-900 dark:text-gray-100">{s.tableCount}</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400">طاولات</div>
                 </div>
-                <div className="bg-red-50 rounded-lg p-2">
+                <div className="bg-red-50 dark:bg-red-950 rounded-lg p-2">
                   <div className="text-lg font-bold text-red-600">{s.occupiedCount}</div>
-                  <div className="text-[10px] text-gray-500">مشغولة</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400">مشغولة</div>
                 </div>
-                <div className="bg-green-50 rounded-lg p-2">
+                <div className="bg-green-50 dark:bg-green-950 rounded-lg p-2">
                   <div className="text-lg font-bold text-green-600">{s.availableCount}</div>
-                  <div className="text-[10px] text-gray-500">متاحة</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-400">متاحة</div>
                 </div>
               </div>
 
-              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{ width: `${sOccRate}%`, backgroundColor: s.color }}
                 />
               </div>
-              <div className="text-[10px] text-gray-500 mt-1 text-center">
+              <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-center">
                 إشغال {sOccRate}% | سعة {s.totalCapacity} مقعد
               </div>
 
@@ -311,8 +311,8 @@ function OverviewTab({ overviewData, sections, loading }: { overviewData: any; s
       {sections.length === 0 && (
         <div className="text-center py-16">
           <MapPin size={56} className="text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد مناطق تشغيل</h3>
-          <p className="text-sm text-gray-500">أضف مناطق مثل: صالة داخلية، تراس، VIP، كافيه خارجي</p>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد مناطق تشغيل</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">أضف مناطق مثل: صالة داخلية، تراس، VIP، كافيه خارجي</p>
         </div>
       )}
     </div>
@@ -344,7 +344,7 @@ function SectionsTab({ sections, loading, expandedSection, setExpandedSection, o
     return (
       <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -357,7 +357,7 @@ function SectionsTab({ sections, loading, expandedSection, setExpandedSection, o
         const isExpanded = expandedSection === s.id;
 
         return (
-          <div key={s.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${!s.isActive ? 'opacity-60' : ''}`}>
+          <div key={s.id} className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden transition-all ${!s.isActive ? 'opacity-60' : ''}`}>
             <div className="flex items-center gap-3 p-4">
               <div className="flex flex-col gap-1">
                 <button
@@ -383,14 +383,14 @@ function SectionsTab({ sections, loading, expandedSection, setExpandedSection, o
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-gray-900">{s.name}</h3>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">{s.name}</h3>
                   <div className="flex items-center gap-1 flex-wrap">
                     {s.isVIP && <span className="text-[10px] px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded-full">VIP</span>}
                     {s.isOutdoor && <span className="text-[10px] px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded-full">خارجي</span>}
                     {s.isSmokingAllowed && <span className="text-[10px] px-1.5 py-0.5 bg-red-100 text-red-700 rounded-full">تدخين</span>}
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {s.tableCount} طاولة • {s.totalCapacity} مقعد •{' '}
                   <span className={s.occupiedCount > 0 ? 'text-red-600 font-medium' : 'text-green-600'}>
                     {s.occupiedCount} مشغولة
@@ -416,9 +416,9 @@ function SectionsTab({ sections, loading, expandedSection, setExpandedSection, o
 
             {/* Expanded Details */}
             {isExpanded && (
-              <div className="border-t px-4 py-4 bg-gray-50 space-y-3">
-                {s.description && <p className="text-sm text-gray-600">{s.description}</p>}
-                <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+              <div className="border-t dark:border-gray-700 px-4 py-4 bg-gray-50 dark:bg-gray-800 space-y-3">
+                {s.description && <p className="text-sm text-gray-600 dark:text-gray-400">{s.description}</p>}
+                <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400">
                   <span className="flex items-center gap-1"><Wind size={12} /> {s.hasAC ? 'مكيف' : 'بدون تكييف'}</span>
                   <span className="flex items-center gap-1"><Cigarette size={12} /> {s.isSmokingAllowed ? 'يسمح بالتدخين' : 'ممنوع التدخين'}</span>
                   <span className="flex items-center gap-1"><Sun size={12} /> {s.isOutdoor ? 'خارجي' : 'داخلي'}</span>
@@ -439,10 +439,10 @@ function SectionsTab({ sections, loading, expandedSection, setExpandedSection, o
       })}
 
       {sections.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-xl shadow-sm border">
+        <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
           <LayoutGrid size={56} className="text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد مناطق</h3>
-          <p className="text-sm text-gray-500">أنشئ مناطق التشغيل لتنظيم المطعم</p>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد مناطق</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">أنشئ مناطق التشغيل لتنظيم المطعم</p>
         </div>
       )}
     </div>
@@ -464,8 +464,8 @@ function AssignTab({ sections, unassignedTables, assigningSectionId, setAssignin
   return (
     <div className="space-y-6">
       {/* Unassigned Tables */}
-      <div className="bg-white rounded-xl shadow-sm border p-5">
-        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700 p-5">
+        <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
           <AlertCircle size={18} className="text-amber-500" />
           طاولات غير مخصصة ({unassignedTables.length})
         </h3>
@@ -498,15 +498,15 @@ function AssignTab({ sections, unassignedTables, assigningSectionId, setAssignin
         const isAssigning = assigningSectionId === s.id;
 
         return (
-          <div key={s.id} className={`bg-white rounded-xl shadow-sm border p-5 transition-all ${isAssigning ? 'ring-2 ring-indigo-400' : ''}`}>
+          <div key={s.id} className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700 p-5 transition-all ${isAssigning ? 'ring-2 ring-indigo-400' : ''}`}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl" style={{ backgroundColor: `${s.color}20`, color: s.color }}>
                   <SectionIcon size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">{s.name}</h3>
-                  <span className="text-xs text-gray-500">{s.tableCount} طاولة</span>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">{s.name}</h3>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{s.tableCount} طاولة</span>
                 </div>
               </div>
               <button
@@ -732,7 +732,7 @@ function SectionFormModal({ section, onClose, onSave, saving }: {
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition"
+            className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition"
           >
             إلغاء
           </button>
@@ -757,14 +757,14 @@ function StatCard({ icon: Icon, label, value, color }: {
     amber: 'bg-amber-50 text-amber-600',
   };
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border">
+    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border dark:border-gray-700">
       <div className="flex items-center gap-3">
         <div className={`p-2.5 rounded-xl ${colorClasses[color]}`}>
           <Icon size={20} />
         </div>
         <div>
-          <div className="text-2xl font-bold text-gray-900">{value}</div>
-          <div className="text-xs text-gray-500">{label}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
         </div>
       </div>
     </div>

@@ -73,11 +73,11 @@ export function AttendanceScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <Fingerprint size={28} className="text-brand-600" />
             الحضور والانصراف
           </h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة الحضور وأجهزة البصمة والمزامنة</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة الحضور وأجهزة البصمة والمزامنة</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => syncAll.mutate()} disabled={syncAll.isPending}
@@ -106,8 +106,8 @@ export function AttendanceScreen() {
                 <s.icon size={20} className="text-white" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">{s.label}</p>
-                <p className="text-xl font-bold text-gray-900">{s.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{s.value}</p>
               </div>
             </div>
           </div>
@@ -116,13 +116,13 @@ export function AttendanceScreen() {
 
       {/* Month Navigation */}
       <div className="flex items-center justify-between card p-3">
-        <button onClick={() => goMonth(-1)} className="p-2 rounded-lg hover:bg-gray-100"><ChevronRight size={20} /></button>
-        <span className="font-bold text-gray-900">{MONTHS[month - 1]} {year}</span>
-        <button onClick={() => goMonth(1)} className="p-2 rounded-lg hover:bg-gray-100"><ChevronLeft size={20} /></button>
+        <button onClick={() => goMonth(-1)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><ChevronRight size={20} /></button>
+        <span className="font-bold text-gray-900 dark:text-gray-100">{MONTHS[month - 1]} {year}</span>
+        <button onClick={() => goMonth(1)} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><ChevronLeft size={20} /></button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
         {[
           { id: 'daily' as Tab, label: 'السجل اليومي', icon: CalendarDays },
           { id: 'monthly' as Tab, label: 'ملخص الشهر', icon: Clock },
@@ -130,7 +130,7 @@ export function AttendanceScreen() {
         ].map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              tab === t.id ? 'bg-white text-brand-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              tab === t.id ? 'bg-white dark:bg-gray-900 text-brand-700 dark:text-brand-300 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
             }`}>
             <t.icon size={16} />
             {t.label}
@@ -168,42 +168,42 @@ function DailyTab({ data, isLoading }: { data: AttendanceDailySummaryDto[]; isLo
       <div className="overflow-x-auto">
         <table className="w-full text-right">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">الموظف</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">التاريخ</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">الحضور</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">الانصراف</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">الساعات</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">الحالة</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">المصدر</th>
+            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">الموظف</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">التاريخ</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">الحضور</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">الانصراف</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">الساعات</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">الحالة</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">المصدر</th>
             </tr>
           </thead>
           <tbody>
             {data.map((row, i) => {
               const st = STATUS_LABELS[row.status] ?? STATUS_FALLBACK;
               return (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                <tr key={i} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-xs shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-900 flex items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-xs shrink-0">
                         {row.employeeName.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900 text-sm">{row.employeeName}</p>
+                        <p className="font-medium text-gray-900 dark:text-gray-100 text-sm">{row.employeeName}</p>
                         {row.department && <p className="text-xs text-gray-400">{row.department}</p>}
                       </div>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{row.date}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700 font-mono">{row.firstCheckIn ?? '—'}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700 font-mono">{row.lastCheckOut ?? '—'}</td>
-                  <td className="py-3 px-4 text-sm font-bold text-gray-900">
+                  <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{row.date}</td>
+                  <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 font-mono">{row.firstCheckIn ?? '—'}</td>
+                  <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 font-mono">{row.lastCheckOut ?? '—'}</td>
+                  <td className="py-3 px-4 text-sm font-bold text-gray-900 dark:text-gray-100">
                     {row.totalHours != null ? `${row.totalHours.toFixed(1)} س` : '—'}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`px-2 py-1 rounded-lg text-xs font-bold ${st.color}`}>{st.label}</span>
                   </td>
-                  <td className="py-3 px-4 text-xs text-gray-500">
+                  <td className="py-3 px-4 text-xs text-gray-500 dark:text-gray-400">
                     {row.punches && row.punches.length > 0 && row.punches[0] ? SOURCE_LABELS[row.punches[0].source] ?? 'نظام' : '—'}
                   </td>
                 </tr>
@@ -223,42 +223,42 @@ function MonthlyTab({ data, isLoading, month, year }: { data: AttendanceMonthSum
 
   return (
     <div className="card overflow-hidden">
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-        <h3 className="font-bold text-gray-900">ملخص حضور الشهر — {MONTHS[month - 1]} {year}</h3>
+      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+        <h3 className="font-bold text-gray-900 dark:text-gray-100">ملخص حضور الشهر — {MONTHS[month - 1]} {year}</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-right">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">الموظف</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">القسم</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">أيام العمل</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">حضور</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">غياب</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">تأخير</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">إجمالي الساعات</th>
-              <th className="py-3 px-4 text-xs font-semibold text-gray-500">نسبة الحضور</th>
+            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">الموظف</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">القسم</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">أيام العمل</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">حضور</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">غياب</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">تأخير</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">إجمالي الساعات</th>
+              <th className="py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400">نسبة الحضور</th>
             </tr>
           </thead>
           <tbody>
             {data.map((row) => {
               const pct = row.workingDays > 0 ? ((row.presentDays / row.workingDays) * 100) : 0;
               return (
-                <tr key={row.employeeId} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <td className="py-3 px-4 font-medium text-gray-900 text-sm">{row.employeeName}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{row.department ?? '—'}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{row.workingDays}</td>
+                <tr key={row.employeeId} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                  <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100 text-sm">{row.employeeName}</td>
+                  <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{row.department ?? '—'}</td>
+                  <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{row.workingDays}</td>
                   <td className="py-3 px-4 text-sm font-bold text-emerald-600">{row.presentDays}</td>
                   <td className="py-3 px-4 text-sm font-bold text-red-600">{row.absentDays}</td>
                   <td className="py-3 px-4 text-sm font-bold text-amber-600">{row.lateDays}</td>
-                  <td className="py-3 px-4 text-sm text-gray-700">{row.totalHours.toFixed(1)} س</td>
+                  <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{row.totalHours.toFixed(1)} س</td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${pct >= 90 ? 'bg-emerald-500' : pct >= 70 ? 'bg-amber-500' : 'bg-red-500'}`}
                           style={{ width: `${Math.min(pct, 100)}%` }} />
                       </div>
-                      <span className="text-xs font-bold text-gray-700">{pct.toFixed(0)}%</span>
+                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{pct.toFixed(0)}%</span>
                     </div>
                   </td>
                 </tr>
@@ -285,7 +285,7 @@ function DevicesTab({ devices, isLoading, onAdd, onEdit }: {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="font-bold text-gray-900">أجهزة البصمة المتصلة</h3>
+        <h3 className="font-bold text-gray-900 dark:text-gray-100">أجهزة البصمة المتصلة</h3>
         <button onClick={onAdd} className="btn-primary text-sm flex items-center gap-2">
           <Plus size={16} />
           إضافة جهاز
@@ -303,13 +303,13 @@ function DevicesTab({ devices, isLoading, onAdd, onEdit }: {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-                      device.isActive ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-400'
+                      device.isActive ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-600' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'
                     }`}>
                       <Fingerprint size={22} />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900">{device.name}</h4>
-                      <p className="text-xs text-gray-500">{device.model ?? 'جهاز بصمة'}</p>
+                      <h4 className="font-bold text-gray-900 dark:text-gray-100">{device.name}</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{device.model ?? 'جهاز بصمة'}</p>
                     </div>
                   </div>
                   <Badge variant={device.isActive ? 'success' : 'danger'}>
@@ -318,39 +318,39 @@ function DevicesTab({ devices, isLoading, onAdd, onEdit }: {
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>IP</span>
-                    <span className="font-mono text-gray-900">{device.ipAddress}:{device.port}</span>
+                    <span className="font-mono text-gray-900 dark:text-gray-100">{device.ipAddress}:{device.port}</span>
                   </div>
                   {device.location && (
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
                       <span>الموقع</span>
-                      <span className="text-gray-900">{device.location}</span>
+                      <span className="text-gray-900 dark:text-gray-100">{device.location}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400">
                     <span>حالة المزامنة</span>
                     <span className={`font-bold ${syncSt.color}`}>{syncSt.label}</span>
                   </div>
                   {device.lastSyncAt && (
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
                       <span>آخر مزامنة</span>
-                      <span className="text-gray-900 text-xs">{new Date(device.lastSyncAt).toLocaleString('ar')}</span>
+                      <span className="text-gray-900 dark:text-gray-100 text-xs">{new Date(device.lastSyncAt).toLocaleString('ar')}</span>
                     </div>
                   )}
                   {device.lastSyncRecords != null && (
-                    <div className="flex justify-between text-gray-600">
+                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
                       <span>سجلات آخر مزامنة</span>
-                      <span className="font-bold text-gray-900">{device.lastSyncRecords}</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100">{device.lastSyncRecords}</span>
                     </div>
                   )}
                 </div>
 
                 {device.lastSyncError && (
-                  <div className="bg-red-50 rounded-lg p-2 text-xs text-red-600">{device.lastSyncError}</div>
+                  <div className="bg-red-50 dark:bg-red-950 rounded-lg p-2 text-xs text-red-600">{device.lastSyncError}</div>
                 )}
 
-                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                   <button onClick={() => testDevice.mutate(device.id)}
                     disabled={testDevice.isPending}
                     className="flex-1 btn-secondary text-xs flex items-center justify-center gap-1">
@@ -364,7 +364,7 @@ function DevicesTab({ devices, isLoading, onAdd, onEdit }: {
                     مزامنة
                   </button>
                   <button onClick={() => onEdit(device)}
-                    className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
+                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
                     <Settings2 size={14} />
                   </button>
                   <button onClick={() => { if (confirm('حذف الجهاز؟')) deleteDevice.mutate(device.id); }}
@@ -515,10 +515,10 @@ function DeviceModal({ device, onClose }: { device: AttendanceDeviceDto | null; 
 function Modal({ onClose, title, children }: { onClose: () => void; title: string; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg" dir="rtl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg" dir="rtl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><X size={20} /></button>
         </div>
         <div className="p-5">{children}</div>
       </div>
@@ -530,7 +530,7 @@ function LoadingSkeleton() {
   return (
     <div className="card p-5 space-y-3">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+        <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
       ))}
     </div>
   );
@@ -540,7 +540,7 @@ function EmptyState({ message }: { message: string }) {
   return (
     <div className="card py-12 text-center">
       <Fingerprint size={48} className="mx-auto text-gray-300 mb-4" />
-      <p className="text-gray-500 font-medium">{message}</p>
+      <p className="text-gray-500 dark:text-gray-400 font-medium">{message}</p>
     </div>
   );
 }

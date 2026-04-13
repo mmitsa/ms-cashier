@@ -150,8 +150,8 @@ export function TenantsScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة المتاجر</h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة جميع المتاجر والاشتراكات</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">إدارة المتاجر</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة جميع المتاجر والاشتراكات</p>
         </div>
         <button onClick={() => setShowCreateModal(true)} className="btn-primary shrink-0">
           <Plus size={18} />
@@ -161,40 +161,40 @@ export function TenantsScreen() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="card p-5 bg-gradient-to-l from-brand-50 to-white">
+        <div className="card p-5 bg-gradient-to-l from-brand-50 dark:from-brand-950 to-white dark:to-gray-900">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center">
               <Store size={20} className="text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">إجمالي المتاجر</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm text-gray-500 dark:text-gray-400">إجمالي المتاجر</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {isLoading ? '...' : formatNumber(totalCount)}
               </p>
             </div>
           </div>
         </div>
-        <div className="card p-5 bg-gradient-to-l from-emerald-50 to-white">
+        <div className="card p-5 bg-gradient-to-l from-emerald-50 dark:from-emerald-950 to-white dark:to-gray-900">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center">
               <ShieldCheck size={20} className="text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">نشط</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm text-gray-500 dark:text-gray-400">نشط</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {isLoading ? '...' : formatNumber(activeCount)}
               </p>
             </div>
           </div>
         </div>
-        <div className="card p-5 bg-gradient-to-l from-red-50 to-white">
+        <div className="card p-5 bg-gradient-to-l from-red-50 dark:from-red-950 to-white dark:to-gray-900">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-red-500 flex items-center justify-center">
               <ShieldOff size={20} className="text-white" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">موقوف</p>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-sm text-gray-500 dark:text-gray-400">موقوف</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {isLoading ? '...' : formatNumber(suspendedCount)}
               </p>
             </div>
@@ -212,13 +212,13 @@ export function TenantsScreen() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="بحث بالاسم، المالك، المدينة..."
-              className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
+              className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
             />
           </div>
           <select
             value={statusFilter ?? ''}
             onChange={(e) => setStatusFilter(e.target.value === '' ? null : Number(e.target.value))}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm bg-white min-w-[140px]"
+            className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-brand-500 outline-none text-sm bg-white dark:bg-gray-900 dark:text-gray-100 min-w-[140px]"
           >
             <option value="">كل الحالات</option>
             <option value={0}>نشط</option>
@@ -233,7 +233,7 @@ export function TenantsScreen() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : isError ? (
@@ -245,42 +245,42 @@ export function TenantsScreen() {
         ) : filtered.length === 0 ? (
           <div className="py-12 text-center">
             <Store size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 font-medium">لا توجد متاجر</p>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">لا توجد متاجر</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-right">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المتجر</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المالك</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المدينة</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الباقة</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الحالة</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المستخدمون</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المنتجات</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">المبيعات</th>
-                  <th className="py-3 px-4 text-sm font-semibold text-gray-500">الإجراءات</th>
+                <tr className="border-b border-gray-100 dark:border-gray-800">
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المتجر</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المالك</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المدينة</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الباقة</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الحالة</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المستخدمون</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المنتجات</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">المبيعات</th>
+                  <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الإجراءات</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((tenant) => {
                   const status = STATUS_MAP[tenant.status] ?? STATUS_FALLBACK;
                   return (
-                    <tr key={tenant.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <tr key={tenant.id} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm shrink-0">
+                          <div className="w-9 h-9 rounded-lg bg-brand-100 dark:bg-brand-900 flex items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-sm shrink-0">
                             {tenant.name.charAt(0)}
                           </div>
                           <div>
-                            <span className="font-medium text-gray-900 block">{tenant.name}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100 block">{tenant.name}</span>
                             <span className="text-xs text-gray-400">{tenant.businessType}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-700">{tenant.ownerName}</td>
-                      <td className="py-3 px-4 text-sm text-gray-600">{tenant.city}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">{tenant.ownerName}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{tenant.city}</td>
                       <td className="py-3 px-4">
                         <Badge variant="primary">{tenant.planName}</Badge>
                       </td>
@@ -288,19 +288,19 @@ export function TenantsScreen() {
                         <Badge variant={status.variant}>{status.label}</Badge>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="flex items-center gap-1 text-sm text-gray-600">
+                        <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                           <Users size={14} className="text-gray-400" />
                           {tenant.activeUsers}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="flex items-center gap-1 text-sm text-gray-600">
+                        <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                           <Package size={14} className="text-gray-400" />
                           {formatNumber(tenant.totalProducts)}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-sm font-bold text-gray-900">
+                        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           {formatCurrency(tenant.totalSales)}
                         </span>
                       </td>
@@ -343,22 +343,22 @@ export function TenantsScreen() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500">
+          <div className="flex items-center justify-between pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               صفحة {page} من {totalPages} — إجمالي {formatNumber(totalCount)} متجر
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={18} />
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={18} />
               </button>
@@ -409,11 +409,25 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
       onClose();
     },
     onError: (err: any) => {
-      const serverErrors = err?.response?.data?.errors;
+      const data = err?.response?.data;
+      const serverErrors = data?.errors;
+
+      // Handle array format: { errors: ["msg"] }
       if (Array.isArray(serverErrors) && serverErrors.length > 0) {
         toast.error(serverErrors[0]);
-      } else {
-        toast.error('فشل إنشاء المتجر. تحقق من البيانات وحاول مرة أخرى.');
+      }
+      // Handle object format (ASP.NET ValidationProblemDetails): { errors: { "Field": ["msg"] } }
+      else if (serverErrors && typeof serverErrors === 'object') {
+        const firstField = Object.values(serverErrors).flat() as string[];
+        if (firstField.length > 0) {
+          toast.error(firstField[0]);
+        } else {
+          toast.error('فشل إنشاء المتجر. تحقق من البيانات وحاول مرة أخرى.');
+        }
+      }
+      // Handle message field or fallback
+      else {
+        toast.error(data?.message || 'فشل إنشاء المتجر. تحقق من البيانات وحاول مرة أخرى.');
       }
     },
   });
@@ -442,7 +456,11 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
       return;
     }
     setErrors([]);
-    createMutation.mutate(form);
+    createMutation.mutate({
+      ...form,
+      email: form.email?.trim() || undefined,
+      address: form.address?.trim() || undefined,
+    } as CreateTenantRequest);
   };
 
   const canProceedStep1 = form.name && form.ownerName && form.phone && form.city && form.vatNumber;
@@ -450,15 +468,15 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 rounded-t-2xl z-10">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">إضافة متجر جديد</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">إضافة متجر جديد</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
               {step === 1 ? 'معلومات المتجر والمالك' : 'حساب المدير والباقة'}
             </p>
           </div>
@@ -472,7 +490,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
             <>
               {/* Store Info */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                   <Building2 size={16} /> معلومات المتجر
                 </h3>
 
@@ -492,7 +510,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       نوع النشاط <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -506,7 +524,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       الرقم الضريبي <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -542,7 +560,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       <Phone size={14} className="inline ml-1" />
                       الهاتف <span className="text-red-500">*</span>
                     </label>
@@ -556,7 +574,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       <Mail size={14} className="inline ml-1" />
                       البريد الإلكتروني
                     </label>
@@ -572,7 +590,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       <MapPin size={14} className="inline ml-1" />
                       العنوان
                     </label>
@@ -585,7 +603,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       المدينة <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -617,7 +635,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
             <>
               {/* Plan Selection */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                   <CreditCard size={16} /> اختر الباقة
                 </h3>
 
@@ -638,11 +656,11 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
                           <Check size={12} className="text-white" />
                         </div>
                       )}
-                      <p className="font-bold text-gray-900">{plan.name}</p>
-                      <p className="text-sm text-brand-600 font-semibold mt-1">{plan.price}</p>
+                      <p className="font-bold text-gray-900 dark:text-gray-100">{plan.name}</p>
+                      <p className="text-sm text-brand-600 dark:text-brand-400 font-semibold mt-1">{plan.price}</p>
                       <ul className="mt-2 space-y-1">
                         {plan.features.map((f, i) => (
-                          <li key={i} className="text-xs text-gray-500">• {f}</li>
+                          <li key={i} className="text-xs text-gray-500 dark:text-gray-400">• {f}</li>
                         ))}
                       </ul>
                     </button>
@@ -652,7 +670,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
 
               {/* Admin Account */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
                   <ShieldCheck size={16} /> حساب المدير
                 </h3>
 
@@ -672,7 +690,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       اسم المستخدم <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -690,7 +708,7 @@ function CreateTenantModal({ onClose }: { onClose: () => void }) {
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       كلمة المرور <span className="text-red-500">*</span>
                     </label>
                     <input

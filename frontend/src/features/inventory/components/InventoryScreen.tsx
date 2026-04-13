@@ -260,11 +260,11 @@ export function InventoryScreen() {
     <div className="space-y-6" dir="rtl">
       {/* Low Stock Alert Banner */}
       {lowStockCount > 0 && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200">
           <AlertTriangle size={24} className="flex-shrink-0" />
           <div>
             <p className="font-semibold">تنبيه: {lowStockCount} صنف تحت الحد الأدنى للمخزون</p>
-            <p className="text-sm text-amber-700">يرجى مراجعة المخزون وإعادة الطلب</p>
+            <p className="text-sm text-amber-700 dark:text-amber-300">يرجى مراجعة المخزون وإعادة الطلب</p>
           </div>
         </div>
       )}
@@ -272,8 +272,8 @@ export function InventoryScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">إدارة المخزون</h1>
-          <p className="text-gray-500 text-sm mt-1">عرض وإدارة أصناف المخزون</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">إدارة المخزون</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">عرض وإدارة أصناف المخزون</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => setShowAddModal(true)} className="btn-primary">
@@ -322,7 +322,7 @@ export function InventoryScreen() {
 
       {/* Filters & Table */}
       <div className="card overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 flex-wrap">
+        <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row gap-4 flex-wrap">
           <div className="relative flex-1 min-w-[200px]">
             <Search
               size={18}
@@ -364,36 +364,36 @@ export function InventoryScreen() {
               }}
               className="rounded"
             />
-            <span className="text-sm text-gray-700">منخفض المخزون فقط</span>
+            <span className="text-sm text-gray-700 dark:text-gray-300">منخفض المخزون فقط</span>
           </label>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   الباركود
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   الاسم
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   التصنيف
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   التكلفة
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   التجزئة
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   الكمية
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   الحالة
                 </th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   إجراءات
                 </th>
               </tr>
@@ -411,24 +411,24 @@ export function InventoryScreen() {
                   return (
                     <tr
                       key={product.id}
-                      className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
+                      className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
                     >
-                      <td className="py-3 px-4 text-sm text-gray-700 font-mono">
+                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 font-mono">
                         {product.barcode || '-'}
                       </td>
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {product.name}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-600">
+                      <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                         {product.categoryName || '-'}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-700">
+                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
                         {formatCurrency(product.costPrice)}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-700">
+                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
                         {formatCurrency(product.retailPrice)}
                       </td>
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {product.currentStock}
                       </td>
                       <td className="py-3 px-4">
@@ -439,21 +439,21 @@ export function InventoryScreen() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2 justify-end">
                           <button
-                            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-brand-600 transition-colors"
+                            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-600 transition-colors"
                             title="تعديل"
                             onClick={() => openEditModal(product)}
                           >
                             <Pencil size={16} />
                           </button>
                           <button
-                            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-brand-600 transition-colors"
+                            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-600 transition-colors"
                             title="طباعة باركود"
                             onClick={() => handlePrintBarcode(product)}
                           >
                             <Barcode size={16} />
                           </button>
                           <button
-                            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-red-600 transition-colors"
+                            className="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-red-600 transition-colors"
                             title="حذف"
                             onClick={() => openDeleteModal(product)}
                           >
@@ -470,15 +470,15 @@ export function InventoryScreen() {
         </div>
 
         {!productsLoading && products.length === 0 && (
-          <div className="py-12 text-center text-gray-500">
+          <div className="py-12 text-center text-gray-500 dark:text-gray-400">
             لا توجد أصناف تطابق البحث
           </div>
         )}
 
         {/* Pagination */}
         {paged && paged.totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p className="text-sm text-gray-600">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               عرض {products.length} من {paged.totalCount} صنف
             </p>
             <div className="flex items-center gap-2">
@@ -489,7 +489,7 @@ export function InventoryScreen() {
               >
                 <ChevronRight size={18} />
               </button>
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 صفحة {paged.pageNumber} من {paged.totalPages}
               </span>
               <button
@@ -516,7 +516,7 @@ export function InventoryScreen() {
       >
         <form onSubmit={handleAddProduct} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اسم الصنف</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم الصنف</label>
             <input
               type="text"
               required
@@ -527,7 +527,7 @@ export function InventoryScreen() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">الباركود</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الباركود</label>
             <input
               type="text"
               value={formData.barcode}
@@ -538,7 +538,7 @@ export function InventoryScreen() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">التصنيف</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">التصنيف</label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData((f) => ({ ...f, categoryId: e.target.value }))}
@@ -553,7 +553,7 @@ export function InventoryScreen() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">المخزن</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">المخزن</label>
               <select
                 value={formData.warehouseId}
                 onChange={(e) => setFormData((f) => ({ ...f, warehouseId: e.target.value }))}
@@ -571,7 +571,7 @@ export function InventoryScreen() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر التكلفة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر التكلفة</label>
               <input
                 type="number"
                 min="0"
@@ -583,7 +583,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر التجزئة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر التجزئة</label>
               <input
                 type="number"
                 min="0"
@@ -595,7 +595,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر الجملة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر الجملة</label>
               <input
                 type="number"
                 min="0"
@@ -608,7 +608,7 @@ export function InventoryScreen() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 الحد الأدنى للمخزون
               </label>
               <input
@@ -620,7 +620,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 الكمية الأولية
               </label>
               <input
@@ -669,7 +669,7 @@ export function InventoryScreen() {
       >
         <form onSubmit={handleUpdateProduct} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اسم الصنف</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم الصنف</label>
             <input
               type="text"
               required
@@ -680,7 +680,7 @@ export function InventoryScreen() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">الباركود</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الباركود</label>
             <input
               type="text"
               value={formData.barcode}
@@ -690,7 +690,7 @@ export function InventoryScreen() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">التصنيف</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">التصنيف</label>
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData((f) => ({ ...f, categoryId: e.target.value }))}
@@ -706,7 +706,7 @@ export function InventoryScreen() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر التكلفة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر التكلفة</label>
               <input
                 type="number"
                 min="0"
@@ -718,7 +718,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر التجزئة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر التجزئة</label>
               <input
                 type="number"
                 min="0"
@@ -730,7 +730,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر الجملة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر الجملة</label>
               <input
                 type="number"
                 min="0"
@@ -742,7 +742,7 @@ export function InventoryScreen() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               الحد الأدنى للمخزون
             </label>
             <input
@@ -787,7 +787,7 @@ export function InventoryScreen() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             هل أنت متأكد من حذف الصنف &quot;{deletingProduct?.name}&quot;؟ لا يمكن التراجع عن هذا
             الإجراء.
           </p>
@@ -822,7 +822,7 @@ export function InventoryScreen() {
         size="lg"
       >
         <div className="space-y-4">
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">
             اختر الأصناف لطباعة ملصقات الباركود عليها
           </p>
           <div className="max-h-64 overflow-y-auto space-y-2">
@@ -831,11 +831,11 @@ export function InventoryScreen() {
                 key={product.id}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-colors',
-                  'hover:bg-gray-50 border-gray-200'
+                  'hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
                 )}
               >
-                <span className="text-sm font-medium text-gray-900">{product.name}</span>
-                <span className="text-xs text-gray-500">{product.barcode || '-'}</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{product.name}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{product.barcode || '-'}</span>
                 <input
                   type="checkbox"
                   checked={printSelectedIds.has(product.id)}

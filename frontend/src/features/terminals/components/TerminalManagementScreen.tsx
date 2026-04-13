@@ -55,11 +55,11 @@ export default function TerminalManagementScreen() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-xl"><CreditCard size={24} className="text-blue-600" /></div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-xl"><CreditCard size={24} className="text-blue-600 dark:text-blue-400" /></div>
             ماكينات الدفع
           </h1>
-          <p className="text-sm text-gray-500 mt-1">إدارة أجهزة نقاط البيع ومدى والبطاقات</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">إدارة أجهزة نقاط البيع ومدى والبطاقات</p>
         </div>
         <button onClick={() => { setEditing(null); setShowForm(true); }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-medium">
@@ -68,14 +68,14 @@ export default function TerminalManagementScreen() {
       </div>
 
       {/* Tabs */}
-      <div className="flex bg-white rounded-xl p-1 shadow-sm border gap-1">
+      <div className="flex bg-white dark:bg-gray-900 rounded-xl p-1 shadow-sm border dark:border-gray-700 gap-1">
         {[
           { id: 'terminals' as const, label: 'الأجهزة', Icon: CreditCard },
           { id: 'transactions' as const, label: 'العمليات', Icon: Activity },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition ${
-              activeTab === tab.id ? 'bg-blue-600 text-white shadow' : 'text-gray-600 hover:bg-gray-100'
+              activeTab === tab.id ? 'bg-blue-600 text-white shadow' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
             }`}>
             <tab.Icon size={16} /> {tab.label}
           </button>
@@ -95,20 +95,20 @@ export default function TerminalManagementScreen() {
           {/* Terminals Grid */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1, 2].map(i => <div key={i} className="h-48 bg-gray-100 rounded-xl animate-pulse" />)}
+              {[1, 2].map(i => <div key={i} className="h-48 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
             </div>
           ) : terminals.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-xl shadow-sm border">
+            <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
               <CreditCard size={56} className="text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد أجهزة دفع</h3>
-              <p className="text-sm text-gray-500">أضف جهاز مدى أو نقطة بيع لبدء استقبال الدفع بالبطاقات</p>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد أجهزة دفع</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">أضف جهاز مدى أو نقطة بيع لبدء استقبال الدفع بالبطاقات</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {terminals.map((t: any) => {
                 const prov = providers.find(p => p.id === t.provider);
                 return (
-                  <div key={t.id} className="bg-white rounded-xl shadow-sm border p-5 hover:shadow-md transition-all">
+                  <div key={t.id} className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700 p-5 hover:shadow-md transition-all">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xs"
@@ -116,7 +116,7 @@ export default function TerminalManagementScreen() {
                           {t.provider === 'Manual' ? <Settings2 size={20} /> : <CreditCard size={20} />}
                         </div>
                         <div>
-                          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                          <h3 className="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                             {t.name}
                             {t.isDefault && <Star size={14} className="text-amber-500 fill-amber-500" />}
                           </h3>
@@ -129,11 +129,11 @@ export default function TerminalManagementScreen() {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-4">
-                      {t.terminalId && <div>TID: <span className="font-mono text-gray-700">{t.terminalId}</span></div>}
-                      {t.merchantId && <div>MID: <span className="font-mono text-gray-700">{t.merchantId}</span></div>}
-                      {t.serialNumber && <div>S/N: <span className="font-mono text-gray-700">{t.serialNumber}</span></div>}
-                      {t.ipAddress && <div>IP: <span className="font-mono text-gray-700">{t.ipAddress}:{t.port}</span></div>}
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400 mb-4">
+                      {t.terminalId && <div>TID: <span className="font-mono text-gray-700 dark:text-gray-300">{t.terminalId}</span></div>}
+                      {t.merchantId && <div>MID: <span className="font-mono text-gray-700 dark:text-gray-300">{t.merchantId}</span></div>}
+                      {t.serialNumber && <div>S/N: <span className="font-mono text-gray-700 dark:text-gray-300">{t.serialNumber}</span></div>}
+                      {t.ipAddress && <div>IP: <span className="font-mono text-gray-700 dark:text-gray-300">{t.ipAddress}:{t.port}</span></div>}
                     </div>
 
                     <div className="flex items-center gap-2 text-xs mb-4">
@@ -143,7 +143,7 @@ export default function TerminalManagementScreen() {
                     </div>
 
                     {(t.todayTxnCount > 0) && (
-                      <div className="bg-gray-50 rounded-lg p-2 mb-3 flex justify-between text-xs">
+                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 mb-3 flex justify-between text-xs">
                         <span>عمليات اليوم: <b>{t.todayTxnCount}</b></span>
                         <span>المبلغ: <b className="text-blue-600">{t.todayTxnTotal?.toFixed(2)} ر.س</b></span>
                       </div>
@@ -182,10 +182,10 @@ export default function TerminalManagementScreen() {
       )}
 
       {activeTab === 'transactions' && (
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                 <tr>
                   <th className="text-right px-4 py-3 font-medium">المرجع</th>
                   <th className="text-right px-4 py-3 font-medium">الجهاز</th>
@@ -200,7 +200,7 @@ export default function TerminalManagementScreen() {
                 {transactions.length === 0 ? (
                   <tr><td colSpan={7} className="text-center py-12 text-gray-400">لا توجد عمليات</td></tr>
                 ) : transactions.map((txn: any) => (
-                  <tr key={txn.id} className="border-t hover:bg-gray-50">
+                  <tr key={txn.id} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="px-4 py-3 font-mono text-xs">{txn.referenceNumber}</td>
                     <td className="px-4 py-3 text-xs">{txn.terminalName}</td>
                     <td className="px-4 py-3 text-xs">{txn.txnType === 'Purchase' ? 'شراء' : txn.txnType === 'Refund' ? 'استرداد' : txn.txnType}</td>
@@ -220,7 +220,7 @@ export default function TerminalManagementScreen() {
                          txn.status === 'Pending' ? 'قيد الانتظار' : txn.status === 'Cancelled' ? 'ملغية' : txn.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{new Date(txn.initiatedAt).toLocaleString('ar-SA')}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{new Date(txn.initiatedAt).toLocaleString('ar-SA')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -320,7 +320,7 @@ function TerminalFormModal({ terminal, onClose, onSave, saving }: { terminal: an
             className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition disabled:opacity-50">
             {saving ? 'جارٍ الحفظ...' : terminal ? 'تحديث' : 'إضافة'}
           </button>
-          <button onClick={onClose} className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition">إلغاء</button>
+          <button onClick={onClose} className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition">إلغاء</button>
         </div>
       </div>
     </Modal>
@@ -330,10 +330,10 @@ function TerminalFormModal({ terminal, onClose, onSave, saving }: { terminal: an
 function StatCard({ icon: Icon, label, value, color }: { icon: typeof CreditCard; label: string; value: any; color: string }) {
   const c: Record<string, string> = { blue: 'bg-blue-50 text-blue-600', green: 'bg-green-50 text-green-600', indigo: 'bg-indigo-50 text-indigo-600', amber: 'bg-amber-50 text-amber-600' };
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border">
+    <div className="bg-white dark:bg-gray-900 rounded-xl p-4 shadow-sm border dark:border-gray-700">
       <div className="flex items-center gap-3">
         <div className={`p-2.5 rounded-xl ${c[color]}`}><Icon size={20} /></div>
-        <div><div className="text-xl font-bold text-gray-900">{value}</div><div className="text-xs text-gray-500">{label}</div></div>
+        <div><div className="text-xl font-bold text-gray-900 dark:text-gray-100">{value}</div><div className="text-xs text-gray-500 dark:text-gray-400">{label}</div></div>
       </div>
     </div>
   );

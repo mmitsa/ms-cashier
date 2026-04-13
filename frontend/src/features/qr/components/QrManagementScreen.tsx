@@ -29,11 +29,11 @@ export default function QrManagementScreen() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <div className="p-2 bg-violet-100 rounded-xl"><QrCode size={24} className="text-violet-600" /></div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+            <div className="p-2 bg-violet-100 dark:bg-violet-900 rounded-xl"><QrCode size={24} className="text-violet-600 dark:text-violet-400" /></div>
             إدارة QR Code للعملاء
           </h1>
-          <p className="text-sm text-gray-500 mt-1">أنشئ أكواد QR ليتمكن العملاء من تصفح المنيو والطلب مباشرة</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">أنشئ أكواد QR ليتمكن العملاء من تصفح المنيو والطلب مباشرة</p>
         </div>
         <button onClick={() => { setEditingConfig(null); setShowForm(true); }}
           className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition font-medium">
@@ -42,12 +42,12 @@ export default function QrManagementScreen() {
       </div>
 
       {/* Info Banner */}
-      <div className="bg-gradient-to-l from-violet-50 to-indigo-50 rounded-xl p-5 border border-violet-200">
+      <div className="bg-gradient-to-l from-violet-50 to-indigo-50 dark:from-violet-950 dark:to-indigo-950 rounded-xl p-5 border border-violet-200 dark:border-violet-800">
         <div className="flex items-start gap-3">
           <Smartphone size={24} className="text-violet-600 shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-bold text-violet-900">كيف يعمل النظام؟</h3>
-            <div className="text-sm text-violet-700 mt-1 space-y-1">
+            <h3 className="font-bold text-violet-900 dark:text-violet-200">كيف يعمل النظام؟</h3>
+            <div className="text-sm text-violet-700 dark:text-violet-300 mt-1 space-y-1">
               <p>1. أنشئ كود QR لكل طاولة أو للمتجر ككل</p>
               <p>2. العميل يمسح الكود بكاميرا الموبايل → تفتح المنيو مباشرة</p>
               <p>3. يختار الأصناف ويضيف ملاحظات → يرسل الطلب</p>
@@ -61,13 +61,13 @@ export default function QrManagementScreen() {
       {/* Configs Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-48 bg-gray-100 rounded-xl animate-pulse" />)}
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-48 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
         </div>
       ) : configs.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl shadow-sm border">
+        <div className="text-center py-20 bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700">
           <QrCode size={64} className="text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد أكواد QR</h3>
-          <p className="text-sm text-gray-500 mb-4">أنشئ أول كود QR لتمكين العملاء من الطلب الذاتي</p>
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد أكواد QR</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">أنشئ أول كود QR لتمكين العملاء من الطلب الذاتي</p>
           <button onClick={() => { setEditingConfig(null); setShowForm(true); }}
             className="px-6 py-2 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition">
             <Plus size={16} className="inline ml-1" /> إنشاء كود
@@ -114,7 +114,7 @@ function QrConfigCard({ config, onEdit, onDelete, onRegenerate }: {
   const orderUrl = `${window.location.origin}/order/${config.code}`;
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border p-5 transition-all hover:shadow-md ${!config.isActive ? 'opacity-60' : ''}`}>
+    <div className={`bg-white dark:bg-gray-900 rounded-xl shadow-sm border dark:border-gray-700 p-5 transition-all hover:shadow-md ${!config.isActive ? 'opacity-60' : ''}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-lg"
@@ -122,7 +122,7 @@ function QrConfigCard({ config, onEdit, onDelete, onRegenerate }: {
             QR
           </div>
           <div>
-            <h3 className="font-bold text-gray-900">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100">
               {config.tableNumber ? `طاولة ${config.tableNumber}` : 'كود عام'}
             </h3>
             <span className={`text-xs px-2 py-0.5 rounded-full ${config.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -131,13 +131,13 @@ function QrConfigCard({ config, onEdit, onDelete, onRegenerate }: {
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"><Edit2 size={14} /></button>
+          <button onClick={onEdit} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400"><Edit2 size={14} /></button>
           <button onClick={onRegenerate} className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-600"><RefreshCw size={14} /></button>
           <button onClick={onDelete} className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"><Trash2 size={14} /></button>
         </div>
       </div>
 
-      <div className="text-xs text-gray-500 space-y-1.5 mb-4">
+      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1.5 mb-4">
         <div className="flex items-center gap-1.5"><Globe size={12} /> نوع: {sessionTypeLabels[config.defaultType] || config.defaultType}</div>
         <div className="flex items-center gap-1.5 flex-wrap">
           {config.allowCashPayment && <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded"><Banknote size={10} className="inline ml-0.5" /> كاش</span>}
@@ -155,7 +155,7 @@ function QrConfigCard({ config, onEdit, onDelete, onRegenerate }: {
           <Copy size={12} /> نسخ الرابط
         </button>
         <a href={orderUrl} target="_blank" rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-50 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-100 transition">
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">
           <ExternalLink size={12} /> معاينة
         </a>
       </div>
@@ -266,7 +266,7 @@ function QrConfigFormModal({ config, onClose, onSave, saving }: {
             className="flex-1 py-2.5 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition disabled:opacity-50">
             {saving ? 'جارٍ الحفظ...' : config ? 'تحديث' : 'إنشاء'}
           </button>
-          <button onClick={onClose} className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition">إلغاء</button>
+          <button onClick={onClose} className="px-6 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition">إلغاء</button>
         </div>
       </div>
     </Modal>

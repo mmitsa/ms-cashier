@@ -55,8 +55,8 @@ export function AdminBranchRequestsScreen() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">طلبات فتح الفروع</h1>
-        <p className="text-gray-500 text-sm mt-1">مراجعة والموافقة على طلبات فتح فروع جديدة من المتاجر</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">طلبات فتح الفروع</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">مراجعة والموافقة على طلبات فتح فروع جديدة من المتاجر</p>
       </div>
 
       {/* Filters */}
@@ -68,7 +68,7 @@ export function AdminBranchRequestsScreen() {
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               statusFilter === f.value
                 ? 'bg-brand-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             {f.label}
@@ -77,49 +77,49 @@ export function AdminBranchRequestsScreen() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
         {isLoading ? (
           <div className="p-8 space-y-3">
-            {[1, 2, 3, 4].map(i => <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />)}
+            {[1, 2, 3, 4].map(i => <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />)}
           </div>
         ) : requests.length === 0 ? (
           <div className="text-center py-16">
             <Building2 size={48} className="text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">لا توجد طلبات</h3>
-            <p className="text-sm text-gray-500">لم يتم تقديم أي طلبات لفتح فروع جديدة</p>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">لا توجد طلبات</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">لم يتم تقديم أي طلبات لفتح فروع جديدة</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-700">
                 <tr>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">المتجر</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">اسم الفرع</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">المدينة</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">النمط</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">الرسوم</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">الحالة</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-600">التاريخ</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-600">الإجراءات</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">المتجر</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">اسم الفرع</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">المدينة</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">النمط</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">الرسوم</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">الحالة</th>
+                  <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">التاريخ</th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">الإجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y dark:divide-gray-700">
                 {requests.map((r: any) => (
-                  <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-3 px-4 font-medium text-gray-900">{r.tenantName ?? '—'}</td>
+                  <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                    <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">{r.tenantName ?? '—'}</td>
                     <td className="py-3 px-4">{r.branchName}</td>
-                    <td className="py-3 px-4 text-gray-600">{r.city || '—'}</td>
-                    <td className="py-3 px-4 text-gray-600">{dataModeLabels[r.dataMode] ?? r.dataMode}</td>
+                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{r.city || '—'}</td>
+                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">{dataModeLabels[r.dataMode] ?? r.dataMode}</td>
                     <td className="py-3 px-4 font-medium">{r.requestedFee?.toFixed(2)} ر.س</td>
                     <td className="py-3 px-4">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[r.status] ?? 'bg-gray-100'}`}>
                         {statusLabels[r.status] ?? r.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-500 text-xs">{new Date(r.createdAt).toLocaleDateString('ar-SA')}</td>
+                    <td className="py-3 px-4 text-gray-500 dark:text-gray-400 text-xs">{new Date(r.createdAt).toLocaleDateString('ar-SA')}</td>
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => setDetailModal(r)} className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                        <button onClick={() => setDetailModal(r)} className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700">
                           <Eye size={15} />
                         </button>
                         {r.status === 'Pending' && (
@@ -146,8 +146,8 @@ export function AdminBranchRequestsScreen() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between p-4 border-t">
-            <p className="text-sm text-gray-500">الصفحة {page} من {totalPages} ({pagedResult?.totalCount ?? 0} طلب)</p>
+          <div className="flex items-center justify-between p-4 border-t dark:border-gray-800">
+            <p className="text-sm text-gray-500 dark:text-gray-400">الصفحة {page} من {totalPages} ({pagedResult?.totalCount ?? 0} طلب)</p>
             <div className="flex gap-2">
               <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
                 className="w-9 h-9 rounded-lg border flex items-center justify-center disabled:opacity-30">
@@ -194,9 +194,9 @@ function ReviewModal({ request, onClose, onReview, isPending }: {
   return (
     <Modal open={true} onClose={onClose} title="مراجعة طلب فتح فرع" size="lg">
       <div className="space-y-4">
-        <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-2 text-sm">
           <div className="grid grid-cols-2 gap-2">
-            <p><span className="text-gray-500">المتجر:</span> <strong>{request.tenantName}</strong></p>
+            <p><span className="text-gray-500 dark:text-gray-400">المتجر:</span> <strong>{request.tenantName}</strong></p>
             <p><span className="text-gray-500">اسم الفرع:</span> <strong>{request.branchName}</strong></p>
             <p><span className="text-gray-500">المدينة:</span> {request.city || '—'}</p>
             <p><span className="text-gray-500">الهاتف:</span> {request.phone || '—'}</p>
@@ -278,9 +278,9 @@ function DetailModal({ request, onClose }: { request: any; onClose: () => void }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
-      <p className="text-xs text-gray-500 mb-0.5">{label}</p>
-      <p className="font-medium text-gray-900">{value}</p>
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{label}</p>
+      <p className="font-medium text-gray-900 dark:text-gray-100">{value}</p>
     </div>
   );
 }

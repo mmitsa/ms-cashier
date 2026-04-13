@@ -9,6 +9,7 @@ import {
   Copy, Activity, Clock, Wifi,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
+import { useUIStore } from '@/store/uiStore';
 import toast from 'react-hot-toast';
 
 // ==================== Helper: get tenantId from JWT ====================
@@ -44,11 +45,11 @@ const tabs: { key: TabKey; label: string; icon: typeof Building2; badge?: string
 // ==================== Shared UI Components ====================
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="text-lg font-bold text-gray-900 mb-4">{children}</h2>;
+  return <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">{children}</h2>;
 }
 
 function FormLabel({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-medium text-gray-700 mb-1.5">{children}</label>;
+  return <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{children}</label>;
 }
 
 function FormInput({
@@ -63,7 +64,7 @@ function FormInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       dir={dir}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm
+      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-100 text-sm
         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
     />
   );
@@ -81,7 +82,7 @@ function FormTextarea({
       placeholder={placeholder}
       rows={rows}
       dir={dir}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm resize-none
+      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-100 text-sm resize-none
         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
     />
   );
@@ -96,7 +97,7 @@ function FormSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-white text-sm
+      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-100 text-sm
         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
     >
       {options.map((o) => (
@@ -117,7 +118,7 @@ function Toggle({
       onClick={() => onChange(!enabled)}
       className="flex items-center justify-between w-full py-3 px-1 group"
     >
-      <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{label}</span>
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100">{label}</span>
       {enabled ? (
         <ToggleRight size={28} className="text-brand-600 shrink-0" />
       ) : (
@@ -173,8 +174,8 @@ function SecondaryButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700
-        bg-gray-100 hover:bg-gray-200 disabled:opacity-50 transition-all ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300
+        bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 transition-all ${className}`}
     >
       {loading && <Loader2 size={14} className="animate-spin" />}
       {children}
@@ -314,8 +315,8 @@ function BusinessInfoTab() {
       </div>
 
       {form.logoUrl && (
-        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-          <img src={form.logoUrl} alt="logo" className="w-16 h-16 object-contain rounded-lg border" />
+        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+          <img src={form.logoUrl} alt="logo" className="w-16 h-16 object-contain rounded-lg border dark:border-gray-700" />
           <span className="text-sm text-gray-500">معاينة الشعار</span>
         </div>
       )}
@@ -426,25 +427,25 @@ function UsersTab() {
           <Loader2 size={28} className="animate-spin text-brand-600" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200">
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">اسم المستخدم</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">الاسم الكامل</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">الدور</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">الحالة</th>
-                <th className="text-right py-3 px-4 font-semibold text-gray-600">آخر دخول</th>
-                <th className="text-center py-3 px-4 font-semibold text-gray-600">إجراءات</th>
+              <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">اسم المستخدم</th>
+                <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">الاسم الكامل</th>
+                <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">الدور</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">الحالة</th>
+                <th className="text-right py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">آخر دخول</th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-600 dark:text-gray-400">إجراءات</th>
               </tr>
             </thead>
             <tbody>
               {(Array.isArray(users) ? users : []).map((user) => (
-                <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                  <td className="py-3 px-4 font-medium text-gray-900" dir="ltr">{user.username}</td>
-                  <td className="py-3 px-4 text-gray-700">{user.fullName}</td>
+                <tr key={user.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
+                  <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100" dir="ltr">{user.username}</td>
+                  <td className="py-3 px-4 text-gray-700 dark:text-gray-300">{user.fullName}</td>
                   <td className="py-3 px-4">
-                    <span className="px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 text-xs font-semibold">
+                    <span className="px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 text-xs font-semibold">
                       {roleLabels[user.role] || user.role}
                     </span>
                   </td>
@@ -489,10 +490,10 @@ function UsersTab() {
       {/* Add User Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">إضافة مستخدم جديد</h3>
-              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">إضافة مستخدم جديد</h3>
+              <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                 <X size={18} className="text-gray-500" />
               </button>
             </div>
@@ -706,14 +707,14 @@ function PrintSettingsTab() {
           />
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1 divide-y divide-gray-100">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-1 divide-y divide-gray-100 dark:divide-gray-700">
           <Toggle enabled={settings.showLogo} onChange={(v) => update('showLogo')(v)} label="عرض الشعار" />
           <Toggle enabled={settings.showQrCode} onChange={(v) => update('showQrCode')(v)} label="عرض رمز QR" />
           <Toggle enabled={settings.showStoreInfo} onChange={(v) => update('showStoreInfo')(v)} label="عرض معلومات المتجر" />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold text-gray-800 mb-3">إعدادات طباعة الباركود</h3>
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">إعدادات طباعة الباركود</h3>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <FormLabel>العرض (مم)</FormLabel>
@@ -1029,8 +1030,8 @@ function ZatcaTab() {
       </div>
 
       {/* Activation Data */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
-        <h3 className="text-base font-bold text-gray-900">بيانات التفعيل</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
+        <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">بيانات التفعيل</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
@@ -1142,18 +1143,18 @@ function ZatcaTab() {
       </div>
 
       {/* Invoice Stats */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
-        <h3 className="text-base font-bold text-gray-900 mb-4">الفواتير المرسلة لزاتكا</h3>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6">
+        <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-4">الفواتير المرسلة لزاتكا</h3>
         <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="bg-blue-50 rounded-xl p-4 text-center">
+          <div className="bg-blue-50 dark:bg-blue-950 rounded-xl p-4 text-center">
             <p className="text-2xl font-bold text-blue-700">{stats.total.toLocaleString('ar-SA')}</p>
             <p className="text-xs text-blue-600 mt-1">إجمالي الفواتير</p>
           </div>
-          <div className="bg-emerald-50 rounded-xl p-4 text-center">
+          <div className="bg-emerald-50 dark:bg-emerald-950 rounded-xl p-4 text-center">
             <p className="text-2xl font-bold text-emerald-700">{stats.success.toLocaleString('ar-SA')}</p>
             <p className="text-xs text-emerald-600 mt-1">المرسلة بنجاح</p>
           </div>
-          <div className="bg-red-50 rounded-xl p-4 text-center">
+          <div className="bg-red-50 dark:bg-red-950 rounded-xl p-4 text-center">
             <p className="text-2xl font-bold text-red-700">{stats.failed.toLocaleString('ar-SA')}</p>
             <p className="text-xs text-red-600 mt-1">الفاشلة</p>
           </div>
@@ -1255,46 +1256,46 @@ function BackupTab() {
         <button
           onClick={clearCache}
           disabled={clearing}
-          className="flex items-center gap-4 p-5 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-right"
+          className="flex items-center gap-4 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 transition-all text-right"
         >
-          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
             <RefreshCw size={22} className={`text-blue-600 ${clearing ? 'animate-spin' : ''}`} />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">مسح الكاش</p>
+            <p className="font-semibold text-gray-900 dark:text-gray-100">مسح الكاش</p>
             <p className="text-xs text-gray-500 mt-0.5">مسح البيانات المؤقتة المحفوظة</p>
           </div>
         </button>
 
         <button
           onClick={exportSettings}
-          className="flex items-center gap-4 p-5 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-right"
+          className="flex items-center gap-4 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 transition-all text-right"
         >
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center shrink-0">
             <Download size={22} className="text-emerald-600" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">تصدير الإعدادات</p>
+            <p className="font-semibold text-gray-900 dark:text-gray-100">تصدير الإعدادات</p>
             <p className="text-xs text-gray-500 mt-0.5">تحميل نسخة JSON من الإعدادات</p>
           </div>
         </button>
 
         <button
           onClick={importSettings}
-          className="flex items-center gap-4 p-5 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-right"
+          className="flex items-center gap-4 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 transition-all text-right"
         >
-          <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900 flex items-center justify-center shrink-0">
             <Upload size={22} className="text-purple-600" />
           </div>
           <div>
-            <p className="font-semibold text-gray-900">استيراد الإعدادات</p>
+            <p className="font-semibold text-gray-900 dark:text-gray-100">استيراد الإعدادات</p>
             <p className="text-xs text-gray-500 mt-0.5">استعادة الإعدادات من ملف JSON</p>
           </div>
         </button>
 
         <button
           onClick={resetSettings}
-          className="flex items-center gap-4 p-5 rounded-2xl border border-red-200 bg-white hover:bg-red-50 hover:border-red-300 transition-all text-right"
+          className="flex items-center gap-4 p-5 rounded-2xl border border-red-200 bg-white dark:bg-gray-900 hover:bg-red-50 dark:hover:bg-red-950 hover:border-red-300 transition-all text-right"
         >
           <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
             <Trash2 size={22} className="text-red-600" />
@@ -1307,8 +1308,8 @@ function BackupTab() {
       </div>
 
       {/* System Info */}
-      <div className="bg-gray-50 rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-gray-800 mb-3">معلومات النظام</h3>
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-5">
+        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">معلومات النظام</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[
             { label: 'المتصفح', value: sysInfo.browser },
@@ -1317,9 +1318,9 @@ function BackupTab() {
             { label: 'دقة الشاشة', value: sysInfo.screen },
             { label: 'حجم التخزين', value: sysInfo.localStorage },
           ].map((item) => (
-            <div key={item.label} className="bg-white rounded-xl p-3">
-              <p className="text-xs text-gray-500">{item.label}</p>
-              <p className="text-sm font-semibold text-gray-900 mt-0.5" dir="ltr">{item.value}</p>
+            <div key={item.label} className="bg-white dark:bg-gray-900 rounded-xl p-3">
+              <p className="text-xs text-gray-500 dark:text-gray-400">{item.label}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-0.5" dir="ltr">{item.value}</p>
             </div>
           ))}
         </div>
@@ -1378,7 +1379,7 @@ function NotificationsTab() {
           </p>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-4 space-y-1 divide-y divide-gray-100">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-1 divide-y divide-gray-100 dark:divide-gray-700">
           <Toggle
             enabled={settings.soundEnabled}
             onChange={(v) => setSettings((p) => ({ ...p, soundEnabled: v }))}
@@ -1391,7 +1392,7 @@ function NotificationsTab() {
           />
         </div>
 
-        <div className="bg-amber-50 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-amber-50 dark:bg-amber-950 rounded-xl p-4 flex items-start gap-3">
           <AlertTriangle size={18} className="text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-800">ملاحظة</p>
@@ -1414,18 +1415,18 @@ function NotificationsTab() {
 
 // ==================== Tab 8: System Settings ====================
 interface SystemSettings {
-  theme: 'light' | 'dark';
   touchMode: boolean;
   appVersion: string;
 }
 
 const defaultSystemSettings: SystemSettings = {
-  theme: 'light',
   touchMode: false,
   appVersion: '1.0.0',
 };
 
 function SystemTab() {
+  const theme = useUIStore(s => s.theme);
+  const setTheme = useUIStore(s => s.setTheme);
   const [settings, setSettings] = useState<SystemSettings>(defaultSystemSettings);
 
   useEffect(() => {
@@ -1438,13 +1439,6 @@ function SystemTab() {
   const save = () => {
     localStorage.setItem('pos_system_settings', JSON.stringify(settings));
     toast.success('تم حفظ إعدادات النظام');
-
-    // Apply theme
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
   };
 
   return (
@@ -1456,42 +1450,42 @@ function SystemTab() {
         <FormLabel>المظهر</FormLabel>
         <div className="grid grid-cols-2 gap-3 mt-1">
           <button
-            onClick={() => setSettings((p) => ({ ...p, theme: 'light' }))}
+            onClick={() => setTheme('light')}
             className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-              settings.theme === 'light'
-                ? 'border-brand-500 bg-brand-50 shadow-sm'
-                : 'border-gray-200 bg-white hover:border-gray-300'
+              theme === 'light'
+                ? 'border-brand-500 bg-brand-50 dark:bg-brand-950 shadow-sm'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300'
             }`}
           >
-            <Sun size={22} className={settings.theme === 'light' ? 'text-brand-600' : 'text-gray-400'} />
+            <Sun size={22} className={theme === 'light' ? 'text-brand-600' : 'text-gray-400'} />
             <div className="text-right">
-              <p className={`text-sm font-semibold ${settings.theme === 'light' ? 'text-brand-700' : 'text-gray-700'}`}>
+              <p className={`text-sm font-semibold ${theme === 'light' ? 'text-brand-700 dark:text-brand-300' : 'text-gray-700 dark:text-gray-300'}`}>
                 فاتح
               </p>
-              <p className="text-xs text-gray-500">المظهر الافتراضي</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">المظهر الافتراضي</p>
             </div>
           </button>
           <button
-            onClick={() => setSettings((p) => ({ ...p, theme: 'dark' }))}
+            onClick={() => setTheme('dark')}
             className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-              settings.theme === 'dark'
-                ? 'border-brand-500 bg-brand-50 shadow-sm'
-                : 'border-gray-200 bg-white hover:border-gray-300'
+              theme === 'dark'
+                ? 'border-brand-500 bg-brand-50 dark:bg-brand-950 shadow-sm'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300'
             }`}
           >
-            <Moon size={22} className={settings.theme === 'dark' ? 'text-brand-600' : 'text-gray-400'} />
+            <Moon size={22} className={theme === 'dark' ? 'text-brand-600' : 'text-gray-400'} />
             <div className="text-right">
-              <p className={`text-sm font-semibold ${settings.theme === 'dark' ? 'text-brand-700' : 'text-gray-700'}`}>
+              <p className={`text-sm font-semibold ${theme === 'dark' ? 'text-brand-700 dark:text-brand-300' : 'text-gray-700 dark:text-gray-300'}`}>
                 داكن
               </p>
-              <p className="text-xs text-gray-500">مريح للعين</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">مريح للعين</p>
             </div>
           </button>
         </div>
       </div>
 
       {/* Touch Mode */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 space-y-1">
         <Toggle
           enabled={settings.touchMode}
           onChange={(v) => setSettings((p) => ({ ...p, touchMode: v }))}
@@ -1500,14 +1494,14 @@ function SystemTab() {
       </div>
 
       {/* Device Info */}
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50">
+      <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
         {settings.touchMode ? (
           <Smartphone size={22} className="text-brand-600" />
         ) : (
           <Monitor size={22} className="text-gray-500" />
         )}
         <div>
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {settings.touchMode ? 'وضع الجهاز اللوحي / الشاشات اللمسية' : 'وضع سطح المكتب'}
           </p>
           <p className="text-xs text-gray-500">
@@ -1520,12 +1514,12 @@ function SystemTab() {
       </div>
 
       {/* App Version */}
-      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50">
+      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
         <div>
-          <p className="text-sm font-medium text-gray-700">إصدار التطبيق</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">إصدار التطبيق</p>
           <p className="text-xs text-gray-500 mt-0.5">نظام نقاط البيع MMIT POS</p>
         </div>
-        <span className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-sm font-mono font-semibold text-gray-700" dir="ltr">
+        <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-sm font-mono font-semibold text-gray-700 dark:text-gray-300" dir="ltr">
           v{settings.appVersion}
         </span>
       </div>
@@ -1719,10 +1713,10 @@ function GatewayFormModal({ initial, onClose, onSave, saving }: { initial: Gatew
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" dir="rtl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
-          <h2 className="text-lg font-bold">{initial ? 'تعديل بوابة الدفع' : 'إضافة بوابة دفع'}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" dir="rtl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 rounded-t-2xl z-10">
+          <h2 className="text-lg font-bold dark:text-gray-100">{initial ? 'تعديل بوابة الدفع' : 'إضافة بوابة دفع'}</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4">
           <div>
@@ -1951,8 +1945,8 @@ function OtpTab() {
       {/* Test Modal */}
       {showTestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowTestModal(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-5" dir="rtl" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-gray-900 mb-3">اختبار إرسال OTP</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-5" dir="rtl" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-3">اختبار إرسال OTP</h3>
             <FormLabel>رقم الهاتف للاختبار</FormLabel>
             <FormInput value={testPhone} onChange={setTestPhone} placeholder="05xxxxxxxx" dir="ltr" />
             <div className="flex gap-3 mt-4">
@@ -1996,10 +1990,10 @@ function OtpFormModal({ initial, onClose, onSave, saving }: { initial: OtpConfig
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" dir="rtl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
-          <h2 className="text-lg font-bold">{initial ? 'تعديل مزود OTP' : 'إضافة مزود OTP'}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100"><X size={20} /></button>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" dir="rtl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 rounded-t-2xl z-10">
+          <h2 className="text-lg font-bold dark:text-gray-100">{initial ? 'تعديل مزود OTP' : 'إضافة مزود OTP'}</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"><X size={20} /></button>
         </div>
         <div className="p-5 space-y-4">
           <div>
@@ -2087,14 +2081,14 @@ export function SettingsScreen() {
     <div className="flex gap-6 h-full min-h-0">
       {/* Content Panel - Left */}
       <div className="flex-1 min-w-0 overflow-y-auto">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
           <ActivePanel />
         </div>
       </div>
 
       {/* Tab Navigation - Right */}
       <div className="w-56 shrink-0">
-        <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm sticky top-0">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 p-2 shadow-sm sticky top-0">
           <h2 className="text-xs font-semibold text-gray-400 px-3 pt-2 pb-3 uppercase tracking-wider">الإعدادات</h2>
           <nav className="space-y-1">
             {tabs.map((tab) => {
@@ -2107,7 +2101,7 @@ export function SettingsScreen() {
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-brand-600 text-white shadow-sm shadow-brand-600/20'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   }`}
                 >
                   <Icon size={18} className={isActive ? 'text-white' : 'text-gray-400'} />

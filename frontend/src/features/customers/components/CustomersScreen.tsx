@@ -55,10 +55,10 @@ export function CustomersScreen() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {activeTab === 'customers' ? 'العملاء' : 'الموردين'}
           </h1>
-          <p className="text-gray-500 text-sm mt-1">إدارة بيانات العملاء والموردين</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">إدارة بيانات العملاء والموردين</p>
         </div>
         <button onClick={() => setShowAddModal(true)} className="btn-primary shrink-0">
           <UserPlus size={18} />
@@ -73,7 +73,7 @@ export function CustomersScreen() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'customers'
               ? 'bg-brand-600 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           <Users size={16} />
@@ -84,7 +84,7 @@ export function CustomersScreen() {
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
             activeTab === 'suppliers'
               ? 'bg-brand-600 text-white shadow-sm'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
           }`}
         >
           <CreditCard size={16} />
@@ -123,7 +123,7 @@ export function CustomersScreen() {
             placeholder="بحث بالاسم أو رقم الهاتف..."
             value={searchText}
             onChange={(e) => { setSearchText(e.target.value); setPage(1); }}
-            className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
+            className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all text-sm"
           />
         </div>
 
@@ -131,7 +131,7 @@ export function CustomersScreen() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-16 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : isError ? (
@@ -145,14 +145,14 @@ export function CustomersScreen() {
             <div className="overflow-x-auto">
               <table className="w-full text-right">
                 <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الاسم</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الهاتف</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الرصيد</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">حد الائتمان</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">نوع السعر</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">الحالة</th>
-                    <th className="py-3 px-4 text-sm font-semibold text-gray-500">إجراءات</th>
+                  <tr className="border-b border-gray-100 dark:border-gray-800">
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الاسم</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الهاتف</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الرصيد</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">حد الائتمان</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">نوع السعر</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">الحالة</th>
+                    <th className="py-3 px-4 text-sm font-semibold text-gray-500 dark:text-gray-400">إجراءات</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -166,22 +166,22 @@ export function CustomersScreen() {
                     contacts.map((contact) => {
                       const balanceColor = contact.balance > 0 ? 'text-emerald-600' : contact.balance < 0 ? 'text-red-600' : 'text-gray-500';
                       return (
-                        <tr key={contact.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <tr key={contact.id} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-3">
                               <div className="w-9 h-9 rounded-lg bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm shrink-0">
                                 {contact.name.charAt(0)}
                               </div>
-                              <span className="font-medium text-gray-900">{contact.name}</span>
+                              <span className="font-medium text-gray-900 dark:text-gray-100">{contact.name}</span>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">{contact.phone ?? '—'}</td>
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{contact.phone ?? '—'}</td>
                           <td className="py-3 px-4">
                             <span className={cn('text-sm font-bold', balanceColor)}>
                               {formatCurrency(contact.balance)}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-sm text-gray-600">
+                          <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                             {contact.creditLimit ? formatCurrency(contact.creditLimit) : '—'}
                           </td>
                           <td className="py-3 px-4">
@@ -211,25 +211,25 @@ export function CustomersScreen() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <p className="text-sm text-gray-500">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   عرض {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, totalCount)} من {totalCount}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
                   >
                     <ChevronRight size={18} />
                   </button>
-                  <span className="text-sm font-medium text-gray-700 min-w-[80px] text-center">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[80px] text-center">
                     {page} / {totalPages}
                   </span>
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition-colors"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 transition-colors"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -287,29 +287,29 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
             {isCustomer ? 'إضافة عميل جديد' : 'إضافة مورد جديد'}
           </h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               الاسم <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => updateField('name', e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
               placeholder={isCustomer ? 'اسم العميل' : 'اسم المورد'}
               required
             />
@@ -317,45 +317,45 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">الهاتف</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الهاتف</label>
               <input
                 type="tel"
                 value={form.phone}
                 onChange={(e) => updateField('phone', e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
                 placeholder="01xxxxxxxxx"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">البريد</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">البريد</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => updateField('email', e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
                 placeholder="email@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">العنوان</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
             <input
               type="text"
               value={form.address}
               onChange={(e) => updateField('address', e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
               placeholder="العنوان"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">نوع السعر</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">نوع السعر</label>
               <select
                 value={form.priceType}
                 onChange={(e) => updateField('priceType', Number(e.target.value) as PriceType)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
               >
                 <option value={PriceType.Retail}>قطاعي</option>
                 <option value={PriceType.HalfWholesale}>نصف جملة</option>
@@ -363,18 +363,18 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">حد الائتمان</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">حد الائتمان</label>
               <input
                 type="number"
                 min={0}
                 value={form.creditLimit ?? 0}
                 onChange={(e) => updateField('creditLimit', Number(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <button
               type="submit"
               disabled={createContact.isPending || !form.name.trim()}
@@ -412,27 +412,27 @@ function RecordPaymentModal({ contact, onClose }: { contact: ContactDto; onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">تسجيل دفعة</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">تسجيل دفعة</h2>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="bg-gray-50 rounded-xl p-3 text-sm">
-            <p className="font-semibold text-gray-900">{contact.name}</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-sm">
+            <p className="font-semibold text-gray-900 dark:text-gray-100">{contact.name}</p>
             <p className={cn('font-bold mt-1', contact.balance > 0 ? 'text-emerald-600' : contact.balance < 0 ? 'text-red-600' : 'text-gray-500')}>
               الرصيد: {formatCurrency(contact.balance)}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               المبلغ <span className="text-red-500">*</span>
             </label>
             <input
@@ -441,14 +441,14 @@ function RecordPaymentModal({ contact, onClose }: { contact: ContactDto; onClose
               step={0.01}
               value={amount || ''}
               onChange={(e) => setAmount(Number(e.target.value))}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
               placeholder="0.00"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               الحساب المالي <span className="text-red-500">*</span>
             </label>
             {accountsLoading ? (
@@ -457,7 +457,7 @@ function RecordPaymentModal({ contact, onClose }: { contact: ContactDto; onClose
               <select
                 value={accountId}
                 onChange={(e) => setAccountId(Number(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-brand-500 outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
                 required
               >
                 <option value={0}>اختر الحساب</option>
@@ -470,7 +470,7 @@ function RecordPaymentModal({ contact, onClose }: { contact: ContactDto; onClose
             )}
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-100">
+          <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <button
               type="submit"
               disabled={recordPayment.isPending || amount <= 0 || accountId <= 0}
