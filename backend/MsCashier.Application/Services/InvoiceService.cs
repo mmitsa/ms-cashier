@@ -16,11 +16,15 @@ public class InvoiceService : IInvoiceService
 {
     private readonly IUnitOfWork _uow;
     private readonly ICurrentTenantService _tenant;
+    private readonly IAuditService _audit;
+    private readonly INotificationService _notif;
 
-    public InvoiceService(IUnitOfWork uow, ICurrentTenantService tenant)
+    public InvoiceService(IUnitOfWork uow, ICurrentTenantService tenant, IAuditService audit, INotificationService notif)
     {
         _uow = uow;
         _tenant = tenant;
+        _audit = audit;
+        _notif = notif;
     }
 
     public async Task<Result<InvoiceDto>> CreateSaleAsync(CreateInvoiceRequest request)
@@ -29,7 +33,25 @@ public class InvoiceService : IInvoiceService
         {
             await _uow.BeginTransactionAsync();
 
-            // 1. Validate items exist and have stock
+            // 0. Resolve SalesRep and effective warehouse FIRST (before validation)
+            SalesRep? salesRep = null;
+            var effectiveWarehouseId = request.WarehouseId;
+
+            if (request.SalesRepId.HasValue)
+            {
+                salesRep = await _uow.Repository<SalesRep>().GetByIdAsync(request.SalesRepId.Value);
+                if (salesRep is null || !salesRep.IsActive)
+                {
+                    await _uow.RollbackTransactionAsync();
+                    return Result<InvoiceDto>.Failure("المندوب غير موجود أو معطّل");
+                }
+                if (salesRep.AssignedWarehouseId.HasValue)
+                {
+                    effectiveWarehouseId = salesRep.AssignedWarehouseId.Value;
+                }
+            }
+
+            // 1. Validate items exist and have stock (using effectiveWarehouseId)
             foreach (var item in request.Items)
             {
                 var product = await _uow.Repository<Product>().Query()
@@ -50,7 +72,7 @@ public class InvoiceService : IInvoiceService
                         .Where(i =>
                             i.TenantId == _tenant.TenantId &&
                             i.ProductId == item.ProductId &&
-                            i.WarehouseId == request.WarehouseId)
+                            i.WarehouseId == effectiveWarehouseId)
                         .SumAsync(i => i.Quantity - i.ReservedQty);
 
                     if (available < item.Quantity)
@@ -67,6 +89,12 @@ public class InvoiceService : IInvoiceService
                 i.InvoiceType == InvoiceType.Sale);
             var invoiceNumber = $"INV-{(invoiceCount + 1):D6}";
 
+            // 2.5. Load tenant tax config for default VAT fallback
+            var taxConfig = await _uow.Repository<TenantTaxConfig>().Query()
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+            var defaultVatRate = taxConfig?.IsEnabled == true ? taxConfig.DefaultVatRate : 0m;
+
             // 3. Calculate per-item totals with tax
             var invoiceItems = new List<InvoiceItem>();
             decimal subTotal = 0;
@@ -77,11 +105,62 @@ public class InvoiceService : IInvoiceService
                 var product = await _uow.Repository<Product>().Query()
                     .FirstOrDefaultAsync(p => p.Id == item.ProductId && p.TenantId == _tenant.TenantId);
 
-                var lineTotal = item.Quantity * item.UnitPrice;
-                var lineDiscount = item.DiscountAmount;
-                var taxableAmount = lineTotal - lineDiscount;
-                var lineTax = product!.TaxRate.HasValue
-                    ? taxableAmount * (product.TaxRate.Value / 100m)
+                // === Bundle handling ===
+                if (product!.IsBundle)
+                {
+                    var bundleItems = await _uow.Repository<BundleItem>().Query()
+                        .Include(bi => bi.Component)
+                        .Where(bi => bi.ProductId == product.Id)
+                        .OrderBy(bi => bi.SortOrder)
+                        .ToListAsync();
+
+                    var bundlePrice = CalcBundlePrice(product, bundleItems, request.PriceType);
+                    var bundleCost = bundleItems.Sum(bi => (bi.Component?.CostPrice ?? 0) * bi.Quantity);
+                    var lineTotal = bundlePrice * item.Quantity;
+                    var lineDiscount = item.DiscountAmount;
+                    var taxableAmount = lineTotal - lineDiscount;
+                    var lineTax = defaultVatRate > 0 ? Math.Round(taxableAmount * defaultVatRate / 100, 2) : 0m;
+
+                    invoiceItems.Add(new InvoiceItem
+                    {
+                        ProductId = product.Id,
+                        Quantity = item.Quantity,
+                        UnitPrice = bundlePrice,
+                        CostPrice = bundleCost,
+                        DiscountAmount = lineDiscount,
+                        TaxAmount = lineTax,
+                        TotalPrice = taxableAmount + lineTax,
+                        BundleParentId = null,
+                    });
+
+                    // Child items for each component (for display and inventory tracking)
+                    foreach (var bi in bundleItems)
+                    {
+                        invoiceItems.Add(new InvoiceItem
+                        {
+                            ProductId = bi.ComponentId,
+                            Quantity = bi.Quantity * item.Quantity,
+                            UnitPrice = 0,
+                            CostPrice = bi.Component?.CostPrice ?? 0,
+                            DiscountAmount = 0,
+                            TaxAmount = 0,
+                            TotalPrice = 0,
+                            BundleParentId = -1, // placeholder — fixed after save
+                        });
+                    }
+
+                    subTotal += lineTotal;
+                    totalTax += lineTax;
+                    continue; // skip normal item processing
+                }
+
+                var lineTotal2 = item.Quantity * item.UnitPrice;
+                var lineDiscount2 = item.DiscountAmount;
+                var taxableAmount2 = lineTotal2 - lineDiscount2;
+                // Use product-specific rate, or fall back to tenant default
+                var effectiveTaxRate = product.TaxRate ?? (defaultVatRate > 0 ? defaultVatRate : (decimal?)null);
+                var lineTax2 = effectiveTaxRate.HasValue
+                    ? taxableAmount2 * (effectiveTaxRate.Value / 100m)
                     : 0;
 
                 var invoiceItem = new InvoiceItem
@@ -90,14 +169,14 @@ public class InvoiceService : IInvoiceService
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                     CostPrice = product.CostPrice,
-                    DiscountAmount = lineDiscount,
-                    TaxAmount = Math.Round(lineTax, 2),
-                    TotalPrice = Math.Round(taxableAmount + lineTax, 2)
+                    DiscountAmount = lineDiscount2,
+                    TaxAmount = Math.Round(lineTax2, 2),
+                    TotalPrice = Math.Round(taxableAmount2 + lineTax2, 2)
                 };
 
                 invoiceItems.Add(invoiceItem);
-                subTotal += lineTotal;
-                totalTax += Math.Round(lineTax, 2);
+                subTotal += lineTotal2;
+                totalTax += Math.Round(lineTax2, 2);
             }
 
             var totalAmount = subTotal - request.DiscountAmount + totalTax;
@@ -108,6 +187,26 @@ public class InvoiceService : IInvoiceService
                     ? PaymentStatus.Partial
                     : PaymentStatus.Unpaid;
 
+            // 3.7. Resolve currency + exchange rate
+            string? currencyCode = request.CurrencyCode;
+            decimal exchangeRate = 1m;
+            decimal? totalInBase = null;
+
+            if (!string.IsNullOrWhiteSpace(currencyCode))
+            {
+                var currency = await _uow.Repository<TenantCurrency>().Query()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.CurrencyCode == currencyCode && !c.IsDeleted);
+                if (currency is not null)
+                {
+                    exchangeRate = currency.ExchangeRate;
+                    if (!currency.IsDefault)
+                    {
+                        totalInBase = Math.Round(totalAmount * exchangeRate, 2);
+                    }
+                }
+            }
+
             // 4. Create Invoice entity
             var invoice = new Invoice
             {
@@ -116,7 +215,7 @@ public class InvoiceService : IInvoiceService
                 InvoiceType = InvoiceType.Sale,
                 InvoiceDate = DateTime.UtcNow,
                 ContactId = request.ContactId,
-                WarehouseId = request.WarehouseId,
+                WarehouseId = effectiveWarehouseId,
                 PriceType = request.PriceType,
                 SubTotal = Math.Round(subTotal, 2),
                 DiscountAmount = request.DiscountAmount,
@@ -127,7 +226,11 @@ public class InvoiceService : IInvoiceService
                 PaymentMethod = request.PaymentMethod,
                 PaymentStatus = paymentStatus,
                 Notes = request.Notes,
-                CreatedBy = _tenant.UserId
+                CreatedBy = _tenant.UserId,
+                SalesRepId = request.SalesRepId,
+                CurrencyCode = currencyCode,
+                ExchangeRate = exchangeRate != 1m ? exchangeRate : null,
+                TotalInBaseCurrency = totalInBase,
             };
 
             await _uow.Repository<Invoice>().AddAsync(invoice);
@@ -141,14 +244,75 @@ public class InvoiceService : IInvoiceService
             }
             await _uow.SaveChangesAsync();
 
-            // 5. Update Inventory (decrease quantity)
+            // Fix BundleParentId placeholder values
+            var savedItems = await _uow.Repository<InvoiceItem>().Query()
+                .Where(ii => ii.InvoiceId == invoice.Id)
+                .OrderBy(ii => ii.Id)
+                .ToListAsync();
+            long? lastBundleParentId = null;
+            foreach (var ii in savedItems)
+            {
+                if (ii.BundleParentId == null)
+                {
+                    var prod = await _uow.Repository<Product>().GetByIdAsync(ii.ProductId);
+                    if (prod?.IsBundle == true)
+                        lastBundleParentId = ii.Id;
+                    else
+                        lastBundleParentId = null;
+                }
+                else if (ii.BundleParentId == -1 && lastBundleParentId != null)
+                {
+                    ii.BundleParentId = lastBundleParentId;
+                }
+            }
+            await _uow.SaveChangesAsync();
+
+            // 5. Update Inventory (decrease from the effective warehouse)
             foreach (var item in request.Items)
             {
+                var product = await _uow.Repository<Product>().Query()
+                    .FirstOrDefaultAsync(p => p.Id == item.ProductId && p.TenantId == _tenant.TenantId);
+
+                if (product?.IsBundle == true)
+                {
+                    if (product.BundleHasOwnStock)
+                    {
+                        // Deduct from bundle's own inventory (same as regular product)
+                        var bundleInv = await _uow.Repository<Inventory>().Query()
+                            .FirstOrDefaultAsync(inv => inv.ProductId == product.Id && inv.WarehouseId == effectiveWarehouseId);
+                        if (bundleInv != null)
+                        {
+                            bundleInv.Quantity -= item.Quantity;
+                            bundleInv.LastUpdated = DateTime.UtcNow;
+                            _uow.Repository<Inventory>().Update(bundleInv);
+                        }
+                    }
+                    else
+                    {
+                        // Deduct from each component's stock
+                        var bundleItems = await _uow.Repository<BundleItem>().Query()
+                            .Where(bi => bi.ProductId == product.Id)
+                            .ToListAsync();
+                        foreach (var bi in bundleItems)
+                        {
+                            var compInv = await _uow.Repository<Inventory>().Query()
+                                .FirstOrDefaultAsync(inv => inv.ProductId == bi.ComponentId && inv.WarehouseId == effectiveWarehouseId);
+                            if (compInv != null)
+                            {
+                                compInv.Quantity -= bi.Quantity * item.Quantity;
+                                compInv.LastUpdated = DateTime.UtcNow;
+                                _uow.Repository<Inventory>().Update(compInv);
+                            }
+                        }
+                    }
+                    continue; // skip normal inventory deduction for bundle
+                }
+
                 var inventory = await _uow.Repository<Inventory>().Query()
                     .FirstOrDefaultAsync(i =>
                         i.TenantId == _tenant.TenantId &&
                         i.ProductId == item.ProductId &&
-                        i.WarehouseId == request.WarehouseId);
+                        i.WarehouseId == effectiveWarehouseId);
 
                 if (inventory is not null)
                 {
@@ -162,7 +326,7 @@ public class InvoiceService : IInvoiceService
                     {
                         TenantId = _tenant.TenantId,
                         ProductId = item.ProductId,
-                        WarehouseId = request.WarehouseId,
+                        WarehouseId = effectiveWarehouseId,
                         TransactionType = InventoryTransactionType.StockOut,
                         Quantity = item.Quantity,
                         PreviousQty = prevQty,
@@ -174,6 +338,21 @@ public class InvoiceService : IInvoiceService
                         CreatedAt = DateTime.UtcNow
                     };
                     await _uow.Repository<InventoryTransaction>().AddAsync(invTx);
+
+                    // 6.5. Low stock notification
+                    if (inventory.Quantity <= 0)
+                    {
+                        var prodName = (await _uow.Repository<Product>().GetByIdAsync(item.ProductId))?.Name ?? $"#{item.ProductId}";
+                        _ = _notif.SendAsync(null, $"نفاد مخزون: {prodName}", $"الرصيد وصل {inventory.Quantity} في المخزن", "warning", "Product", item.ProductId.ToString());
+                    }
+                    else
+                    {
+                        var prod = await _uow.Repository<Product>().GetByIdAsync(item.ProductId);
+                        if (prod is not null && inventory.Quantity <= prod.MinStock)
+                        {
+                            _ = _notif.SendAsync(null, $"مخزون منخفض: {prod.Name}", $"الرصيد {inventory.Quantity} (الحد الأدنى: {prod.MinStock})", "warning", "Product", item.ProductId.ToString());
+                        }
+                    }
                 }
             }
             await _uow.SaveChangesAsync();
@@ -226,10 +405,42 @@ public class InvoiceService : IInvoiceService
                 }
             }
 
+            // 8.5. SalesRep ledger: record the taken items on the rep's account
+            if (salesRep is not null)
+            {
+                salesRep.OutstandingBalance += invoice.TotalAmount;
+                _uow.Repository<SalesRep>().Update(salesRep);
+
+                var repTxn = new SalesRepTransaction
+                {
+                    SalesRepId = salesRep.Id,
+                    TenantId = _tenant.TenantId,
+                    TransactionType = SalesRepTxnType.ItemTaken,
+                    Amount = invoice.TotalAmount,
+                    BalanceAfter = salesRep.OutstandingBalance,
+                    InvoiceId = invoice.Id,
+                    Notes = $"بضاعة مسحوبة — فاتورة {invoiceNumber}",
+                };
+                await _uow.Repository<SalesRepTransaction>().AddAsync(repTxn);
+                await _uow.SaveChangesAsync();
+
+                // Notify admin if rep's balance exceeds 10,000
+                if (salesRep.OutstandingBalance > 10_000)
+                {
+                    _ = _notif.SendAsync(null,
+                        $"تنبيه: رصيد المندوب {salesRep.Name} مرتفع",
+                        $"الرصيد المعلق: {salesRep.OutstandingBalance:N0}",
+                        "danger", "SalesRep", salesRep.Id.ToString());
+                }
+            }
+
             // 9. Commit transaction
             await _uow.CommitTransactionAsync();
 
-            // 10. Return complete InvoiceDto
+            // 10. Audit + Return
+            _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
+                newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}");
+
             var dto = await BuildInvoiceDto(invoice.Id);
             return Result<InvoiceDto>.Success(dto!, "تم إنشاء الفاتورة بنجاح");
         }
@@ -740,6 +951,13 @@ public class InvoiceService : IInvoiceService
         var creator = await _uow.Repository<User>().GetByIdAsync(invoice.CreatedBy);
         var creatorName = creator?.FullName ?? "";
 
+        string? salesRepName = null;
+        if (invoice.SalesRepId.HasValue)
+        {
+            var rep = await _uow.Repository<SalesRep>().GetByIdAsync(invoice.SalesRepId.Value);
+            salesRepName = rep?.Name;
+        }
+
         var items = await _uow.Repository<InvoiceItem>().Query()
             .Where(ii => ii.InvoiceId == invoiceId)
             .ToListAsync();
@@ -762,7 +980,8 @@ public class InvoiceService : IInvoiceService
                 item.Quantity,
                 unitName ?? "حبة",
                 item.UnitPrice, item.CostPrice,
-                item.DiscountAmount, item.TaxAmount, item.TotalPrice));
+                item.DiscountAmount, item.TaxAmount, item.TotalPrice,
+                item.BundleParentId));
         }
 
         return new InvoiceDto(
@@ -774,7 +993,45 @@ public class InvoiceService : IInvoiceService
             invoice.PaidAmount, invoice.DueAmount,
             invoice.PaymentMethod, invoice.PaymentStatus,
             invoice.Notes, creatorName, itemDtos,
-            invoice.ZatcaReported, invoice.ZatcaQrCode);
+            invoice.ZatcaReported, invoice.ZatcaQrCode,
+            invoice.SalesRepId, salesRepName,
+            invoice.CurrencyCode, invoice.ExchangeRate, invoice.TotalInBaseCurrency);
+    }
+
+    private static decimal CalcBundlePrice(Product bundle, List<BundleItem> items, PriceType priceType)
+    {
+        if (bundle.BundleDiscountType == Domain.Enums.BundleDiscountType.FixedPrice)
+        {
+            if (bundle.BundlePricingMode == Domain.Enums.BundlePricingMode.Unified)
+                return bundle.RetailPrice;
+
+            return priceType switch
+            {
+                PriceType.HalfWholesale => bundle.HalfWholesalePrice ?? bundle.RetailPrice,
+                PriceType.Wholesale => bundle.WholesalePrice ?? bundle.RetailPrice,
+                _ => bundle.RetailPrice,
+            };
+        }
+
+        var componentSum = items.Sum(bi =>
+        {
+            var compPrice = priceType switch
+            {
+                PriceType.HalfWholesale => bi.Component?.HalfWholesalePrice ?? bi.Component?.RetailPrice ?? 0,
+                PriceType.Wholesale => bi.Component?.WholesalePrice ?? bi.Component?.RetailPrice ?? 0,
+                _ => bi.Component?.RetailPrice ?? 0,
+            };
+            return compPrice * bi.Quantity;
+        });
+
+        return bundle.BundleDiscountType switch
+        {
+            Domain.Enums.BundleDiscountType.Percent =>
+                Math.Round(componentSum * (1 - (bundle.BundleDiscountValue ?? 0) / 100), 2),
+            Domain.Enums.BundleDiscountType.FlatDiscount =>
+                Math.Max(0, componentSum - (bundle.BundleDiscountValue ?? 0)),
+            _ => componentSum,
+        };
     }
 }
 
