@@ -54,6 +54,8 @@ public class OnlineStoreService : IOnlineStoreService
                 TenantId = _tenant.TenantId,
                 Subdomain = subdomain,
                 CustomDomain = request.CustomDomain,
+                IsActive = request.IsActive,
+                IsPublished = request.IsPublished,
                 ThemeId = request.ThemeId ?? "modern-retail",
                 ThemeSettings = request.ThemeSettings,
                 LogoUrl = request.LogoUrl,
@@ -70,6 +72,8 @@ public class OnlineStoreService : IOnlineStoreService
         {
             store.Subdomain = subdomain;
             store.CustomDomain = request.CustomDomain;
+            store.IsActive = request.IsActive;
+            store.IsPublished = request.IsPublished;
             store.ThemeId = request.ThemeId ?? store.ThemeId;
             store.ThemeSettings = request.ThemeSettings ?? store.ThemeSettings;
             store.LogoUrl = request.LogoUrl ?? store.LogoUrl;

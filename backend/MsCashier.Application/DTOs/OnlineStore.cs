@@ -13,10 +13,10 @@ public record OnlineStoreDto(
     string? GoogleAnalyticsId, string? FacebookPixelId, string? CustomCss);
 
 public record CreateOnlineStoreRequest(
-    string Subdomain, string? CustomDomain, string? ThemeId,
-    string? ThemeSettings, string? LogoUrl, string? FaviconUrl,
-    string? MetaTitle, string? MetaDescription,
-    string? GoogleAnalyticsId, string? FacebookPixelId, string? CustomCss);
+    string Subdomain, string? CustomDomain, bool IsActive = true, bool IsPublished = false,
+    string? ThemeId = null, string? ThemeSettings = null, string? LogoUrl = null, string? FaviconUrl = null,
+    string? MetaTitle = null, string? MetaDescription = null,
+    string? GoogleAnalyticsId = null, string? FacebookPixelId = null, string? CustomCss = null);
 
 public record UpdateOnlineStoreRequest(
     string? Subdomain, string? CustomDomain, bool? IsActive, bool? IsPublished,

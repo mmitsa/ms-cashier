@@ -437,16 +437,20 @@ public class InvoiceService : IInvoiceService
             // 9. Commit transaction
             await _uow.CommitTransactionAsync();
 
-            // 10. Audit + Return
-            _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
-                newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}");
+            // 10. Audit (fire-and-forget, never fail the sale)
+            try
+            {
+                _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
+                    newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}");
+            }
+            catch { /* audit failure must not break a committed sale */ }
 
             var dto = await BuildInvoiceDto(invoice.Id);
             return Result<InvoiceDto>.Success(dto!, "تم إنشاء الفاتورة بنجاح");
         }
         catch (Exception ex)
         {
-            await _uow.RollbackTransactionAsync();
+            try { await _uow.RollbackTransactionAsync(); } catch { /* already committed or no transaction */ }
             return Result<InvoiceDto>.Failure($"خطأ أثناء إنشاء فاتورة البيع: {ex.Message}");
         }
     }
