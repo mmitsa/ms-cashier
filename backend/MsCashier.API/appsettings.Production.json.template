@@ -1,0 +1,22 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MsCashier;User Id=mscashier;Password=REPLACE_ME;TrustServerCertificate=True;MultipleActiveResultSets=True"
+  },
+  "Jwt": {
+    "Key": "REPLACE_WITH_64_CHAR_RANDOM_SECRET_MINIMUM_32_CHARACTERS_REQUIRED",
+    "Issuer": "MsCashier",
+    "Audience": "MsCashier",
+    "ExpiryHours": 24
+  },
+  "Cors": {
+    "Origins": "https://mops.mmit.sa"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    }
+  },
+  "AllowedHosts": "mops.mmit.sa;localhost"
+}
