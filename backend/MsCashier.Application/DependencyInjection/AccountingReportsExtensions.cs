@@ -9,6 +9,7 @@ public static class AccountingReportsExtensions
     public static IServiceCollection AddAccountingReports(this IServiceCollection services)
     {
         services.AddScoped<IAccountingReportsService, AccountingReportsService>();
+        services.AddScoped<IChartOfAccountService, ChartOfAccountService>();
         return services;
     }
 }
