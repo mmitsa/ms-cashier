@@ -36,6 +36,7 @@ public class ReceiptPostingService : IReceiptPostingService
         int cashAccountId,
         DateTime date,
         string? reference,
+        long sourceId,
         CancellationToken ct = default)
     {
         if (amount <= 0)
@@ -70,8 +71,8 @@ public class ReceiptPostingService : IReceiptPostingService
             Reference: reference,
             DescriptionAr: $"سند قبض من العميل — {reference}",
             DescriptionEn: $"Customer receipt — {reference}",
-            SourceType: "CustomerReceipt",
-            SourceId: null,
+            SourceType: "FinanceTransaction",
+            SourceId: sourceId,
             BranchId: null);
 
         return await _journal.CreateAndPostAsync(dto, ct);

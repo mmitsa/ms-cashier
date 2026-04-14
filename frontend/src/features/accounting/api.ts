@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
 import type { ApiResponse } from '@/types/api.types';
 import type {
   TrialBalanceDto, IncomeStatementDto, BalanceSheetDto, ContactStatementDto,
+  ChartOfAccountNode,
 } from './types';
 
 export const accountingApi = {
@@ -68,5 +70,80 @@ export function useContactStatement(contactId: number | undefined, fromDate: str
     queryFn: () => accountingApi.getContactStatement(contactId!, fromDate, toDate),
     select: (r) => r.data,
     enabled: !!contactId && !!fromDate && !!toDate,
+  });
+}
+
+// ==================== Chart of Accounts ====================
+
+export type ChartOfAccountsResult = {
+  accounts: ChartOfAccountNode[];
+  notAvailable: boolean;
+};
+
+async function fetchChartOfAccounts(): Promise<ChartOfAccountsResult> {
+  try {
+    const res = await apiClient.get<ApiResponse<ChartOfAccountNode[]>>(
+      '/accounting/chart-of-accounts'
+    );
+    return { accounts: res.data.data ?? [], notAvailable: false };
+  } catch (err) {
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      // eslint-disable-next-line no-console
+      console.warn('[accounting] Chart of Accounts endpoint not available yet (404)');
+      return { accounts: [], notAvailable: true };
+    }
+    throw err;
+  }
+}
+
+export function useChartOfAccounts() {
+  return useQuery({
+    queryKey: ['accounting', 'chart-of-accounts'],
+    queryFn: fetchChartOfAccounts,
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 404) return false;
+      return failureCount < 2;
+    },
+  });
+}
+
+export type CreateChartOfAccountInput = {
+  parentId: number | null;
+  code: string;
+  nameAr: string;
+  nameEn?: string | null;
+  description?: string | null;
+};
+
+export function useCreateChartOfAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateChartOfAccountInput) =>
+      apiClient
+        .post<ApiResponse<ChartOfAccountNode>>('/accounting/chart-of-accounts', input)
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounting', 'chart-of-accounts'] });
+    },
+  });
+}
+
+export type UpdateChartOfAccountInput = {
+  nameAr?: string;
+  nameEn?: string | null;
+  description?: string | null;
+  isActive?: boolean;
+};
+
+export function useUpdateChartOfAccount(id: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateChartOfAccountInput) =>
+      apiClient
+        .patch<ApiResponse<ChartOfAccountNode>>(`/accounting/chart-of-accounts/${id}`, input)
+        .then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['accounting', 'chart-of-accounts'] });
+    },
   });
 }

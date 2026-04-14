@@ -216,7 +216,7 @@ public class FinanceService : IFinanceService
                             // Money OUT to supplier → supplier payment (Dr AP / Cr Cash)
                             var result = await _paymentPosting.PostSupplierPaymentAsync(
                                 request.ContactId.Value, request.Amount, glCashAccountId.Value,
-                                transaction.CreatedAt, reference);
+                                transaction.CreatedAt, reference, transaction.Id);
                             if (!result.IsSuccess)
                             {
                                 _logger.LogWarning("Supplier payment GL posting failed for FT {TxId}: {Error}", transaction.Id, result.Message);
@@ -228,7 +228,7 @@ public class FinanceService : IFinanceService
                             // Money IN from customer → customer receipt (Dr Cash / Cr AR)
                             var result = await _receiptPosting.PostCustomerReceiptAsync(
                                 request.ContactId.Value, request.Amount, glCashAccountId.Value,
-                                transaction.CreatedAt, reference);
+                                transaction.CreatedAt, reference, transaction.Id);
                             if (!result.IsSuccess)
                             {
                                 _logger.LogWarning("Customer receipt GL posting failed for FT {TxId}: {Error}", transaction.Id, result.Message);

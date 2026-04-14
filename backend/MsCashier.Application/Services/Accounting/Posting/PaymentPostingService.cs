@@ -36,6 +36,7 @@ public class PaymentPostingService : IPaymentPostingService
         int cashAccountId,
         DateTime date,
         string? reference,
+        long sourceId,
         CancellationToken ct = default)
     {
         if (amount <= 0)
@@ -71,8 +72,8 @@ public class PaymentPostingService : IPaymentPostingService
             Reference: reference,
             DescriptionAr: $"سند صرف للمورد — {reference}",
             DescriptionEn: $"Supplier payment — {reference}",
-            SourceType: "SupplierPayment",
-            SourceId: null,
+            SourceType: "FinanceTransaction",
+            SourceId: sourceId,
             BranchId: null);
 
         return await _journal.CreateAndPostAsync(dto, ct);

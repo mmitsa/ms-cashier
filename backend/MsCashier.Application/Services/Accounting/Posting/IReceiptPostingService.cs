@@ -10,5 +10,6 @@ public interface IReceiptPostingService
         int cashAccountId,
         DateTime date,
         string? reference,
+        long sourceId,
         CancellationToken ct = default);
 }

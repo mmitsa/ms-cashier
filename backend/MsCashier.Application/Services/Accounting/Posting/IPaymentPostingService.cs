@@ -10,5 +10,6 @@ public interface IPaymentPostingService
         int cashAccountId,
         DateTime date,
         string? reference,
+        long sourceId,
         CancellationToken ct = default);
 }

@@ -54,13 +54,22 @@ public class SalePostingService : ISalePostingService
         //   3) 0 < PaidAmount < TotalAmount                → partial: Dr Cash (PaidAmount),
         //                                                              Dr AR  (Total - PaidAmount).
         //
-        // Cash side resolution: the invoice does not currently carry a FinanceAccountId/PaymentTerminalId
-        // linkage from which to derive the tenant's specific cash/bank leaf. We therefore default to
-        // system code "1101" (Main Cash). TODO: once invoices capture the terminal/cash-drawer FinanceAccountId,
-        // resolve via FinanceAccount.ChartOfAccountId for per-terminal cash posting.
+        // Cash side resolution: route by payment method.
+        //   Cash          → 1101 Main Cash
+        //   Visa / Instapay / Tabby / Tamara / ValU → 1120 Card Payments Clearing
+        //       (settled to a bank later via CardSettlementService)
+        //   BankTransfer  → 1101 for now (TODO: resolve specific bank FinanceAccount once
+        //                   invoices carry the destination bank link)
+        //   Installment   → 1101 for the down-payment portion; the remainder is AR and
+        //                   later movements go through InstallmentPaymentPostingService.
+        //   Credit        → handled above (full AR)
+        //   Any new method → falls through to 1101 (documented fallback).
         var paid = invoice.PaidAmount;
         var isFullCredit = invoice.PaymentMethod == PaymentMethod.Credit || paid == 0m;
         var isFullCash = !isFullCredit && paid >= total;
+
+        var cashSideCode = ResolveCashSideAccountCode(invoice.PaymentMethod);
+        var cashSideDesc = CashSideDescription(invoice.PaymentMethod);
 
         if (isFullCredit)
         {
@@ -74,17 +83,17 @@ public class SalePostingService : ISalePostingService
         }
         else if (isFullCash)
         {
-            var cashId = await _resolver.GetAccountIdByCodeAsync("1101", ct);
+            var cashId = await _resolver.GetAccountIdByCodeAsync(cashSideCode, ct);
             lines.Add(new JournalLineDto(
                 AccountId: cashId,
                 Debit: total,
                 Credit: 0m,
-                Description: $"نقدية محصلة من الفاتورة {invoice.InvoiceNumber}"));
+                Description: $"{cashSideDesc} — فاتورة {invoice.InvoiceNumber}"));
         }
         else
         {
-            // Partial payment: split between cash and AR.
-            var cashId = await _resolver.GetAccountIdByCodeAsync("1101", ct);
+            // Partial payment: split between the payment-method cash leg and AR.
+            var cashId = await _resolver.GetAccountIdByCodeAsync(cashSideCode, ct);
             var arId = await _resolver.GetAccountIdByCodeAsync("1130", ct);
             var outstanding = total - paid;
 
@@ -92,7 +101,7 @@ public class SalePostingService : ISalePostingService
                 AccountId: cashId,
                 Debit: paid,
                 Credit: 0m,
-                Description: $"دفعة جزئية نقدية — فاتورة {invoice.InvoiceNumber}"));
+                Description: $"{cashSideDesc} (دفعة جزئية) — فاتورة {invoice.InvoiceNumber}"));
 
             lines.Add(new JournalLineDto(
                 AccountId: arId,
@@ -153,4 +162,30 @@ public class SalePostingService : ISalePostingService
 
         return await _journal.CreateAndPostAsync(dto, ct);
     }
+
+    private static string ResolveCashSideAccountCode(PaymentMethod method) => method switch
+    {
+        PaymentMethod.Cash         => "1101", // Main Cash
+        PaymentMethod.Visa         => "1120", // Card Payments Clearing
+        PaymentMethod.Instapay     => "1120",
+        PaymentMethod.Tabby        => "1120",
+        PaymentMethod.Tamara       => "1120",
+        PaymentMethod.ValU         => "1120",
+        PaymentMethod.BankTransfer => "1101", // TODO: resolve specific bank FinanceAccount
+        PaymentMethod.Installment  => "1101", // down-payment portion only
+        _                          => "1101", // documented fallback
+    };
+
+    private static string CashSideDescription(PaymentMethod method) => method switch
+    {
+        PaymentMethod.Cash         => "نقدية محصلة",
+        PaymentMethod.Visa         => "مدفوعات شبكة تحت التحصيل",
+        PaymentMethod.Instapay     => "مدفوعات إنستاباي تحت التحصيل",
+        PaymentMethod.Tabby        => "مدفوعات تابي تحت التحصيل",
+        PaymentMethod.Tamara       => "مدفوعات تمارا تحت التحصيل",
+        PaymentMethod.ValU         => "مدفوعات ڤاليو تحت التحصيل",
+        PaymentMethod.BankTransfer => "تحويل بنكي",
+        PaymentMethod.Installment  => "دفعة مقدمة نقدية",
+        _                          => "نقدية محصلة",
+    };
 }

@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { BookOpen, FileBarChart2, Scale } from 'lucide-react';
+import { BookOpen, FileBarChart2, Network, Scale, User } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { TrialBalanceReport } from './components/TrialBalanceReport';
 import { IncomeStatementReport } from './components/IncomeStatementReport';
 import { BalanceSheetReport } from './components/BalanceSheetReport';
+import { ContactStatementReport } from './components/ContactStatementReport';
+import { ChartOfAccountsBrowser } from './components/ChartOfAccountsBrowser';
 
-type TabId = 'trial-balance' | 'income-statement' | 'balance-sheet';
+type TabId = 'trial-balance' | 'income-statement' | 'balance-sheet' | 'contact-statement' | 'chart-of-accounts';
 
 const tabs: { id: TabId; label: string; icon: typeof BookOpen }[] = [
   { id: 'trial-balance', label: 'ميزان المراجعة', icon: BookOpen },
   { id: 'income-statement', label: 'قائمة الدخل', icon: FileBarChart2 },
   { id: 'balance-sheet', label: 'الميزانية العمومية', icon: Scale },
+  { id: 'contact-statement', label: 'كشف حساب', icon: User },
+  { id: 'chart-of-accounts', label: 'شجرة الحسابات', icon: Network },
 ];
 
 export function AccountingScreen() {
@@ -52,6 +56,8 @@ export function AccountingScreen() {
         {activeTab === 'trial-balance' && <TrialBalanceReport />}
         {activeTab === 'income-statement' && <IncomeStatementReport />}
         {activeTab === 'balance-sheet' && <BalanceSheetReport />}
+        {activeTab === 'contact-statement' && <ContactStatementReport />}
+        {activeTab === 'chart-of-accounts' && <ChartOfAccountsBrowser />}
       </div>
     </div>
   );

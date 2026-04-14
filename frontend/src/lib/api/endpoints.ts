@@ -1050,4 +1050,37 @@ export const accountingApi = {
 
   getContactStatement: (contactId: number, fromDate: string, toDate: string) =>
     apiClient.get<ApiResponse<any>>(`/accounting/reports/contacts/${contactId}/statement`, { params: { fromDate, toDate } }).then(r => r.data),
+
+  // Chart of Accounts (endpoint may not exist yet — UI handles 404 gracefully)
+  getChartOfAccounts: () =>
+    apiClient.get<ApiResponse<any>>('/accounting/chart-of-accounts').then(r => r.data),
+
+  createChartOfAccount: (payload: {
+    parentId: number | null;
+    code: string;
+    nameAr: string;
+    nameEn?: string | null;
+    description?: string | null;
+  }) =>
+    apiClient.post<ApiResponse<any>>('/accounting/chart-of-accounts', payload).then(r => r.data),
+
+  updateChartOfAccount: (id: number, payload: {
+    nameAr?: string;
+    nameEn?: string | null;
+    description?: string | null;
+    isActive?: boolean;
+  }) =>
+    apiClient.patch<ApiResponse<any>>(`/accounting/chart-of-accounts/${id}`, payload).then(r => r.data),
+};
+
+// ==================== Posting Failures (Admin) ====================
+export const postingFailuresApi = {
+  list: (params: { resolved?: boolean; source?: string; page?: number; pageSize?: number }) =>
+    apiClient.get<ApiResponse<PagedResult<any>>>('/admin/accounting/posting-failures', { params }).then(r => r.data),
+
+  retry: (id: number) =>
+    apiClient.post<ApiResponse<any>>(`/admin/accounting/posting-failures/${id}/retry`).then(r => r.data),
+
+  resolve: (id: number, notes: string) =>
+    apiClient.post<ApiResponse<any>>(`/admin/accounting/posting-failures/${id}/resolve`, { notes }).then(r => r.data),
 };

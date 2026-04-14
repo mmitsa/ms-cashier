@@ -81,3 +81,45 @@ export type ContactStatementDto = {
   entries: ContactStatementEntry[];
   closingBalance: number;
 };
+
+// ==================== Chart of Accounts ====================
+export type ChartOfAccountNode = {
+  id: number;
+  code: string;
+  nameAr: string;
+  nameEn: string | null;
+  category: AccountCategory;
+  nature: 1 | 2; // 1 = Debit, 2 = Credit
+  parentId: number | null;
+  level: number;
+  isGroup: boolean;
+  isSystem: boolean;
+  isActive: boolean;
+  description: string | null;
+  children?: ChartOfAccountNode[];
+};
+
+export function buildTree(flat: ChartOfAccountNode[]): ChartOfAccountNode[] {
+  const byId = new Map<number, ChartOfAccountNode>();
+  const roots: ChartOfAccountNode[] = [];
+
+  for (const raw of flat) {
+    byId.set(raw.id, { ...raw, children: [] });
+  }
+
+  for (const node of byId.values()) {
+    if (node.parentId != null && byId.has(node.parentId)) {
+      byId.get(node.parentId)!.children!.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+
+  const sortNodes = (nodes: ChartOfAccountNode[]) => {
+    nodes.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+    for (const n of nodes) if (n.children?.length) sortNodes(n.children);
+  };
+  sortNodes(roots);
+
+  return roots;
+}
