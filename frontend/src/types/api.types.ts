@@ -148,6 +148,7 @@ export interface ProductDto {
   bundleValidTo?: string;
   bundlePricingMode: BundlePricingMode;
   bundleItems?: BundleItemDto[];
+  hasVariants?: boolean;
 }
 
 export interface CreateProductRequest {

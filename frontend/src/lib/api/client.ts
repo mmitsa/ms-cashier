@@ -72,7 +72,7 @@ apiClient.interceptors.response.use(
     if (status === 401) {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      toast.error(statusMessages[401]);
+      toast.error(statusMessages[401] ?? 'Unauthorized');
       window.location.href = '/login';
       return Promise.reject(error);
     }
