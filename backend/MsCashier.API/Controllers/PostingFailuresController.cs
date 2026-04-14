@@ -21,16 +21,31 @@ public class PostingFailuresController : BaseApiController
     private readonly IUnitOfWork _uow;
     private readonly ISalePostingService _salePosting;
     private readonly IPayrollPostingService _payrollPosting;
+    private readonly IReceiptPostingService _receiptPosting;
+    private readonly IPaymentPostingService _paymentPosting;
+    private readonly IInstallmentPaymentPostingService _installmentPosting;
 
     public PostingFailuresController(
         IUnitOfWork uow,
         ISalePostingService salePosting,
-        IPayrollPostingService payrollPosting)
+        IPayrollPostingService payrollPosting,
+        IReceiptPostingService receiptPosting,
+        IPaymentPostingService paymentPosting,
+        IInstallmentPaymentPostingService installmentPosting)
     {
         _uow = uow;
         _salePosting = salePosting;
         _payrollPosting = payrollPosting;
+        _receiptPosting = receiptPosting;
+        _paymentPosting = paymentPosting;
+        _installmentPosting = installmentPosting;
     }
+
+    // The journal engine returns this Arabic prefix when (SourceType,SourceId)
+    // already has a posted JE. For a retry that's a "successful resolution" —
+    // the original post succeeded on a prior attempt (or by another path), so
+    // we close out the failure row rather than incrementing retry count.
+    private const string DuplicateMarker = "يوجد قيد بالفعل";
 
     public record PostingFailureDto(
         long Id,
@@ -95,9 +110,13 @@ public class PostingFailuresController : BaseApiController
         {
             "Invoice"             => await _salePosting.PostSaleAsync(row.SourceId, ct),
             "Payroll"             => await _payrollPosting.PostPayrollRunAsync((int)row.SourceId, ct),
-            // FinanceTransaction and InstallmentPayment don't expose a single "re-post by id"
-            // service call today — those must be resolved manually via /resolve until their
-            // posting services gain an idempotent re-post entry point.
+            "FinanceTransaction"  => row.Operation switch
+            {
+                "Receipt" => await _receiptPosting.RepostFromFinanceTransactionAsync(row.SourceId, ct),
+                "Payment" => await _paymentPosting.RepostFromFinanceTransactionAsync(row.SourceId, ct),
+                _         => Result<long>.Failure("عملية غير معروفة لمعاملة مالية"),
+            },
+            "InstallmentPayment"  => await _installmentPosting.PostInstallmentPaymentAsync((int)row.SourceId, ct),
             _ => null,
         };
 
@@ -109,23 +128,40 @@ public class PostingFailuresController : BaseApiController
                 $"إعادة المحاولة غير مدعومة لهذا النوع «{row.SourceType}». استخدم /resolve بعد المعالجة اليدوية."));
         }
 
+        // Duplicate-source rejection from the journal engine = the post already
+        // happened (idempotency guard fired). Treat as a successful resolution:
+        // undo the retry-count increment, mark resolved, capture the EntryNumber
+        // the engine echoed back so the admin has a trail to the real JE.
+        var combinedError = string.Join("; ", postResult.Errors);
+        var isDuplicateResolution = !postResult.IsSuccess
+            && combinedError.Contains(DuplicateMarker, StringComparison.Ordinal);
+
         if (postResult.IsSuccess)
         {
             row.IsResolved = true;
             row.ResolvedAt = DateTime.UtcNow;
-            row.ResolutionNotes = $"Auto-resolved by retry. JournalEntryId={postResult.Data}";
+            row.ResolutionNotes = Truncate($"Auto-resolved by retry. JournalEntryId={postResult.Data}", 500);
+        }
+        else if (isDuplicateResolution)
+        {
+            row.RetryCount--; // duplicate detection is not a real retry
+            row.IsResolved = true;
+            row.ResolvedAt = DateTime.UtcNow;
+            row.ResolutionNotes = Truncate($"تم اكتشاف قيد موجود مسبقاً — {combinedError}", 500);
         }
         else
         {
-            row.ErrorMessage = Truncate(string.Join("; ", postResult.Errors), 2000);
+            row.ErrorMessage = Truncate(combinedError, 2000);
         }
 
         _uow.Repository<PostingFailure>().Update(row);
         await _uow.SaveChangesAsync(ct);
 
-        return postResult.IsSuccess
-            ? HandleResult(Result<object>.Success(new { row.Id, row.IsResolved, JournalEntryId = postResult.Data }, "تمت إعادة الترحيل بنجاح"))
-            : HandleResult(Result<object>.Failure($"فشلت إعادة المحاولة: {row.ErrorMessage}"));
+        if (postResult.IsSuccess)
+            return HandleResult(Result<object>.Success(new { row.Id, row.IsResolved, JournalEntryId = postResult.Data }, "تمت إعادة الترحيل بنجاح"));
+        if (isDuplicateResolution)
+            return HandleResult(Result<object>.Success(new { row.Id, row.IsResolved, row.ResolutionNotes }, "تم اكتشاف قيد موجود مسبقاً — تم وضع علامة «محلول»"));
+        return HandleResult(Result<object>.Failure($"فشلت إعادة المحاولة: {row.ErrorMessage}"));
     }
 
     public record ResolveRequest(string? Notes);

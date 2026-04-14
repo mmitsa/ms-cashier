@@ -13,7 +13,8 @@ public record CreateInvoiceRequest(
     string? Notes,
     List<InvoiceItemRequest> Items,
     int? SalesRepId = null,
-    string? CurrencyCode = null);
+    string? CurrencyCode = null,
+    int? FinanceAccountId = null);
 
 public record InvoiceItemRequest(int ProductId, decimal Quantity, decimal UnitPrice, decimal DiscountAmount = 0);
 
@@ -26,7 +27,8 @@ public record InvoiceDto(
     string CreatedByName, List<InvoiceItemDto> Items,
     bool ZatcaReported, string? ZatcaQrCode,
     int? SalesRepId = null, string? SalesRepName = null,
-    string? CurrencyCode = null, decimal? ExchangeRate = null, decimal? TotalInBaseCurrency = null);
+    string? CurrencyCode = null, decimal? ExchangeRate = null, decimal? TotalInBaseCurrency = null,
+    int? FinanceAccountId = null);
 
 public record InvoiceItemDto(
     long Id, int ProductId, string ProductName, string? Barcode,

@@ -77,6 +77,10 @@ public class Invoice : TenantEntity
     [Column(TypeName = "decimal(18,2)")]
     public decimal? TotalInBaseCurrency { get; set; }
 
+    /// <summary>الخزنة/البنك/المحفظة التي استلمت السداد (اختياري — يربط الفاتورة بحساب GL محدد)</summary>
+    public int? FinanceAccountId { get; set; }
+    public FinanceAccount? FinanceAccount { get; set; }
+
     // Navigation
     public Contact? Contact { get; set; }
     public Warehouse? Warehouse { get; set; }

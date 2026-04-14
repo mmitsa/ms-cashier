@@ -912,6 +912,15 @@ public class AppDbContext : DbContext
             e.HasOne(x => x.SalesRep).WithMany().HasForeignKey(x => x.SalesRepId).OnDelete(DeleteBehavior.SetNull);
         });
 
+        // Invoice → FinanceAccount (optional — records which cash drawer/bank/wallet received payment)
+        modelBuilder.Entity<Invoice>()
+            .HasOne(x => x.FinanceAccount)
+            .WithMany()
+            .HasForeignKey(x => x.FinanceAccountId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Invoice>()
+            .HasIndex(x => new { x.TenantId, x.FinanceAccountId });
+
         // Online Store
         modelBuilder.Entity<OnlineStore>(e =>
         {

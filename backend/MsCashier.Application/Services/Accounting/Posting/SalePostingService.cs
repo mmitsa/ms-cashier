@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MsCashier.Application.DTOs.Accounting;
 using MsCashier.Application.Interfaces.Accounting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
+using MsCashier.Domain.Entities.Accounting;
 using MsCashier.Domain.Enums;
 using MsCashier.Domain.Enums.Accounting;
 using MsCashier.Domain.Interfaces;
@@ -17,12 +19,18 @@ public class SalePostingService : ISalePostingService
     private readonly IUnitOfWork _uow;
     private readonly IJournalEntryService _journal;
     private readonly AccountResolver _resolver;
+    private readonly ILogger<SalePostingService> _logger;
 
-    public SalePostingService(IUnitOfWork uow, IJournalEntryService journal, AccountResolver resolver)
+    public SalePostingService(
+        IUnitOfWork uow,
+        IJournalEntryService journal,
+        AccountResolver resolver,
+        ILogger<SalePostingService> logger)
     {
         _uow = uow;
         _journal = journal;
         _resolver = resolver;
+        _logger = logger;
     }
 
     public async Task<Result<long>> PostSaleAsync(long invoiceId, CancellationToken ct = default)
@@ -54,16 +62,10 @@ public class SalePostingService : ISalePostingService
         //   3) 0 < PaidAmount < TotalAmount                → partial: Dr Cash (PaidAmount),
         //                                                              Dr AR  (Total - PaidAmount).
         //
-        // Cash side resolution: route by payment method.
-        //   Cash          → 1101 Main Cash
-        //   Visa / Instapay / Tabby / Tamara / ValU → 1120 Card Payments Clearing
-        //       (settled to a bank later via CardSettlementService)
-        //   BankTransfer  → 1101 for now (TODO: resolve specific bank FinanceAccount once
-        //                   invoices carry the destination bank link)
-        //   Installment   → 1101 for the down-payment portion; the remainder is AR and
-        //                   later movements go through InstallmentPaymentPostingService.
-        //   Credit        → handled above (full AR)
-        //   Any new method → falls through to 1101 (documented fallback).
+        // Cash-leg GL account precedence:
+        //   1) invoice.FinanceAccount.ChartOfAccountId  (explicit link to the exact cashier/bank leaf)
+        //   2) PaymentMethod-based code map (ResolveCashSideAccountCode)
+        //   3) "1101" fallback inside the map for unknown methods
         var paid = invoice.PaidAmount;
         var isFullCredit = invoice.PaymentMethod == PaymentMethod.Credit || paid == 0m;
         var isFullCash = !isFullCredit && paid >= total;
@@ -83,7 +85,7 @@ public class SalePostingService : ISalePostingService
         }
         else if (isFullCash)
         {
-            var cashId = await _resolver.GetAccountIdByCodeAsync(cashSideCode, ct);
+            var cashId = await ResolveCashAccountIdAsync(invoice, cashSideCode, ct);
             lines.Add(new JournalLineDto(
                 AccountId: cashId,
                 Debit: total,
@@ -93,7 +95,7 @@ public class SalePostingService : ISalePostingService
         else
         {
             // Partial payment: split between the payment-method cash leg and AR.
-            var cashId = await _resolver.GetAccountIdByCodeAsync(cashSideCode, ct);
+            var cashId = await ResolveCashAccountIdAsync(invoice, cashSideCode, ct);
             var arId = await _resolver.GetAccountIdByCodeAsync("1130", ct);
             var outstanding = total - paid;
 
@@ -161,6 +163,42 @@ public class SalePostingService : ISalePostingService
             BranchId: null);
 
         return await _journal.CreateAndPostAsync(dto, ct);
+    }
+
+    /// <summary>
+    /// Resolves the cash-side GL account id with the following precedence:
+    ///   1) invoice.FinanceAccount.ChartOfAccountId  (explicit cashier/bank/wallet link)
+    ///   2) PaymentMethod-based code map
+    ///   3) "1101" fallback (inside the map)
+    /// </summary>
+    private async Task<int> ResolveCashAccountIdAsync(Invoice invoice, string fallbackCode, CancellationToken ct)
+    {
+        if (invoice.FinanceAccountId is int faId && faId > 0)
+        {
+            var fa = await _uow.Repository<FinanceAccount>().Query()
+                .FirstOrDefaultAsync(a =>
+                    a.Id == faId &&
+                    a.TenantId == invoice.TenantId &&
+                    !a.IsDeleted, ct);
+
+            if (fa?.ChartOfAccountId is int coaId)
+            {
+                var coa = await _uow.Repository<ChartOfAccount>().Query()
+                    .FirstOrDefaultAsync(a =>
+                        a.Id == coaId &&
+                        a.TenantId == invoice.TenantId &&
+                        !a.IsGroup &&
+                        !a.IsDeleted, ct);
+                if (coa is not null)
+                    return coa.Id;
+            }
+
+            _logger.LogWarning(
+                "Invoice {InvoiceId} FinanceAccount {FaId} has no usable GL link — falling back to code {Code}.",
+                invoice.Id, faId, fallbackCode);
+        }
+
+        return await _resolver.GetAccountIdByCodeAsync(fallbackCode, ct);
     }
 
     private static string ResolveCashSideAccountCode(PaymentMethod method) => method switch

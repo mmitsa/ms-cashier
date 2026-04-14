@@ -12,6 +12,7 @@ public static class JournalEngineExtensions
         services.AddScoped<IJournalEntryService, JournalEntryService>();
         services.AddScoped<IFinanceAccountGlBridge, FinanceAccountGlBridge>();
         services.AddScoped<IPostingFailureLogger, PostingFailureLogger>();
+        services.AddScoped<IOpeningBalanceImportService, OpeningBalanceImportService>();
         return services;
     }
 }

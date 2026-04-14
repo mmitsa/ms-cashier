@@ -272,6 +272,30 @@ public class OnlineStoreService : IOnlineStoreService
 
                 if (warehouse is not null)
                 {
+                    // Look up the gateway transaction for this order (if any) so we can
+                    // derive the correct PaymentMethod and route the GL entry to the
+                    // right account (e.g. 1120 card clearing) instead of a bank transfer.
+                    OnlinePayment? payment = null;
+                    PaymentGatewayConfig? gatewayConfig = null;
+                    if (!string.IsNullOrWhiteSpace(order.PaymentReference))
+                    {
+                        payment = await _uow.Repository<OnlinePayment>().Query()
+                            .FirstOrDefaultAsync(p =>
+                                (p.GatewayTransactionId == order.PaymentReference
+                                 || p.GatewayReferenceId == order.PaymentReference)
+                                && !p.IsDeleted);
+                    }
+                    if (payment is null && order.InvoiceId is long existingInvId)
+                    {
+                        payment = await _uow.Repository<OnlinePayment>().Query()
+                            .FirstOrDefaultAsync(p => p.InvoiceId == existingInvId && !p.IsDeleted);
+                    }
+                    if (payment is not null)
+                    {
+                        gatewayConfig = await _uow.Repository<PaymentGatewayConfig>().Query()
+                            .FirstOrDefaultAsync(g => g.Id == payment.GatewayConfigId && !g.IsDeleted);
+                    }
+
                     var invoiceNumber = $"ONL-{order.OrderNumber}";
                     var invoice = new Invoice
                     {
@@ -287,7 +311,7 @@ public class OnlineStoreService : IOnlineStoreService
                         TotalAmount = order.TotalAmount,
                         PaidAmount = order.PaymentStatus == OnlinePaymentStatus.Paid ? order.TotalAmount : 0,
                         DueAmount = order.PaymentStatus == OnlinePaymentStatus.Paid ? 0 : order.TotalAmount,
-                        PaymentMethod = PaymentMethod.BankTransfer,
+                        PaymentMethod = DeriveInvoicePaymentMethod(order, payment, gatewayConfig),
                         PaymentStatus = order.PaymentStatus == OnlinePaymentStatus.Paid
                             ? Domain.Enums.PaymentStatus.Paid
                             : Domain.Enums.PaymentStatus.Unpaid,
@@ -566,4 +590,60 @@ public class OnlineStoreService : IOnlineStoreService
     private static StoreShippingConfigDto MapShippingConfig(StoreShippingConfig c) => new(
         c.Id, c.OnlineStoreId, c.ShippingType,
         c.FlatRate, c.FreeShippingMinimum, c.ZoneRates, c.IsActive);
+
+    // Derive the POS PaymentMethod for an invoice auto-created from an online order.
+    // The routing into the GL (e.g. 1120 card-clearing) happens downstream in
+    // SalePostingService based on this enum value, so it must reflect the real
+    // customer payment channel rather than a hard-coded bank transfer.
+    private static PaymentMethod DeriveInvoicePaymentMethod(
+        OnlineOrder order,
+        OnlinePayment? payment,
+        PaymentGatewayConfig? gatewayConfig)
+    {
+        // 1) Honor explicit hints on the order itself (free-form string set by storefront).
+        //    Typical values: "cash", "cod", "card", "visa", "mada", "applepay", "stcpay",
+        //    "instapay", "banktransfer", "tabby", "tamara", "valu".
+        var hint = (order.PaymentMethod ?? payment?.PaymentMethod ?? string.Empty)
+            .Trim()
+            .ToLowerInvariant();
+        if (hint.Length > 0)
+        {
+            if (hint.Contains("cod") || hint.Contains("cash_on_delivery") || hint == "cash")
+                return PaymentMethod.Cash;
+            if (hint.Contains("tabby")) return PaymentMethod.Tabby;
+            if (hint.Contains("tamara")) return PaymentMethod.Tamara;
+            if (hint.Contains("valu")) return PaymentMethod.ValU;
+            if (hint.Contains("installment")) return PaymentMethod.Installment;
+            if (hint.Contains("instapay") || hint.Contains("stcpay") || hint.Contains("stc_pay")
+                || hint.Contains("applepay") || hint.Contains("apple_pay")
+                || hint.Contains("googlepay") || hint.Contains("google_pay")
+                || hint.Contains("wallet"))
+                return PaymentMethod.Instapay;
+            if (hint.Contains("bank") || hint.Contains("transfer") || hint.Contains("wire"))
+                return PaymentMethod.BankTransfer;
+            if (hint.Contains("card") || hint.Contains("visa") || hint.Contains("master")
+                || hint.Contains("mada") || hint.Contains("credit") || hint.Contains("debit"))
+                return PaymentMethod.Visa;
+        }
+
+        // 2) Fall back to the gateway type recorded on the OnlinePayment.
+        var gatewayType = payment?.GatewayType ?? gatewayConfig?.GatewayType;
+        if (gatewayType.HasValue)
+        {
+            return gatewayType.Value switch
+            {
+                PaymentGatewayType.Moyasar => PaymentMethod.Visa,
+                PaymentGatewayType.Tap => PaymentMethod.Visa,
+                PaymentGatewayType.HyperPay => PaymentMethod.Visa,
+                PaymentGatewayType.PayTabs => PaymentMethod.Visa,
+                PaymentGatewayType.Stripe => PaymentMethod.Visa,
+                PaymentGatewayType.Tabby => PaymentMethod.Tabby,
+                // TODO: map future gateway types (Tamara, STC Pay, Checkout.com, etc.) explicitly.
+                _ => PaymentMethod.BankTransfer,
+            };
+        }
+
+        // 3) Unknown — preserve the prior default so behavior is a strict superset.
+        return PaymentMethod.BankTransfer;
+    }
 }
