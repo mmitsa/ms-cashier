@@ -79,6 +79,7 @@ const sidebarGroups: ModuleGroup[] = [
     icon: Landmark,
     items: [
       { id: 'finance', label: 'الحسابات والخزينة', icon: DollarSign, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
+      { id: 'bank-accounts', label: 'الحسابات البنكية والصناديق', icon: Landmark, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
       { id: 'accounting', label: 'المحاسبة', icon: BookOpen, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
       { id: 'payroll', label: 'الرواتب والشيكات', icon: Banknote, permission: MODULE_PERMISSIONS.payroll, moduleKey: 'Payroll' },
       { id: 'payment-terminals', label: 'ماكينات الدفع', icon: CreditCard, permission: MODULE_PERMISSIONS.settings, moduleKey: 'Terminals' },

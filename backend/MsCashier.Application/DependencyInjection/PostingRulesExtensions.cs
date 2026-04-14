@@ -12,6 +12,7 @@ public static class PostingRulesExtensions
         services.AddScoped<IPaymentPostingService, PaymentPostingService>();
         services.AddScoped<IReceiptPostingService, ReceiptPostingService>();
         services.AddScoped<IPayrollPostingService, PayrollPostingService>();
+        services.AddScoped<IInstallmentPaymentPostingService, InstallmentPaymentPostingService>();
         return services;
     }
 }

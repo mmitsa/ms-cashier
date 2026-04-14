@@ -126,6 +126,7 @@ public class AppDbContext : DbContext
     public DbSet<AccountingPeriod> AccountingPeriods => Set<AccountingPeriod>();
     public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
     public DbSet<JournalLine> JournalLines => Set<JournalLine>();
+    public DbSet<PostingFailure> PostingFailures => Set<PostingFailure>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -463,6 +464,11 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.TenantId);
             e.Property(x => x.Name).HasMaxLength(200).IsRequired();
             e.Property(x => x.Balance).HasPrecision(18, 2);
+            e.HasOne(x => x.ChartOfAccount)
+                .WithMany()
+                .HasForeignKey(x => x.ChartOfAccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.TenantId, x.ChartOfAccountId });
         });
 
         // FinanceTransaction
@@ -1018,6 +1024,18 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(x => x.AccountId)
                 .OnDelete(DeleteBehavior.Restrict);
+            e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
+        });
+
+        modelBuilder.Entity<PostingFailure>(e =>
+        {
+            // Lookup by source — NOT unique: same (source,id) can fail multiple times
+            // before being resolved, and we want to preserve each attempt's error.
+            e.HasIndex(x => new { x.TenantId, x.SourceType, x.SourceId, x.IsResolved })
+                .HasDatabaseName("IX_PostingFailures_Source");
+            // Admin list view: unresolved first, newest first.
+            e.HasIndex(x => new { x.TenantId, x.IsResolved, x.CreatedAt })
+                .HasDatabaseName("IX_PostingFailures_Admin");
             e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
         });
 

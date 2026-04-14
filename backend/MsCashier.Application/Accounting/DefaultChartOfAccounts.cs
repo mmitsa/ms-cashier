@@ -30,6 +30,7 @@ public static class DefaultChartOfAccounts
         new("1101",  "الصندوق الرئيسي",               "Main Cash",              AccountCategory.Asset, false, "11"),
         new("1102",  "صناديق نقاط البيع",             "POS Cash Drawers",       AccountCategory.Asset, false, "11"),
         new("1110",  "البنوك",                       "Banks",                  AccountCategory.Asset, true,  "11"),
+        new("1115",  "المحافظ الإلكترونية",            "Digital Wallets",        AccountCategory.Asset, true,  "11"),
         new("1120",  "مدفوعات الشبكة تحت التحصيل",     "Card Payments Clearing", AccountCategory.Asset, false, "11"),
         new("1130",  "العملاء — ذمم مدينة",           "Accounts Receivable",    AccountCategory.Asset, false, "11"),
         new("1140",  "المخزون",                      "Inventory",              AccountCategory.Asset, false, "11"),

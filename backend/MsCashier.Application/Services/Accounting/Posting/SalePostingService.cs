@@ -46,11 +46,23 @@ public class SalePostingService : ISalePostingService
 
         var lines = new List<JournalLineDto>();
 
-        // الطرف المدين: نقدية أو ذمم مدينة حسب طريقة الدفع
-        var isCredit = invoice.PaymentStatus != PaymentStatus.Paid
-                       && invoice.PaymentMethod == PaymentMethod.Credit;
+        // الطرف المدين: نقدية / ذمم مدينة / مزيج منهما حسب المدفوع.
+        //
+        // Rules:
+        //   1) PaymentMethod == Credit OR PaidAmount == 0  → full credit sale: Dr AR (total).
+        //   2) PaidAmount >= TotalAmount                   → full cash sale:   Dr Cash (total).
+        //   3) 0 < PaidAmount < TotalAmount                → partial: Dr Cash (PaidAmount),
+        //                                                              Dr AR  (Total - PaidAmount).
+        //
+        // Cash side resolution: the invoice does not currently carry a FinanceAccountId/PaymentTerminalId
+        // linkage from which to derive the tenant's specific cash/bank leaf. We therefore default to
+        // system code "1101" (Main Cash). TODO: once invoices capture the terminal/cash-drawer FinanceAccountId,
+        // resolve via FinanceAccount.ChartOfAccountId for per-terminal cash posting.
+        var paid = invoice.PaidAmount;
+        var isFullCredit = invoice.PaymentMethod == PaymentMethod.Credit || paid == 0m;
+        var isFullCash = !isFullCredit && paid >= total;
 
-        if (isCredit)
+        if (isFullCredit)
         {
             var arId = await _resolver.GetAccountIdByCodeAsync("1130", ct); // Accounts Receivable
             lines.Add(new JournalLineDto(
@@ -60,14 +72,34 @@ public class SalePostingService : ISalePostingService
                 Description: $"ذمم مدينة عن الفاتورة {invoice.InvoiceNumber}",
                 ContactId: invoice.ContactId));
         }
-        else
+        else if (isFullCash)
         {
-            var cashId = await _resolver.GetAccountIdByCodeAsync("1101", ct); // Cash
+            var cashId = await _resolver.GetAccountIdByCodeAsync("1101", ct);
             lines.Add(new JournalLineDto(
                 AccountId: cashId,
                 Debit: total,
                 Credit: 0m,
                 Description: $"نقدية محصلة من الفاتورة {invoice.InvoiceNumber}"));
+        }
+        else
+        {
+            // Partial payment: split between cash and AR.
+            var cashId = await _resolver.GetAccountIdByCodeAsync("1101", ct);
+            var arId = await _resolver.GetAccountIdByCodeAsync("1130", ct);
+            var outstanding = total - paid;
+
+            lines.Add(new JournalLineDto(
+                AccountId: cashId,
+                Debit: paid,
+                Credit: 0m,
+                Description: $"دفعة جزئية نقدية — فاتورة {invoice.InvoiceNumber}"));
+
+            lines.Add(new JournalLineDto(
+                AccountId: arId,
+                Debit: outstanding,
+                Credit: 0m,
+                Description: $"ذمم مدينة — المتبقي على الفاتورة {invoice.InvoiceNumber}",
+                ContactId: invoice.ContactId));
         }
 
         // الطرف الدائن: مبيعات + ضريبة مخرجات

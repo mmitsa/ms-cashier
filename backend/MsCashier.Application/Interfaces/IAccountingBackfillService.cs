@@ -2,7 +2,7 @@ using MsCashier.Domain.Common;
 
 namespace MsCashier.Application.Interfaces;
 
-public record AccountingBackfillRow(Guid TenantId, string TenantName, int AccountsCreated, bool PeriodCreated, string? Error);
+public record AccountingBackfillRow(Guid TenantId, string TenantName, int AccountsCreated, bool PeriodCreated, string? Error, int BankAccountsLinked = 0);
 
 public record AccountingBackfillResultDto(int TenantsProcessed, int TenantsSucceeded, int TenantsFailed, IReadOnlyList<AccountingBackfillRow> Rows);
 

@@ -600,6 +600,39 @@ if (migrateOnly || autoMigrate)
 
             logger.LogInformation("SuperAdmin tenant ({TenantId}) and user ({UserId}) seeded successfully.", tenantId, userId);
         }
+
+        // ─────────────────────────────────────────────────────────────
+        // Auto-backfill Chart of Accounts for any tenant missing it.
+        // Idempotent: only fills gaps (skips tenants that already have CoA).
+        // Isolated in its own scope + try/catch so a backfill failure
+        // does not crash API startup.
+        // ─────────────────────────────────────────────────────────────
+        try
+        {
+            using var backfillScope = app.Services.CreateScope();
+            var backfillSvc = backfillScope.ServiceProvider
+                .GetRequiredService<MsCashier.Application.Interfaces.IAccountingBackfillService>();
+            var backfillResult = await backfillSvc.BackfillAllMissingAsync();
+            if (backfillResult.IsSuccess && backfillResult.Data is not null)
+            {
+                var d = backfillResult.Data;
+                if (d.TenantsProcessed > 0)
+                    logger.LogInformation(
+                        "Accounting backfill on startup: {Processed} tenant(s) processed ({Ok} ok, {Fail} failed).",
+                        d.TenantsProcessed, d.TenantsSucceeded, d.TenantsFailed);
+                else
+                    logger.LogInformation("Accounting backfill on startup: no missing tenants — skipped.");
+            }
+            else
+            {
+                logger.LogWarning("Accounting backfill on startup returned failure: {Errors}",
+                    string.Join("; ", backfillResult.Errors));
+            }
+        }
+        catch (Exception backfillEx)
+        {
+            logger.LogError(backfillEx, "Accounting backfill on startup threw — continuing boot.");
+        }
     }
     catch (Exception ex)
     {

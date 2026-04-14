@@ -19,8 +19,9 @@ public class PayrollManagementService : IPayrollService
     private readonly IAttendanceService _attendanceService;
     private readonly ICurrentTenantService _tenantService;
     private readonly IPayrollPostingService _payrollPostingService;
-    public PayrollManagementService(IUnitOfWork uow, IAttendanceService att, ICurrentTenantService tenant, IPayrollPostingService payrollPostingService)
-    { _uow = uow; _attendanceService = att; _tenantService = tenant; _payrollPostingService = payrollPostingService; }
+    private readonly IPostingFailureLogger _postingFailureLogger;
+    public PayrollManagementService(IUnitOfWork uow, IAttendanceService att, ICurrentTenantService tenant, IPayrollPostingService payrollPostingService, IPostingFailureLogger postingFailureLogger)
+    { _uow = uow; _attendanceService = att; _tenantService = tenant; _payrollPostingService = payrollPostingService; _postingFailureLogger = postingFailureLogger; }
 
     public async Task<Result<List<PayrollDetailDto>>> GeneratePayrollAsync(GeneratePayrollRequest req)
     {
@@ -127,11 +128,18 @@ public class PayrollManagementService : IPayrollService
             // Post GL journal per approved payroll. Idempotency risk: engine does not enforce SourceType="Payroll"+SourceId uniqueness, so re-approval could double-post.
             foreach (var p in payrolls)
             {
-                var postResult = await _payrollPostingService.PostPayrollRunAsync(p.Id);
-                if (!postResult.IsSuccess)
+                try
                 {
-                    // TODO: retry posting (e.g., enqueue background job) — payroll approval is not rolled back on posting failure.
-                    Console.Error.WriteLine($"[PayrollPosting] Failed to post payroll {p.Id}: {postResult.Message}");
+                    var postResult = await _payrollPostingService.PostPayrollRunAsync(p.Id);
+                    if (!postResult.IsSuccess)
+                    {
+                        // Captured in PostingFailures audit table — admin can retry from the dashboard.
+                        try { await _postingFailureLogger.LogAsync("Payroll", p.Id, "PayrollRun", string.Join("; ", postResult.Errors)); } catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    try { await _postingFailureLogger.LogAsync("Payroll", p.Id, "PayrollRun", ex); } catch { }
                 }
             }
 

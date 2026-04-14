@@ -20,14 +20,16 @@ public class InvoiceService : IInvoiceService
     private readonly IAuditService _audit;
     private readonly INotificationService _notif;
     private readonly ISalePostingService _salePostingService;
+    private readonly IPostingFailureLogger _postingFailureLogger;
 
-    public InvoiceService(IUnitOfWork uow, ICurrentTenantService tenant, IAuditService audit, INotificationService notif, ISalePostingService salePostingService)
+    public InvoiceService(IUnitOfWork uow, ICurrentTenantService tenant, IAuditService audit, INotificationService notif, ISalePostingService salePostingService, IPostingFailureLogger postingFailureLogger)
     {
         _uow = uow;
         _tenant = tenant;
         _audit = audit;
         _notif = notif;
         _salePostingService = salePostingService;
+        _postingFailureLogger = postingFailureLogger;
     }
 
     public async Task<Result<InvoiceDto>> CreateSaleAsync(CreateInvoiceRequest request)
@@ -452,9 +454,21 @@ public class InvoiceService : IInvoiceService
         try { _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
             newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}"); } catch { }
 
-        // Auto-post sale to GL (accounting side-effect; never blocks invoice creation)
-        // TODO: on failure, enqueue retry / dead-letter for reliable posting
-        try { await _salePostingService.PostSaleAsync(invoice.Id); } catch { }
+        // Auto-post sale to GL (accounting side-effect; never blocks invoice creation).
+        // Failures are captured in the PostingFailures audit table so admins can retry
+        // them from /api/v1/admin/accounting/posting-failures.
+        try
+        {
+            var postResult = await _salePostingService.PostSaleAsync(invoice.Id);
+            if (!postResult.IsSuccess)
+            {
+                try { await _postingFailureLogger.LogAsync("Invoice", invoice.Id, "Sale", string.Join("; ", postResult.Errors)); } catch { }
+            }
+        }
+        catch (Exception ex)
+        {
+            try { await _postingFailureLogger.LogAsync("Invoice", invoice.Id, "Sale", ex); } catch { }
+        }
 
         var dto = await BuildInvoiceDto(invoice.Id);
         return Result<InvoiceDto>.Success(dto!, "تم إنشاء الفاتورة بنجاح");
@@ -867,9 +881,20 @@ public class InvoiceService : IInvoiceService
         }
 
         // === Post-commit work (outside transaction) ===
-        // Auto-post sale return to GL (accounting side-effect; never blocks invoice creation)
-        // TODO: on failure, enqueue retry / dead-letter for reliable posting
-        try { await _salePostingService.PostSaleAsync(returnInvoice.Id); } catch { }
+        // Auto-post sale return to GL (accounting side-effect; never blocks invoice creation).
+        // Failures captured in PostingFailures audit table for retry.
+        try
+        {
+            var postResult = await _salePostingService.PostSaleAsync(returnInvoice.Id);
+            if (!postResult.IsSuccess)
+            {
+                try { await _postingFailureLogger.LogAsync("Invoice", returnInvoice.Id, "SaleReturn", string.Join("; ", postResult.Errors)); } catch { }
+            }
+        }
+        catch (Exception ex)
+        {
+            try { await _postingFailureLogger.LogAsync("Invoice", returnInvoice.Id, "SaleReturn", ex); } catch { }
+        }
 
         var dto = await BuildInvoiceDto(returnInvoice.Id);
         return Result<InvoiceDto>.Success(dto!, "تم إنشاء فاتورة المرتجع بنجاح");

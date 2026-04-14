@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MsCashier.Application.Accounting;
 using MsCashier.Application.Interfaces;
+using MsCashier.Application.Interfaces.Accounting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
 using MsCashier.Domain.Entities.Accounting;
@@ -24,10 +25,12 @@ namespace MsCashier.Application.Services.Accounting;
 public class AccountingBackfillService : IAccountingBackfillService
 {
     private readonly IUnitOfWork _uow;
+    private readonly IFinanceAccountGlBridge _glBridge;
 
-    public AccountingBackfillService(IUnitOfWork uow)
+    public AccountingBackfillService(IUnitOfWork uow, IFinanceAccountGlBridge glBridge)
     {
         _uow = uow;
+        _glBridge = glBridge;
     }
 
     public async Task<Result<AccountingBackfillResultDto>> BackfillAllMissingAsync(CancellationToken ct = default)
@@ -54,10 +57,9 @@ public class AccountingBackfillService : IAccountingBackfillService
 
             foreach (var tenant in missingTenants)
             {
-                if (tenantsWithCoaSet.Contains(tenant.Id))
-                    continue; // already has CoA — skip
-
-                var (row, ok) = await BackfillSingleAsync(tenant.Id, tenant.Name, ct);
+                var alreadyHasCoa = tenantsWithCoaSet.Contains(tenant.Id);
+                var (row, ok) = await BackfillSingleAsync(tenant.Id, tenant.Name, alreadyHasCoa, ct);
+                if (row is null) continue; // nothing to do for this tenant
                 rows.Add(row);
                 if (ok) succeeded++; else failed++;
             }
@@ -76,42 +78,81 @@ public class AccountingBackfillService : IAccountingBackfillService
         }
     }
 
-    private async Task<(AccountingBackfillRow Row, bool Ok)> BackfillSingleAsync(Guid tenantId, string tenantName, CancellationToken ct)
+    private async Task<(AccountingBackfillRow? Row, bool Ok)> BackfillSingleAsync(Guid tenantId, string tenantName, bool alreadyHasCoa, CancellationToken ct)
     {
+        int accountsCreated = 0;
+        bool periodCreated = false;
+
+        if (!alreadyHasCoa)
+        {
+            try
+            {
+                await _uow.BeginTransactionAsync();
+
+                var accounts = DefaultChartOfAccounts.BuildEntities(tenantId);
+                // BuildEntities already stamps TenantId; re-assert in case of drift.
+                foreach (var a in accounts)
+                    a.TenantId = tenantId;
+
+                await _uow.Repository<ChartOfAccount>().AddRangeAsync(accounts);
+
+                var now = DateTime.UtcNow;
+                var periodStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                var periodEnd = periodStart.AddMonths(1).AddSeconds(-1);
+                var period = new AccountingPeriod
+                {
+                    TenantId = tenantId,
+                    Name = $"{now:yyyy-MM}",
+                    StartDate = periodStart,
+                    EndDate = periodEnd,
+                    FiscalYear = now.Year,
+                    IsClosed = false
+                };
+                await _uow.Repository<AccountingPeriod>().AddAsync(period);
+
+                await _uow.SaveChangesAsync(ct);
+                await _uow.CommitTransactionAsync();
+
+                accountsCreated = accounts.Count;
+                periodCreated = true;
+            }
+            catch (Exception ex)
+            {
+                try { await _uow.RollbackTransactionAsync(); } catch { /* ignore */ }
+                return (new AccountingBackfillRow(tenantId, tenantName, 0, false, ex.Message, 0), false);
+            }
+        }
+
+        // Link any FinanceAccount rows (for this tenant) that are missing GL links.
+        int linked = 0;
         try
         {
-            await _uow.BeginTransactionAsync();
+            var pending = await _uow.Repository<FinanceAccount>().QueryUnfiltered()
+                .Where(a => a.TenantId == tenantId && !a.IsDeleted && a.ChartOfAccountId == null)
+                .ToListAsync(ct);
 
-            var accounts = DefaultChartOfAccounts.BuildEntities(tenantId);
-            // BuildEntities already stamps TenantId; re-assert in case of drift.
-            foreach (var a in accounts)
-                a.TenantId = tenantId;
-
-            await _uow.Repository<ChartOfAccount>().AddRangeAsync(accounts);
-
-            var now = DateTime.UtcNow;
-            var periodStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var periodEnd = periodStart.AddMonths(1).AddSeconds(-1);
-            var period = new AccountingPeriod
+            foreach (var fa in pending)
             {
-                TenantId = tenantId,
-                Name = $"{now:yyyy-MM}",
-                StartDate = periodStart,
-                EndDate = periodEnd,
-                FiscalYear = now.Year,
-                IsClosed = false
-            };
-            await _uow.Repository<AccountingPeriod>().AddAsync(period);
-
-            await _uow.SaveChangesAsync(ct);
-            await _uow.CommitTransactionAsync();
-
-            return (new AccountingBackfillRow(tenantId, tenantName, accounts.Count, true, null), true);
+                try
+                {
+                    await _glBridge.EnsureGlAccountAsync(fa, ct);
+                    linked++;
+                }
+                catch
+                {
+                    // continue with other accounts; individual failures shouldn't abort the backfill
+                }
+            }
         }
         catch (Exception ex)
         {
-            try { await _uow.RollbackTransactionAsync(); } catch { /* ignore */ }
-            return (new AccountingBackfillRow(tenantId, tenantName, 0, false, ex.Message), false);
+            return (new AccountingBackfillRow(tenantId, tenantName, accountsCreated, periodCreated, ex.Message, linked), false);
         }
+
+        // If nothing was created and nothing was linked, skip reporting this tenant.
+        if (accountsCreated == 0 && !periodCreated && linked == 0)
+            return (null, true);
+
+        return (new AccountingBackfillRow(tenantId, tenantName, accountsCreated, periodCreated, null, linked), true);
     }
 }

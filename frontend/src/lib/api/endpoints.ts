@@ -220,6 +220,36 @@ export const financeApi = {
   createAccount: (data: { name: string; accountType: number }) =>
     apiClient.post<ApiResponse<FinanceAccountDto>>('/finance/accounts', data).then(r => r.data),
 
+  getAccount: (id: number) =>
+    apiClient.get<ApiResponse<FinanceAccountDto>>(`/finance/accounts/${id}`).then(r => r.data),
+
+  createBankAccount: (data: {
+    name: string;
+    accountType: number;
+    bankName?: string | null;
+    accountNumber?: string | null;
+    iban?: string | null;
+    isPrimary?: boolean;
+    initialBalance?: number;
+  }) =>
+    apiClient.post<ApiResponse<FinanceAccountDto>>('/finance/accounts', data).then(r => r.data),
+
+  updateBankAccount: (id: number, data: {
+    name: string;
+    accountType: number;
+    bankName?: string | null;
+    accountNumber?: string | null;
+    iban?: string | null;
+    isPrimary?: boolean;
+  }) =>
+    apiClient.put<ApiResponse<FinanceAccountDto>>(`/finance/accounts/${id}`, data).then(r => r.data),
+
+  deactivateAccount: (id: number) =>
+    apiClient.post<ApiResponse<boolean>>(`/finance/accounts/${id}/deactivate`, {}).then(r => r.data),
+
+  activateAccount: (id: number) =>
+    apiClient.post<ApiResponse<boolean>>(`/finance/accounts/${id}/activate`, {}).then(r => r.data),
+
   recordTransaction: (data: { accountId: number; transactionType: number; category?: string; amount: number; description?: string }) =>
     apiClient.post<ApiResponse<FinanceTransactionDto>>('/finance/transactions', data).then(r => r.data),
 
