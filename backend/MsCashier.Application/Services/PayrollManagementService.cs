@@ -1,5 +1,6 @@
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
+using MsCashier.Application.Services.Accounting.Posting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
 using MsCashier.Domain.Enums;
@@ -17,8 +18,9 @@ public class PayrollManagementService : IPayrollService
     private readonly IUnitOfWork _uow;
     private readonly IAttendanceService _attendanceService;
     private readonly ICurrentTenantService _tenantService;
-    public PayrollManagementService(IUnitOfWork uow, IAttendanceService att, ICurrentTenantService tenant)
-    { _uow = uow; _attendanceService = att; _tenantService = tenant; }
+    private readonly IPayrollPostingService _payrollPostingService;
+    public PayrollManagementService(IUnitOfWork uow, IAttendanceService att, ICurrentTenantService tenant, IPayrollPostingService payrollPostingService)
+    { _uow = uow; _attendanceService = att; _tenantService = tenant; _payrollPostingService = payrollPostingService; }
 
     public async Task<Result<List<PayrollDetailDto>>> GeneratePayrollAsync(GeneratePayrollRequest req)
     {
@@ -121,6 +123,18 @@ public class PayrollManagementService : IPayrollService
                 _uow.Repository<Payroll>().Update(p);
             }
             await _uow.SaveChangesAsync();
+
+            // Post GL journal per approved payroll. Idempotency risk: engine does not enforce SourceType="Payroll"+SourceId uniqueness, so re-approval could double-post.
+            foreach (var p in payrolls)
+            {
+                var postResult = await _payrollPostingService.PostPayrollRunAsync(p.Id);
+                if (!postResult.IsSuccess)
+                {
+                    // TODO: retry posting (e.g., enqueue background job) — payroll approval is not rolled back on posting failure.
+                    Console.Error.WriteLine($"[PayrollPosting] Failed to post payroll {p.Id}: {postResult.Message}");
+                }
+            }
+
             return Result<bool>.Success(true, $"تم اعتماد {payrolls.Count} كشف راتب");
         }
         catch (Exception ex) { return Result<bool>.Failure($"خطأ: {ex.Message}"); }
@@ -239,15 +253,29 @@ public class PayrollManagementService : IPayrollService
                 .Where(p => p.TenantId == _tenantService.TenantId);
             if (year.HasValue) query = query.Where(p => p.Year == year.Value);
 
-            var groups = await query.GroupBy(p => new { p.Month, p.Year })
-                .Select(g => new PayrollMonthSummaryDto(
-                    g.Key.Month, g.Key.Year, g.Count(),
-                    g.Sum(p => p.BasicSalary), g.Sum(p => p.Allowances),
-                    g.Sum(p => p.Deductions), g.Sum(p => p.Bonus),
-                    g.Sum(p => p.NetSalary),
-                    g.Count(p => p.IsPaid), g.Count(p => !p.IsPaid)))
-                .OrderByDescending(s => s.Year).ThenByDescending(s => s.Month)
+            var raw = await query.GroupBy(p => new { p.Month, p.Year })
+                .Select(g => new
+                {
+                    g.Key.Month,
+                    g.Key.Year,
+                    Count = g.Count(),
+                    BasicSalary = g.Sum(p => p.BasicSalary),
+                    Allowances = g.Sum(p => p.Allowances),
+                    Deductions = g.Sum(p => p.Deductions),
+                    Bonus = g.Sum(p => p.Bonus),
+                    NetSalary = g.Sum(p => p.NetSalary),
+                    Paid = g.Sum(p => p.IsPaid ? 1 : 0),
+                    Unpaid = g.Sum(p => p.IsPaid ? 0 : 1),
+                })
                 .ToListAsync();
+
+            var groups = raw
+                .OrderByDescending(s => s.Year).ThenByDescending(s => s.Month)
+                .Select(s => new PayrollMonthSummaryDto(
+                    s.Month, s.Year, s.Count,
+                    s.BasicSalary, s.Allowances, s.Deductions, s.Bonus, s.NetSalary,
+                    s.Paid, s.Unpaid))
+                .ToList();
             return Result<List<PayrollMonthSummaryDto>>.Success(groups);
         }
         catch (Exception ex) { return Result<List<PayrollMonthSummaryDto>>.Failure($"خطأ: {ex.Message}"); }

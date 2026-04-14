@@ -381,6 +381,28 @@ export const tenantsApi = {
     apiClient.post<ApiResponse<boolean>>(`/admin/tenants/${id}/activate`).then(r => r.data),
 };
 
+// ==================== Tenant Modules ====================
+export type TenantModuleDto = {
+  key: string;
+  nameAr: string;
+  category: string;
+  isEnabled: boolean;
+  enabledAt?: string | null;
+};
+
+export type TenantModuleToggle = { key: string; isEnabled: boolean };
+
+export const tenantModulesApi = {
+  getForTenant: (tenantId: string) =>
+    apiClient.get<ApiResponse<TenantModuleDto[]>>(`/admin/tenants/${tenantId}/modules`).then(r => r.data),
+
+  updateForTenant: (tenantId: string, modules: TenantModuleToggle[]) =>
+    apiClient.put<ApiResponse<TenantModuleDto[]>>(`/admin/tenants/${tenantId}/modules`, { modules }).then(r => r.data),
+
+  getMine: () =>
+    apiClient.get<ApiResponse<TenantModuleDto[]>>('/tenant/modules').then(r => r.data),
+};
+
 // ==================== Users ====================
 export const usersApi = {
   getAll: () =>
@@ -983,4 +1005,19 @@ export const publicApiManagementApi = {
 
   testWebhook: (subscriptionId: number) =>
     apiClient.post<ApiResponse<any>>(`/api-management/webhooks/${subscriptionId}/test`).then(r => r.data),
+};
+
+// ==================== Accounting ====================
+export const accountingApi = {
+  getTrialBalance: (fromDate: string, toDate: string, branchId?: number) =>
+    apiClient.get<ApiResponse<any>>('/accounting/reports/trial-balance', { params: { fromDate, toDate, branchId } }).then(r => r.data),
+
+  getIncomeStatement: (fromDate: string, toDate: string, branchId?: number) =>
+    apiClient.get<ApiResponse<any>>('/accounting/reports/income-statement', { params: { fromDate, toDate, branchId } }).then(r => r.data),
+
+  getBalanceSheet: (asOfDate: string, branchId?: number) =>
+    apiClient.get<ApiResponse<any>>('/accounting/reports/balance-sheet', { params: { asOfDate, branchId } }).then(r => r.data),
+
+  getContactStatement: (contactId: number, fromDate: string, toDate: string) =>
+    apiClient.get<ApiResponse<any>>(`/accounting/reports/contacts/${contactId}/statement`, { params: { fromDate, toDate } }).then(r => r.data),
 };

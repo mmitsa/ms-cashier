@@ -46,6 +46,7 @@ import { SocialMediaScreen } from '@/features/social-media/components/SocialMedi
 import { StoreBuilderScreen } from '@/features/online-store/components/StoreBuilderScreen';
 import { RfidManagementScreen } from '@/features/rfid-inventory/components/RfidManagementScreen';
 import { ApiManagementScreen } from '@/features/api-management/components/ApiManagementScreen';
+import { AccountingScreen } from '@/features/accounting/AccountingScreen';
 import { initSyncEngine, destroySyncEngine, syncAll, onSyncStatusChange, type SyncStatus } from '@/lib/offline/syncEngine';
 import { hasPermission } from '@/lib/permissions/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions/permissions';
@@ -68,6 +69,7 @@ const consoleModules: Record<string, React.FC> = {
   sales: SalesScreen,
   customers: CustomersScreen,
   finance: FinanceScreen,
+  accounting: AccountingScreen,
   reports: ReportsScreen,
   warehouses: WarehousesScreen,
   units: UnitsScreen,

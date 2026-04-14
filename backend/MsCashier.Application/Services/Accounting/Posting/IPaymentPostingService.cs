@@ -1,0 +1,14 @@
+using MsCashier.Domain.Common;
+
+namespace MsCashier.Application.Services.Accounting.Posting;
+
+public interface IPaymentPostingService
+{
+    Task<Result<long>> PostSupplierPaymentAsync(
+        int contactId,
+        decimal amount,
+        int cashAccountId,
+        DateTime date,
+        string? reference,
+        CancellationToken ct = default);
+}

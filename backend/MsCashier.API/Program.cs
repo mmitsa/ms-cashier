@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MsCashier.API.Middleware;
+using MsCashier.Application.DependencyInjection;
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
 using MsCashier.Application.Services;
@@ -132,6 +133,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 // Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<ITenantModuleService, TenantModuleService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUnitService, UnitService>();
@@ -143,6 +145,13 @@ builder.Services.AddScoped<IStoreSettingsService, StoreSettingsService>();
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IContactService, ContactService>();
+
+// Accounting / GL
+builder.Services
+    .AddJournalEngine()
+    .AddPostingRules()
+    .AddAccountingReports()
+    .AddAccountingBackfill();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ICsvImportService, CsvImportService>();

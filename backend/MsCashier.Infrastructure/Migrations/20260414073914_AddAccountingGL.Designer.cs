@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MsCashier.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using MsCashier.Infrastructure.Data;
 namespace MsCashier.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260414073914_AddAccountingGL")]
+    partial class AddAccountingGL
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -235,10 +238,7 @@ namespace MsCashier.Infrastructure.Migrations
 
                     b.HasIndex("TenantId", "Status");
 
-                    b.HasIndex("TenantId", "SourceType", "SourceId")
-                        .IsUnique()
-                        .HasDatabaseName("UX_JournalEntries_Source_Active")
-                        .HasFilter("[SourceType] IS NOT NULL AND [SourceId] IS NOT NULL AND [Status] <> 3");
+                    b.HasIndex("TenantId", "SourceType", "SourceId");
 
                     b.ToTable("JournalEntries");
                 });
