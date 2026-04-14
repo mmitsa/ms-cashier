@@ -9,7 +9,7 @@ using MsCashier.Domain.Enums;
 namespace MsCashier.API.Controllers;
 
 /// <summary>إدارة أجهزة الدفع (POS Terminals)</summary>
-[Route("api/[controller]")]
+[Route("api/v1/payment-terminals")]
 public class PaymentTerminalsController : BaseApiController
 {
     private readonly IPaymentTerminalService _service;
