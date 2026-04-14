@@ -238,6 +238,7 @@ public class InvoiceService : IInvoiceService
                 CurrencyCode = currencyCode,
                 ExchangeRate = exchangeRate != 1m ? exchangeRate : null,
                 TotalInBaseCurrency = totalInBase,
+                FinanceAccountId = request.FinanceAccountId,
             };
 
             await _uow.Repository<Invoice>().AddAsync(invoice);
@@ -557,7 +558,8 @@ public class InvoiceService : IInvoiceService
                 PaymentMethod = request.PaymentMethod,
                 PaymentStatus = paymentStatus,
                 Notes = request.Notes,
-                CreatedBy = _tenant.UserId
+                CreatedBy = _tenant.UserId,
+                FinanceAccountId = request.FinanceAccountId,
             };
 
             await _uow.Repository<Invoice>().AddAsync(invoice);
@@ -777,7 +779,8 @@ public class InvoiceService : IInvoiceService
                 PaymentMethod = original.PaymentMethod,
                 PaymentStatus = PaymentStatus.Paid,
                 Notes = $"مرتجع من فاتورة {original.InvoiceNumber}",
-                CreatedBy = _tenant.UserId
+                CreatedBy = _tenant.UserId,
+                FinanceAccountId = original.FinanceAccountId,
             };
 
             await _uow.Repository<Invoice>().AddAsync(returnInvoice);
@@ -1040,7 +1043,8 @@ public class InvoiceService : IInvoiceService
             invoice.Notes, creatorName, itemDtos,
             invoice.ZatcaReported, invoice.ZatcaQrCode,
             invoice.SalesRepId, salesRepName,
-            invoice.CurrencyCode, invoice.ExchangeRate, invoice.TotalInBaseCurrency);
+            invoice.CurrencyCode, invoice.ExchangeRate, invoice.TotalInBaseCurrency,
+            invoice.FinanceAccountId);
     }
 
     private static decimal CalcBundlePrice(Product bundle, List<BundleItem> items, PriceType priceType)

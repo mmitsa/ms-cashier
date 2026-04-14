@@ -183,6 +183,10 @@ public class FinanceService : IFinanceService
                 BalanceBefore = balanceBefore,
                 BalanceAfter = account.Balance,
                 Description = request.Description,
+                // Persist the contact link so admin retry can reconstruct the GL post
+                // without needing the original request DTO.
+                ReferenceType = request.ContactId.HasValue ? "Contact" : null,
+                ReferenceId = request.ContactId?.ToString(),
                 CreatedBy = _tenant.UserId,
                 CreatedAt = DateTime.UtcNow
             };
