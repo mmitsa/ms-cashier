@@ -46,6 +46,9 @@ import { SocialMediaScreen } from '@/features/social-media/components/SocialMedi
 import { StoreBuilderScreen } from '@/features/online-store/components/StoreBuilderScreen';
 import { RfidManagementScreen } from '@/features/rfid-inventory/components/RfidManagementScreen';
 import { ApiManagementScreen } from '@/features/api-management/components/ApiManagementScreen';
+import { AccountingScreen } from '@/features/accounting/AccountingScreen';
+import { BankAccountsScreen } from '@/features/bank-accounts/BankAccountsScreen';
+import { PostingFailuresScreen } from '@/features/posting-failures/PostingFailuresScreen';
 import { initSyncEngine, destroySyncEngine, syncAll, onSyncStatusChange, type SyncStatus } from '@/lib/offline/syncEngine';
 import { hasPermission } from '@/lib/permissions/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions/permissions';
@@ -68,6 +71,7 @@ const consoleModules: Record<string, React.FC> = {
   sales: SalesScreen,
   customers: CustomersScreen,
   finance: FinanceScreen,
+  accounting: AccountingScreen,
   reports: ReportsScreen,
   warehouses: WarehousesScreen,
   units: UnitsScreen,
@@ -91,6 +95,8 @@ const consoleModules: Record<string, React.FC> = {
   'store-builder': StoreBuilderScreen,
   'rfid-inventory': RfidManagementScreen,
   'api-management': ApiManagementScreen,
+  'bank-accounts': BankAccountsScreen,
+  'posting-failures': PostingFailuresScreen,
 };
 
 // ═══════════════════════════════════════════════════════════

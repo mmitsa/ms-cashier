@@ -5,7 +5,7 @@ import {
   ChevronRight, ChevronLeft, ChevronDown, FileText, Shield, Fingerprint, Banknote,
   GitBranch, ClipboardCheck, UtensilsCrossed, ChefHat, MapPin, QrCode, CreditCard,
   LayoutGrid, Store, Utensils, Landmark, UserCog, ShieldCheck, Ruler, Gift,
-  Megaphone, Globe, ScanLine, Code,
+  Megaphone, Globe, ScanLine, Code, BookOpen, AlertOctagon,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -13,6 +13,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { MODULE_PERMISSIONS, type PermissionKey } from '@/lib/permissions/permissions';
 import { hasPermission } from '@/lib/permissions/usePermissions';
+import { useEnabledModules } from '@/hooks/useEnabledModules';
 
 // ─── Types ───────────────────────────────────────────
 
@@ -23,6 +24,7 @@ interface ModuleItem {
   badge?: number;
   adminOnly?: boolean;
   permission?: PermissionKey;
+  moduleKey?: string;
 }
 
 interface ModuleGroup {
@@ -50,14 +52,14 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'المبيعات والمخزون',
     icon: Store,
     items: [
-      { id: 'sales', label: 'المبيعات', icon: Receipt, permission: MODULE_PERMISSIONS.sales },
-      { id: 'inventory', label: 'المخزون', icon: Package, permission: MODULE_PERMISSIONS.inventory },
-      { id: 'warehouses', label: 'المخازن', icon: Warehouse, permission: MODULE_PERMISSIONS.warehouses },
-      { id: 'units', label: 'وحدات القياس', icon: Ruler, permission: MODULE_PERMISSIONS.inventory },
+      { id: 'sales', label: 'المبيعات', icon: Receipt, permission: MODULE_PERMISSIONS.sales, moduleKey: 'Sales' },
+      { id: 'inventory', label: 'المخزون', icon: Package, permission: MODULE_PERMISSIONS.inventory, moduleKey: 'Inventory' },
+      { id: 'warehouses', label: 'المخازن', icon: Warehouse, permission: MODULE_PERMISSIONS.warehouses, moduleKey: 'Inventory' },
+      { id: 'units', label: 'وحدات القياس', icon: Ruler, permission: MODULE_PERMISSIONS.inventory, moduleKey: 'Inventory' },
       { id: 'customers', label: 'العملاء والموردين', icon: Users, permission: MODULE_PERMISSIONS.customers },
-      { id: 'sales-reps', label: 'مندوبي المبيعات', icon: UserCheck, permission: MODULE_PERMISSIONS.sales },
-      { id: 'loyalty', label: 'نقاط الولاء', icon: Gift, permission: MODULE_PERMISSIONS.settings },
-      { id: 'rfid-inventory', label: 'جرد RFID و QR', icon: ScanLine, permission: MODULE_PERMISSIONS.inventory },
+      { id: 'sales-reps', label: 'مندوبي المبيعات', icon: UserCheck, permission: MODULE_PERMISSIONS.sales, moduleKey: 'SalesReps' },
+      { id: 'loyalty', label: 'نقاط الولاء', icon: Gift, permission: MODULE_PERMISSIONS.settings, moduleKey: 'Loyalty' },
+      { id: 'rfid-inventory', label: 'جرد RFID و QR', icon: ScanLine, permission: MODULE_PERMISSIONS.inventory, moduleKey: 'Rfid' },
     ],
   },
   {
@@ -65,10 +67,10 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'خدمة المطعم',
     icon: Utensils,
     items: [
-      { id: 'floor-plan', label: 'مناطق التشغيل', icon: MapPin, permission: MODULE_PERMISSIONS.waiter },
-      { id: 'waiter', label: 'الويتر / الطلبات', icon: UtensilsCrossed, permission: MODULE_PERMISSIONS.waiter },
-      { id: 'kitchen', label: 'شاشة المطبخ', icon: ChefHat, permission: MODULE_PERMISSIONS.kitchen },
-      { id: 'qr-codes', label: 'QR طلب العملاء', icon: QrCode, permission: MODULE_PERMISSIONS.waiter },
+      { id: 'floor-plan', label: 'مناطق التشغيل', icon: MapPin, permission: MODULE_PERMISSIONS.waiter, moduleKey: 'Restaurant' },
+      { id: 'waiter', label: 'الويتر / الطلبات', icon: UtensilsCrossed, permission: MODULE_PERMISSIONS.waiter, moduleKey: 'Restaurant' },
+      { id: 'kitchen', label: 'شاشة المطبخ', icon: ChefHat, permission: MODULE_PERMISSIONS.kitchen, moduleKey: 'Restaurant' },
+      { id: 'qr-codes', label: 'QR طلب العملاء', icon: QrCode, permission: MODULE_PERMISSIONS.waiter, moduleKey: 'Restaurant' },
     ],
   },
   {
@@ -76,10 +78,13 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'المالية والتقارير',
     icon: Landmark,
     items: [
-      { id: 'finance', label: 'الحسابات والخزينة', icon: DollarSign, permission: MODULE_PERMISSIONS.finance },
-      { id: 'payroll', label: 'الرواتب والشيكات', icon: Banknote, permission: MODULE_PERMISSIONS.payroll },
-      { id: 'payment-terminals', label: 'ماكينات الدفع', icon: CreditCard, permission: MODULE_PERMISSIONS.settings },
-      { id: 'reports', label: 'التقارير', icon: BarChart3, permission: MODULE_PERMISSIONS.reports },
+      { id: 'finance', label: 'الحسابات والخزينة', icon: DollarSign, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
+      { id: 'bank-accounts', label: 'الحسابات البنكية والصناديق', icon: Landmark, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
+      { id: 'accounting', label: 'المحاسبة', icon: BookOpen, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
+      { id: 'posting-failures', label: 'القيود الفاشلة', icon: AlertOctagon, adminOnly: true },
+      { id: 'payroll', label: 'الرواتب والشيكات', icon: Banknote, permission: MODULE_PERMISSIONS.payroll, moduleKey: 'Payroll' },
+      { id: 'payment-terminals', label: 'ماكينات الدفع', icon: CreditCard, permission: MODULE_PERMISSIONS.settings, moduleKey: 'Terminals' },
+      { id: 'reports', label: 'التقارير', icon: BarChart3, permission: MODULE_PERMISSIONS.reports, moduleKey: 'Reports' },
     ],
   },
   {
@@ -87,8 +92,8 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'شؤون الموظفين',
     icon: UserCog,
     items: [
-      { id: 'employees', label: 'الموظفين', icon: UserCheck, permission: MODULE_PERMISSIONS.employees },
-      { id: 'attendance', label: 'الحضور والانصراف', icon: Fingerprint, permission: MODULE_PERMISSIONS.attendance },
+      { id: 'employees', label: 'الموظفين', icon: UserCheck, permission: MODULE_PERMISSIONS.employees, moduleKey: 'Employees' },
+      { id: 'attendance', label: 'الحضور والانصراف', icon: Fingerprint, permission: MODULE_PERMISSIONS.attendance, moduleKey: 'Attendance' },
     ],
   },
   {
@@ -96,7 +101,7 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'المتجر الإلكتروني',
     icon: Globe,
     items: [
-      { id: 'store-builder', label: 'المتجر الإلكتروني', icon: Globe, permission: MODULE_PERMISSIONS.settings },
+      { id: 'store-builder', label: 'المتجر الإلكتروني', icon: Globe, permission: MODULE_PERMISSIONS.settings, moduleKey: 'OnlineStore' },
     ],
   },
   {
@@ -104,7 +109,7 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'التسويق',
     icon: Megaphone,
     items: [
-      { id: 'social-media', label: 'التواصل الاجتماعي', icon: Megaphone, permission: MODULE_PERMISSIONS.settings },
+      { id: 'social-media', label: 'التواصل الاجتماعي', icon: Megaphone, permission: MODULE_PERMISSIONS.settings, moduleKey: 'SocialMedia' },
     ],
   },
   {
@@ -112,7 +117,7 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'المطورين',
     icon: Code,
     items: [
-      { id: 'api-management', label: 'إدارة API', icon: Code, permission: MODULE_PERMISSIONS.settings },
+      { id: 'api-management', label: 'إدارة API', icon: Code, permission: MODULE_PERMISSIONS.settings, moduleKey: 'Api' },
     ],
   },
   {
@@ -120,7 +125,7 @@ const sidebarGroups: ModuleGroup[] = [
     label: 'الإدارة',
     icon: ShieldCheck,
     items: [
-      { id: 'branches', label: 'إدارة الفروع', icon: GitBranch, permission: MODULE_PERMISSIONS.branches },
+      { id: 'branches', label: 'إدارة الفروع', icon: GitBranch, permission: MODULE_PERMISSIONS.branches, moduleKey: 'Branches' },
       { id: 'users', label: 'إدارة المستخدمين', icon: Shield },
       { id: 'settings', label: 'الإعدادات', icon: Settings, permission: MODULE_PERMISSIONS.settings },
     ],
@@ -257,6 +262,7 @@ export function Sidebar() {
   const { sidebarOpen, activeModule, setActiveModule, toggleSidebar } = useUIStore();
   const user = useAuthStore((s) => s.user);
   const isSuperAdmin = user?.role === 'SuperAdmin' || user?.role === 'Admin';
+  const { isModuleEnabled } = useEnabledModules();
 
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(loadCollapsedGroups);
 
@@ -293,6 +299,7 @@ export function Sidebar() {
       return group.items.some((item) => {
         if (item.adminOnly && !isSuperAdmin) return false;
         if (item.permission && !hasPermission(item.permission)) return false;
+        if (!isModuleEnabled(item.moduleKey)) return false;
         return true;
       });
     })
@@ -301,6 +308,7 @@ export function Sidebar() {
       items: group.items.filter((item) => {
         if (item.adminOnly && !isSuperAdmin) return false;
         if (item.permission && !hasPermission(item.permission)) return false;
+        if (!isModuleEnabled(item.moduleKey)) return false;
         return true;
       }),
     }));

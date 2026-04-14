@@ -220,6 +220,36 @@ export const financeApi = {
   createAccount: (data: { name: string; accountType: number }) =>
     apiClient.post<ApiResponse<FinanceAccountDto>>('/finance/accounts', data).then(r => r.data),
 
+  getAccount: (id: number) =>
+    apiClient.get<ApiResponse<FinanceAccountDto>>(`/finance/accounts/${id}`).then(r => r.data),
+
+  createBankAccount: (data: {
+    name: string;
+    accountType: number;
+    bankName?: string | null;
+    accountNumber?: string | null;
+    iban?: string | null;
+    isPrimary?: boolean;
+    initialBalance?: number;
+  }) =>
+    apiClient.post<ApiResponse<FinanceAccountDto>>('/finance/accounts', data).then(r => r.data),
+
+  updateBankAccount: (id: number, data: {
+    name: string;
+    accountType: number;
+    bankName?: string | null;
+    accountNumber?: string | null;
+    iban?: string | null;
+    isPrimary?: boolean;
+  }) =>
+    apiClient.put<ApiResponse<FinanceAccountDto>>(`/finance/accounts/${id}`, data).then(r => r.data),
+
+  deactivateAccount: (id: number) =>
+    apiClient.post<ApiResponse<boolean>>(`/finance/accounts/${id}/deactivate`, {}).then(r => r.data),
+
+  activateAccount: (id: number) =>
+    apiClient.post<ApiResponse<boolean>>(`/finance/accounts/${id}/activate`, {}).then(r => r.data),
+
   recordTransaction: (data: { accountId: number; transactionType: number; category?: string; amount: number; description?: string }) =>
     apiClient.post<ApiResponse<FinanceTransactionDto>>('/finance/transactions', data).then(r => r.data),
 
@@ -379,6 +409,28 @@ export const tenantsApi = {
 
   activate: (id: string) =>
     apiClient.post<ApiResponse<boolean>>(`/admin/tenants/${id}/activate`).then(r => r.data),
+};
+
+// ==================== Tenant Modules ====================
+export type TenantModuleDto = {
+  key: string;
+  nameAr: string;
+  category: string;
+  isEnabled: boolean;
+  enabledAt?: string | null;
+};
+
+export type TenantModuleToggle = { key: string; isEnabled: boolean };
+
+export const tenantModulesApi = {
+  getForTenant: (tenantId: string) =>
+    apiClient.get<ApiResponse<TenantModuleDto[]>>(`/admin/tenants/${tenantId}/modules`).then(r => r.data),
+
+  updateForTenant: (tenantId: string, modules: TenantModuleToggle[]) =>
+    apiClient.put<ApiResponse<TenantModuleDto[]>>(`/admin/tenants/${tenantId}/modules`, { modules }).then(r => r.data),
+
+  getMine: () =>
+    apiClient.get<ApiResponse<TenantModuleDto[]>>('/tenant/modules').then(r => r.data),
 };
 
 // ==================== Users ====================
@@ -983,4 +1035,52 @@ export const publicApiManagementApi = {
 
   testWebhook: (subscriptionId: number) =>
     apiClient.post<ApiResponse<any>>(`/api-management/webhooks/${subscriptionId}/test`).then(r => r.data),
+};
+
+// ==================== Accounting ====================
+export const accountingApi = {
+  getTrialBalance: (fromDate: string, toDate: string, branchId?: number) =>
+    apiClient.get<ApiResponse<any>>('/accounting/reports/trial-balance', { params: { fromDate, toDate, branchId } }).then(r => r.data),
+
+  getIncomeStatement: (fromDate: string, toDate: string, branchId?: number) =>
+    apiClient.get<ApiResponse<any>>('/accounting/reports/income-statement', { params: { fromDate, toDate, branchId } }).then(r => r.data),
+
+  getBalanceSheet: (asOfDate: string, branchId?: number) =>
+    apiClient.get<ApiResponse<any>>('/accounting/reports/balance-sheet', { params: { asOfDate, branchId } }).then(r => r.data),
+
+  getContactStatement: (contactId: number, fromDate: string, toDate: string) =>
+    apiClient.get<ApiResponse<any>>(`/accounting/reports/contacts/${contactId}/statement`, { params: { fromDate, toDate } }).then(r => r.data),
+
+  // Chart of Accounts (endpoint may not exist yet — UI handles 404 gracefully)
+  getChartOfAccounts: () =>
+    apiClient.get<ApiResponse<any>>('/accounting/chart-of-accounts').then(r => r.data),
+
+  createChartOfAccount: (payload: {
+    parentId: number | null;
+    code: string;
+    nameAr: string;
+    nameEn?: string | null;
+    description?: string | null;
+  }) =>
+    apiClient.post<ApiResponse<any>>('/accounting/chart-of-accounts', payload).then(r => r.data),
+
+  updateChartOfAccount: (id: number, payload: {
+    nameAr?: string;
+    nameEn?: string | null;
+    description?: string | null;
+    isActive?: boolean;
+  }) =>
+    apiClient.patch<ApiResponse<any>>(`/accounting/chart-of-accounts/${id}`, payload).then(r => r.data),
+};
+
+// ==================== Posting Failures (Admin) ====================
+export const postingFailuresApi = {
+  list: (params: { resolved?: boolean; source?: string; page?: number; pageSize?: number }) =>
+    apiClient.get<ApiResponse<PagedResult<any>>>('/admin/accounting/posting-failures', { params }).then(r => r.data),
+
+  retry: (id: number) =>
+    apiClient.post<ApiResponse<any>>(`/admin/accounting/posting-failures/${id}/retry`).then(r => r.data),
+
+  resolve: (id: number, notes: string) =>
+    apiClient.post<ApiResponse<any>>(`/admin/accounting/posting-failures/${id}/resolve`, { notes }).then(r => r.data),
 };

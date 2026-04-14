@@ -22,6 +22,358 @@ namespace MsCashier.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.AccountingPeriod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ClosedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FiscalYear")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "FiscalYear");
+
+                    b.HasIndex("TenantId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("AccountingPeriods");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.ChartOfAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<byte>("Category")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsGroup")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("bit");
+
+                    b.Property<byte>("Level")
+                        .HasColumnType("tinyint");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameEn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte>("Nature")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("TenantId", "Category");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("ChartOfAccounts");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.JournalEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DescriptionAr")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DescriptionEn")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("EntryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EntryNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PeriodId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PostedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("PostedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long?>("ReversesEntryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<byte>("Source")
+                        .HasColumnType("tinyint");
+
+                    b.Property<long?>("SourceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SourceType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte>("Status")
+                        .HasColumnType("tinyint");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalCredit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalDebit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PeriodId");
+
+                    b.HasIndex("TenantId", "EntryDate");
+
+                    b.HasIndex("TenantId", "EntryNumber")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.HasIndex("TenantId", "SourceType", "SourceId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_JournalEntries_Source_Active")
+                        .HasFilter("[SourceType] IS NOT NULL AND [SourceId] IS NOT NULL AND [Status] <> 3");
+
+                    b.ToTable("JournalEntries");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.JournalLine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ContactId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CostCenter")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Credit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Debit")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("JournalEntryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<short>("LineNumber")
+                        .HasColumnType("smallint");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.HasIndex("TenantId", "AccountId");
+
+                    b.HasIndex("TenantId", "ContactId");
+
+                    b.ToTable("JournalLines");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.PostingFailure", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastRetryAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ResolutionNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<long>("SourceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("StackTrace")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "IsResolved", "CreatedAt")
+                        .HasDatabaseName("IX_PostingFailures_Admin");
+
+                    b.HasIndex("TenantId", "SourceType", "SourceId", "IsResolved")
+                        .HasDatabaseName("IX_PostingFailures_Source");
+
+                    b.ToTable("PostingFailures");
+                });
+
             modelBuilder.Entity("MsCashier.Domain.Entities.ApiKey", b =>
                 {
                     b.Property<int>("Id")
@@ -1160,6 +1512,10 @@ namespace MsCashier.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AccountNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<byte>("AccountType")
                         .HasColumnType("tinyint");
 
@@ -1167,13 +1523,27 @@ namespace MsCashier.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ChartOfAccountId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Iban")
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -1189,7 +1559,11 @@ namespace MsCashier.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ChartOfAccountId");
+
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "ChartOfAccountId");
 
                     b.ToTable("FinanceAccounts");
                 });
@@ -5015,6 +5389,48 @@ namespace MsCashier.Infrastructure.Migrations
                     b.ToTable("TenantIntegrations");
                 });
 
+            modelBuilder.Entity("MsCashier.Domain.Entities.TenantModule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EnabledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("EnabledBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModuleKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ModuleKey")
+                        .IsUnique();
+
+                    b.ToTable("TenantModules");
+                });
+
             modelBuilder.Entity("MsCashier.Domain.Entities.TenantTaxConfig", b =>
                 {
                     b.Property<int>("Id")
@@ -5543,6 +5959,46 @@ namespace MsCashier.Infrastructure.Migrations
                     b.ToTable("WebhookSubscriptions");
                 });
 
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.ChartOfAccount", b =>
+                {
+                    b.HasOne("MsCashier.Domain.Entities.Accounting.ChartOfAccount", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.JournalEntry", b =>
+                {
+                    b.HasOne("MsCashier.Domain.Entities.Accounting.AccountingPeriod", "Period")
+                        .WithMany()
+                        .HasForeignKey("PeriodId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Period");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.JournalLine", b =>
+                {
+                    b.HasOne("MsCashier.Domain.Entities.Accounting.ChartOfAccount", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MsCashier.Domain.Entities.Accounting.JournalEntry", "JournalEntry")
+                        .WithMany("Lines")
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("JournalEntry");
+                });
+
             modelBuilder.Entity("MsCashier.Domain.Entities.Attendance", b =>
                 {
                     b.HasOne("MsCashier.Domain.Entities.Employee", null)
@@ -5751,6 +6207,16 @@ namespace MsCashier.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.FinanceAccount", b =>
+                {
+                    b.HasOne("MsCashier.Domain.Entities.Accounting.ChartOfAccount", "ChartOfAccount")
+                        .WithMany()
+                        .HasForeignKey("ChartOfAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ChartOfAccount");
                 });
 
             modelBuilder.Entity("MsCashier.Domain.Entities.FinanceTransaction", b =>
@@ -6521,6 +6987,17 @@ namespace MsCashier.Infrastructure.Migrations
                     b.Navigation("Plan");
                 });
 
+            modelBuilder.Entity("MsCashier.Domain.Entities.TenantModule", b =>
+                {
+                    b.HasOne("MsCashier.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("MsCashier.Domain.Entities.TerminalTransaction", b =>
                 {
                     b.HasOne("MsCashier.Domain.Entities.Invoice", "Invoice")
@@ -6605,6 +7082,16 @@ namespace MsCashier.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Subscription");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.ChartOfAccount", b =>
+                {
+                    b.Navigation("Children");
+                });
+
+            modelBuilder.Entity("MsCashier.Domain.Entities.Accounting.JournalEntry", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("MsCashier.Domain.Entities.Branch", b =>

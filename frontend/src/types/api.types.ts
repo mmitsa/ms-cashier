@@ -426,6 +426,13 @@ export interface FinanceAccountDto {
   name: string;
   accountType: AccountType;
   balance: number;
+  isActive?: boolean;
+  chartOfAccountId?: number | null;
+  chartOfAccountCode?: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
+  iban?: string | null;
+  isPrimary?: boolean;
 }
 
 export interface FinanceTransactionDto {

@@ -1,5 +1,7 @@
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
+using MsCashier.Application.Interfaces.Accounting;
+using MsCashier.Application.Services.Accounting.Posting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
 using MsCashier.Domain.Enums;
@@ -17,12 +19,21 @@ public class OnlineStoreService : IOnlineStoreService
     private readonly IUnitOfWork _uow;
     private readonly ICurrentTenantService _tenant;
     private readonly IEncryptionService _encryption;
+    private readonly ISalePostingService _salePostingService;
+    private readonly IPostingFailureLogger _postingFailureLogger;
 
-    public OnlineStoreService(IUnitOfWork uow, ICurrentTenantService tenant, IEncryptionService encryption)
+    public OnlineStoreService(
+        IUnitOfWork uow,
+        ICurrentTenantService tenant,
+        IEncryptionService encryption,
+        ISalePostingService salePostingService,
+        IPostingFailureLogger postingFailureLogger)
     {
         _uow = uow;
         _tenant = tenant;
         _encryption = encryption;
+        _salePostingService = salePostingService;
+        _postingFailureLogger = postingFailureLogger;
     }
 
     public async Task<Result<OnlineStoreDto>> GetStoreAsync()
@@ -252,6 +263,7 @@ public class OnlineStoreService : IOnlineStoreService
             order.Status = request.Status;
             order.UpdatedAt = DateTime.UtcNow;
 
+            long? newlyCreatedInvoiceId = null;
             // When confirmed, create a POS invoice automatically
             if (request.Status == OnlineOrderStatus.Confirmed && order.InvoiceId is null)
             {
@@ -304,12 +316,32 @@ public class OnlineStoreService : IOnlineStoreService
                     }
 
                     order.InvoiceId = invoice.Id;
+                    newlyCreatedInvoiceId = invoice.Id;
                 }
             }
 
             _uow.Repository<OnlineOrder>().Update(order);
             await _uow.SaveChangesAsync();
             await _uow.CommitTransactionAsync();
+
+            // GL posting (outside the tx; failures are logged, never roll back the order).
+            // OnlineStoreService bypasses InvoiceService when auto-creating the invoice,
+            // so the posting hook must fire here.
+            if (newlyCreatedInvoiceId is long newInvoiceId)
+            {
+                try
+                {
+                    var postResult = await _salePostingService.PostSaleAsync(newInvoiceId);
+                    if (!postResult.IsSuccess)
+                    {
+                        try { await _postingFailureLogger.LogAsync("Invoice", newInvoiceId, "Sale", string.Join("; ", postResult.Errors)); } catch { }
+                    }
+                }
+                catch (Exception postEx)
+                {
+                    try { await _postingFailureLogger.LogAsync("Invoice", newInvoiceId, "Sale", postEx); } catch { }
+                }
+            }
 
             return Result<OnlineOrderDto>.Success(MapOrder(order), "تم تحديث حالة الطلب بنجاح");
         }

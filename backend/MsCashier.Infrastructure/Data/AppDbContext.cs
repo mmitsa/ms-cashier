@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
+using MsCashier.Domain.Entities.Accounting;
 using MsCashier.Domain.Interfaces;
 
 namespace MsCashier.Infrastructure.Data;
@@ -53,6 +54,7 @@ public class AppDbContext : DbContext
 
     // Store Settings
     public DbSet<TenantCurrency> TenantCurrencies => Set<TenantCurrency>();
+    public DbSet<TenantModule> TenantModules => Set<TenantModule>();
     public DbSet<TenantTaxConfig> TenantTaxConfigs => Set<TenantTaxConfig>();
     public DbSet<TenantIntegration> TenantIntegrations => Set<TenantIntegration>();
 
@@ -118,6 +120,13 @@ public class AppDbContext : DbContext
     public DbSet<OnlineOrderItem> OnlineOrderItems => Set<OnlineOrderItem>();
     public DbSet<OnlinePaymentConfig> OnlinePaymentConfigs => Set<OnlinePaymentConfig>();
     public DbSet<StoreShippingConfig> StoreShippingConfigs => Set<StoreShippingConfig>();
+
+    // Accounting / General Ledger
+    public DbSet<ChartOfAccount> ChartOfAccounts => Set<ChartOfAccount>();
+    public DbSet<AccountingPeriod> AccountingPeriods => Set<AccountingPeriod>();
+    public DbSet<JournalEntry> JournalEntries => Set<JournalEntry>();
+    public DbSet<JournalLine> JournalLines => Set<JournalLine>();
+    public DbSet<PostingFailure> PostingFailures => Set<PostingFailure>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -455,6 +464,11 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.TenantId);
             e.Property(x => x.Name).HasMaxLength(200).IsRequired();
             e.Property(x => x.Balance).HasPrecision(18, 2);
+            e.HasOne(x => x.ChartOfAccount)
+                .WithMany()
+                .HasForeignKey(x => x.ChartOfAccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.TenantId, x.ChartOfAccountId });
         });
 
         // FinanceTransaction
@@ -950,6 +964,79 @@ public class AppDbContext : DbContext
             e.HasKey(x => x.Id);
             e.HasIndex(x => x.OnlineStoreId);
             e.Property(x => x.ShippingType).HasMaxLength(50).IsRequired();
+        });
+
+        modelBuilder.Entity<TenantModule>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.ModuleKey }).IsUnique();
+            e.Property(x => x.ModuleKey).HasMaxLength(50).IsRequired();
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // ========================================================
+        // Accounting / General Ledger
+        // ========================================================
+        modelBuilder.Entity<ChartOfAccount>(e =>
+        {
+            e.HasIndex(x => new { x.TenantId, x.Code }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.Category });
+            e.HasOne(x => x.Parent)
+                .WithMany(x => x.Children)
+                .HasForeignKey(x => x.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
+        });
+
+        modelBuilder.Entity<AccountingPeriod>(e =>
+        {
+            e.HasIndex(x => new { x.TenantId, x.Name }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.FiscalYear });
+            e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
+        });
+
+        modelBuilder.Entity<JournalEntry>(e =>
+        {
+            e.HasIndex(x => new { x.TenantId, x.EntryNumber }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.EntryDate });
+            e.HasIndex(x => new { x.TenantId, x.Status });
+            e.HasIndex(x => new { x.TenantId, x.SourceType, x.SourceId });
+            e.HasIndex(x => new { x.TenantId, x.SourceType, x.SourceId })
+                .IsUnique()
+                .HasFilter("[SourceType] IS NOT NULL AND [SourceId] IS NOT NULL AND [Status] <> 3")
+                .HasDatabaseName("UX_JournalEntries_Source_Active");
+            e.HasOne(x => x.Period)
+                .WithMany()
+                .HasForeignKey(x => x.PeriodId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
+        });
+
+        modelBuilder.Entity<JournalLine>(e =>
+        {
+            e.HasIndex(x => new { x.TenantId, x.AccountId });
+            e.HasIndex(x => new { x.TenantId, x.ContactId });
+            e.HasOne(x => x.JournalEntry)
+                .WithMany(x => x.Lines)
+                .HasForeignKey(x => x.JournalEntryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Account)
+                .WithMany()
+                .HasForeignKey(x => x.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
+        });
+
+        modelBuilder.Entity<PostingFailure>(e =>
+        {
+            // Lookup by source — NOT unique: same (source,id) can fail multiple times
+            // before being resolved, and we want to preserve each attempt's error.
+            e.HasIndex(x => new { x.TenantId, x.SourceType, x.SourceId, x.IsResolved })
+                .HasDatabaseName("IX_PostingFailures_Source");
+            // Admin list view: unresolved first, newest first.
+            e.HasIndex(x => new { x.TenantId, x.IsResolved, x.CreatedAt })
+                .HasDatabaseName("IX_PostingFailures_Admin");
+            e.HasQueryFilter(x => _tenantService == null || (!x.IsDeleted && x.TenantId == _tenantService.TenantId));
         });
 
         // Seed Plans

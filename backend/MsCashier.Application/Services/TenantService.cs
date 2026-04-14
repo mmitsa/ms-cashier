@@ -1,7 +1,9 @@
+using MsCashier.Application.Accounting;
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
+using MsCashier.Domain.Entities.Accounting;
 using MsCashier.Domain.Enums;
 using MsCashier.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -20,29 +22,31 @@ public class TenantService : ITenantService
 
     public async Task<Result<TenantDto>> CreateTenantAsync(CreateTenantRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.VatNumber))
+            return Result<TenantDto>.Failure("الرقم الضريبي مطلوب");
+
+        if (string.IsNullOrWhiteSpace(request.AdminUsername) || request.AdminUsername.Length < 3)
+            return Result<TenantDto>.Failure("اسم المستخدم يجب أن يكون 3 أحرف على الأقل");
+
+        if (string.IsNullOrWhiteSpace(request.AdminPassword) || request.AdminPassword.Length < 6)
+            return Result<TenantDto>.Failure("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+
+        // Check username uniqueness across ALL tenants (unfiltered)
+        var usernameExists = await _uow.Repository<User>().QueryUnfiltered()
+            .AnyAsync(u => u.Username == request.AdminUsername && !u.IsDeleted);
+
+        if (usernameExists)
+            return Result<TenantDto>.Failure("اسم المستخدم مستخدم بالفعل. اختر اسم مستخدم آخر.");
+
+        var plan = await _uow.Repository<Plan>().Query()
+            .FirstOrDefaultAsync(p => p.Id == request.PlanId);
+
+        if (plan is null)
+            return Result<TenantDto>.Failure("الباقة غير موجودة");
+
+        await _uow.BeginTransactionAsync();
         try
         {
-            if (string.IsNullOrWhiteSpace(request.VatNumber))
-                return Result<TenantDto>.Failure("الرقم الضريبي مطلوب");
-
-            if (string.IsNullOrWhiteSpace(request.AdminUsername) || request.AdminUsername.Length < 3)
-                return Result<TenantDto>.Failure("اسم المستخدم يجب أن يكون 3 أحرف على الأقل");
-
-            if (string.IsNullOrWhiteSpace(request.AdminPassword) || request.AdminPassword.Length < 6)
-                return Result<TenantDto>.Failure("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-
-            // Check username uniqueness across ALL tenants (unfiltered)
-            var usernameExists = await _uow.Repository<User>().QueryUnfiltered()
-                .AnyAsync(u => u.Username == request.AdminUsername && !u.IsDeleted);
-
-            if (usernameExists)
-                return Result<TenantDto>.Failure("اسم المستخدم مستخدم بالفعل. اختر اسم مستخدم آخر.");
-
-            var plan = await _uow.Repository<Plan>().Query()
-                .FirstOrDefaultAsync(p => p.Id == request.PlanId);
-
-            if (plan is null)
-                return Result<TenantDto>.Failure("الباقة غير موجودة");
 
             var tenant = new Tenant
             {
@@ -102,10 +106,34 @@ public class TenantService : ITenantService
 
             await _uow.SaveChangesAsync();
 
+            // Seed default Chart of Accounts (62 accounts)
+            var coaAccounts = DefaultChartOfAccounts.BuildEntities(tenant.Id);
+            foreach (var account in coaAccounts)
+                await _uow.Repository<ChartOfAccount>().AddAsync(account);
+
+            // Create initial open AccountingPeriod for current month
+            var now = DateTime.UtcNow;
+            var periodStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var periodEnd = periodStart.AddMonths(1).AddSeconds(-1);
+            var period = new AccountingPeriod
+            {
+                TenantId = tenant.Id,
+                Name = $"{now:yyyy-MM}",
+                StartDate = periodStart,
+                EndDate = periodEnd,
+                FiscalYear = now.Year,
+                IsClosed = false
+            };
+            await _uow.Repository<AccountingPeriod>().AddAsync(period);
+
+            await _uow.SaveChangesAsync();
+            await _uow.CommitTransactionAsync();
+
             return Result<TenantDto>.Success(MapToDto(tenant, plan.Name, 1, 0, 0m));
         }
         catch (Exception ex)
         {
+            await _uow.RollbackTransactionAsync();
             return Result<TenantDto>.Failure($"خطأ: {ex.Message}");
         }
     }

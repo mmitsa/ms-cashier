@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MsCashier.API.Middleware;
+using MsCashier.Application.DependencyInjection;
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
 using MsCashier.Application.Services;
@@ -132,6 +133,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 // Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITenantService, TenantService>();
+builder.Services.AddScoped<ITenantModuleService, TenantModuleService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IUnitService, UnitService>();
@@ -143,6 +145,13 @@ builder.Services.AddScoped<IStoreSettingsService, StoreSettingsService>();
 builder.Services.AddScoped<IIntegrationService, IntegrationService>();
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();
 builder.Services.AddScoped<IContactService, ContactService>();
+
+// Accounting / GL
+builder.Services
+    .AddJournalEngine()
+    .AddPostingRules()
+    .AddAccountingReports()
+    .AddAccountingBackfill();
 builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ICsvImportService, CsvImportService>();
@@ -590,6 +599,39 @@ if (migrateOnly || autoMigrate)
             await db.SaveChangesAsync();
 
             logger.LogInformation("SuperAdmin tenant ({TenantId}) and user ({UserId}) seeded successfully.", tenantId, userId);
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // Auto-backfill Chart of Accounts for any tenant missing it.
+        // Idempotent: only fills gaps (skips tenants that already have CoA).
+        // Isolated in its own scope + try/catch so a backfill failure
+        // does not crash API startup.
+        // ─────────────────────────────────────────────────────────────
+        try
+        {
+            using var backfillScope = app.Services.CreateScope();
+            var backfillSvc = backfillScope.ServiceProvider
+                .GetRequiredService<MsCashier.Application.Interfaces.IAccountingBackfillService>();
+            var backfillResult = await backfillSvc.BackfillAllMissingAsync();
+            if (backfillResult.IsSuccess && backfillResult.Data is not null)
+            {
+                var d = backfillResult.Data;
+                if (d.TenantsProcessed > 0)
+                    logger.LogInformation(
+                        "Accounting backfill on startup: {Processed} tenant(s) processed ({Ok} ok, {Fail} failed).",
+                        d.TenantsProcessed, d.TenantsSucceeded, d.TenantsFailed);
+                else
+                    logger.LogInformation("Accounting backfill on startup: no missing tenants — skipped.");
+            }
+            else
+            {
+                logger.LogWarning("Accounting backfill on startup returned failure: {Errors}",
+                    string.Join("; ", backfillResult.Errors));
+            }
+        }
+        catch (Exception backfillEx)
+        {
+            logger.LogError(backfillEx, "Accounting backfill on startup threw — continuing boot.");
         }
     }
     catch (Exception ex)
