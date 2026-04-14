@@ -30,7 +30,6 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'data-vendor': ['@tanstack/react-query', 'axios', 'zustand'],
           'ui-vendor': ['framer-motion', 'lucide-react', 'react-hot-toast', 'clsx', 'tailwind-merge'],
-          'charts-vendor': ['chart.js'],
         },
       },
     },
