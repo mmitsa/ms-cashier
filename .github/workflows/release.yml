@@ -1,0 +1,97 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'       # e.g. v1.0.0, v2.3.1
+  workflow_dispatch:   # allow manual trigger from Actions tab
+
+permissions:
+  contents: write      # required to create releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # --- Backend ---
+      - name: Publish backend
+        run: |
+          cd backend/MsCashier.API
+          dotnet publish -c Release -o ../../artifacts/backend --nologo
+          cp appsettings.Production.json.template ../../artifacts/backend/ 2>/dev/null || true
+          mkdir -p ../../artifacts/backend/logs
+
+      # --- Frontend (Vite) ---
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+          mkdir -p ../artifacts/frontend
+          cp -r dist/* ../artifacts/frontend/
+
+      # --- Storefront (Next.js standalone) ---
+      - name: Build storefront
+        run: |
+          cd storefront
+          npm ci
+          npm run build
+          mkdir -p ../artifacts/storefront
+          cp -r .next/standalone/* ../artifacts/storefront/
+          mkdir -p ../artifacts/storefront/.next
+          cp -r .next/static ../artifacts/storefront/.next/static
+          [ -d public ] && cp -r public ../artifacts/storefront/public || true
+
+      # --- Bundle deployment scripts alongside artifacts ---
+      - name: Copy deploy scripts
+        run: cp -r deploy artifacts/deploy
+
+      # --- Package into a single zip ---
+      - name: Create release archive
+        run: |
+          cd artifacts
+          zip -r ../mpos-${{ github.ref_name }}.zip .
+          cd ..
+          sha256sum mpos-${{ github.ref_name }}.zip > mpos-${{ github.ref_name }}.zip.sha256
+
+      - name: Upload build artifact (non-tag runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mpos-release
+          path: |
+            mpos-*.zip
+            mpos-*.zip.sha256
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            mpos-${{ github.ref_name }}.zip
+            mpos-${{ github.ref_name }}.zip.sha256
+          generate_release_notes: true
+          body: |
+            ## MPOS Release ${{ github.ref_name }}
+
+            Download `mpos-${{ github.ref_name }}.zip` and extract on the Windows server.
+
+            **Deploy steps:**
+            ```powershell
+            # On the server, after extracting the zip:
+            pwsh -File deploy\deploy.ps1
+            pwsh -File deploy\verify.ps1
+            ```
+
+            The archive contains pre-built artifacts — no build step needed on the server.

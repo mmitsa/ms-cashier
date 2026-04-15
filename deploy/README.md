@@ -238,17 +238,111 @@ RESTORE DATABASE MsCashier
 
 ## النشر التالي (تحديث الكود)
 
-بعد أول إعداد، كل تحديث لاحق:
+### الطريقة الموصى بها — Release من GitHub Actions
+
+1. على جهازك، اعمل tag:
+   ```bash
+   git tag v1.0.1
+   git push origin v1.0.1
+   ```
+2. GitHub Actions يبني الـ 3 مشاريع و ينشر `mpos-v1.0.1.zip` في [Releases](https://github.com/mmitsa/ms-cashier/releases).
+3. على السيرفر:
+   ```powershell
+   pwsh -File deploy\pull-release.ps1
+   pwsh -File deploy\deploy.ps1
+   ```
+
+`pull-release.ps1` ينزل آخر release، يتحقق من SHA-256، و يفك الضغط إلى `C:\mpos-deploy\artifacts\`.
+
+لاختيار tag معين:
+```powershell
+pwsh -File deploy\pull-release.ps1 -Tag v1.0.0
+```
+
+### الطريقة البديلة — بناء محلي
 
 ```powershell
 # جهازك المحلي
 pwsh -File deploy\build.ps1
 
-# انسخ artifacts\ للسيرفر
+# انسخ deploy\artifacts\ للسيرفر
 
 # السيرفر (كـ Administrator)
 pwsh -File deploy\deploy.ps1
 ```
+
+---
+
+## Rollback (التراجع بعد deploy فاشل)
+
+كل `deploy.ps1` بيعمل snapshot قبل النشر في `C:\inetpub\mpos-snapshots\<timestamp>\` (آخر 3 snapshots فقط بيتحفظوا).
+
+**عرض الـ snapshots المتاحة**:
+```powershell
+pwsh -File deploy\rollback.ps1 -List
+```
+
+**رجوع لآخر نسخة تلقائياً**:
+```powershell
+pwsh -File deploy\rollback.ps1
+```
+
+**رجوع لـ snapshot معين**:
+```powershell
+pwsh -File deploy\rollback.ps1 -Snapshot 20260415-143022
+```
+
+الـ rollback بيحافظ على `appsettings.Production.json` و `.env.production` الحاليين (مش بيرجعهم لنسخة قديمة).
+
+---
+
+## Log Rotation (تنظيف دوري للـ logs)
+
+ملفات الـ stdout logs بتكبر مع الوقت (خصوصاً `C:\inetpub\mpos\backend\logs\stdout_*.log`). لتفعيل التنظيف التلقائي:
+
+```powershell
+pwsh -File deploy\log-rotate.ps1 -InstallScheduledTask
+```
+
+- يعمل كل **أحد 03:00 صباحاً** كـ `SYSTEM`
+- يحذف ملفات `.log` و `.txt` أقدم من 30 يوم من:
+  - `C:\inetpub\mpos\backend\logs\`
+  - `C:\inetpub\mpos\storefront\logs\`
+  - `C:\inetpub\logs\LogFiles\` (IIS request logs)
+
+**تشغيل يدوي** (اختبار):
+```powershell
+pwsh -File deploy\log-rotate.ps1
+```
+
+**احتفاظ مختلف** (مثلاً 60 يوم):
+```powershell
+pwsh -File deploy\log-rotate.ps1 -InstallScheduledTask -RetentionDays 60
+```
+
+---
+
+## المراقبة الخارجية (Uptime Monitoring)
+
+لاكتشاف عطل السيرفر خارجياً (نضمن أن النت للسيرفر شغال، مش فقط الخدمات داخلياً)، نوصي بخدمة مجانية مثل **UptimeRobot**:
+
+1. أنشئ حساب على [uptimerobot.com](https://uptimerobot.com)
+2. أضف 3 monitors (كل واحد نوعه HTTPS):
+
+| Monitor Name | URL | Expected Keyword |
+|--------------|-----|------------------|
+| MPOS Frontend | `https://mops.mmit.sa/` | `mpos` (أو عنوان الصفحة) |
+| MPOS API | `https://mops.mmit.sa/api/v1/health` | (فقط 200 status) |
+| MPOS Storefront | `https://mops.mmit.sa/store` | `متجر` (أو أي نص عربي في الصفحة) |
+
+3. إعدادات يوصى بها:
+   - **Monitoring Interval**: 5 دقائق
+   - **Alert Contacts**: إيميل + SMS (حسب الخطة)
+   - **SSL Monitoring**: فعّله لتنبيه قبل انتهاء الشهادة (حتى لو win-acme يُجدد تلقائياً)
+
+4. للـ status page عام (اختياري): UptimeRobot يوفر صفحة مجانية تعرض حالة MPOS لعملائك.
+
+**بدائل مجانية**: BetterStack, Freshping, StatusCake — نفس الفكرة.
 
 ---
 
@@ -310,29 +404,6 @@ iisreset
 
 # إظهار جميع المواقع
 Get-Website
-```
-
----
-
-## Rollback (التراجع عن نشر)
-
-قبل كل نشر ننصح بأخذ backup:
-
-```powershell
-$ts = Get-Date -Format 'yyyyMMdd-HHmmss'
-Copy-Item C:\inetpub\mpos "C:\inetpub\mpos-backup-$ts" -Recurse
-```
-
-للتراجع:
-```powershell
-Stop-Service mpos-storefront
-Stop-WebAppPool mpos-api
-Stop-Website mpos
-Remove-Item C:\inetpub\mpos -Recurse -Force
-Rename-Item "C:\inetpub\mpos-backup-$ts" C:\inetpub\mpos
-Start-WebAppPool mpos-api
-Start-Website mpos
-Start-Service mpos-storefront
 ```
 
 ---

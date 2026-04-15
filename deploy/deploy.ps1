@@ -72,6 +72,29 @@ if (Test-Path "IIS:\Sites\$FrontendSite") {
 
 Start-Sleep -Seconds 2
 
+# --- Snapshot current deploy for rollback ---
+$snapshotRoot = Join-Path (Split-Path -Parent $DeployRoot) 'mpos-snapshots'
+if (-not (Test-Path $snapshotRoot)) { New-Item -ItemType Directory -Path $snapshotRoot -Force | Out-Null }
+
+if (Test-Path $DeployRoot) {
+    $ts = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $snapshotDir = Join-Path $snapshotRoot $ts
+    Write-Step "Snapshotting current deploy -> $snapshotDir (for rollback)"
+    robocopy $DeployRoot $snapshotDir /E /NFL /NDL /NJH /NJS /NP /R:2 /W:2 | Out-Null
+    if ($LASTEXITCODE -ge 8) {
+        Write-Warning "Snapshot failed (robocopy exit $LASTEXITCODE) — continuing without snapshot"
+    }
+
+    # Retention: keep last 3 snapshots only
+    $snapshots = Get-ChildItem -Path $snapshotRoot -Directory | Sort-Object Name -Descending
+    if ($snapshots.Count -gt 3) {
+        $snapshots | Select-Object -Skip 3 | ForEach-Object {
+            Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "  pruned old snapshot: $($_.Name)" -ForegroundColor DarkGray
+        }
+    }
+}
+
 # --- Prepare deploy directories ---
 Write-Step "Preparing directories under $DeployRoot"
 $backendDir    = Join-Path $DeployRoot 'backend'
