@@ -1,6 +1,8 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=MsCashier;User Id=mscashier;Password=REPLACE_ME;TrustServerCertificate=True;MultipleActiveResultSets=True"
+    "__comment": "Windows Auth via IIS AppPool identity (recommended — no password). Run deploy\\setup-sqlserver.ps1 to grant 'IIS AppPool\\mpos-api' DB access.",
+    "DefaultConnection": "Server=localhost;Database=MsCashier;Integrated Security=true;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=true",
+    "__alternative_sql_auth": "Server=localhost;Database=MsCashier;User Id=mscashier;Password=REPLACE_ME;TrustServerCertificate=True;MultipleActiveResultSets=True;Encrypt=true"
   },
   "Jwt": {
     "Key": "REPLACE_WITH_64_CHAR_RANDOM_SECRET_MINIMUM_32_CHARACTERS_REQUIRED",
