@@ -172,12 +172,67 @@ pwsh -File deploy\setup-storefront-service.ps1
 
 هذا ينشئ خدمة ويندوز `mpos-storefront` تدير عملية Next.js على `127.0.0.1:3000`.
 
-### الخطوة 8 — التحقق
+### الخطوة 8 — التحقق (Smoke Test)
 
-افتح في المتصفح:
-- ✅ `https://mops.mmit.sa/` — الواجهة الرئيسية (React)
-- ✅ `https://mops.mmit.sa/api/health` — حالة الـ API
-- ✅ `https://mops.mmit.sa/store` — واجهة المتجر (Next.js)
+```powershell
+pwsh -File deploy\verify.ps1
+```
+
+السكريبت بيختبر:
+- **حالة الخدمات**: `mpos-storefront` (Windows service) و `mpos` و `mpos-api` (IIS sites)
+- **Endpoints داخلية**:
+  - `http://127.0.0.1:5000/health` (الباك إند)
+  - `http://127.0.0.1:3000/store` (Next.js)
+- **Endpoints عامة (عبر HTTPS)**:
+  - `https://mops.mmit.sa/` (React)
+  - `https://mops.mmit.sa/api/v1/health` (عبر الـ reverse proxy)
+  - `https://mops.mmit.sa/store` (عبر ARR)
+
+**Exit code**: `0` = كله تمام، `1` = في فشل (يظهر تفاصيل الفشل).
+
+**قبل جاهزية DNS/SSL** استخدم `-SkipPublic` لاختبار الجزء الداخلي فقط:
+```powershell
+pwsh -File deploy\verify.ps1 -SkipPublic
+```
+
+> ملاحظة: `deploy.ps1` بيشغل `verify.ps1 -SkipPublic` تلقائياً بعد كل نشر.
+
+### الخطوة 9 — تفعيل النسخ الاحتياطي اليومي (backup-db)
+
+```powershell
+pwsh -File deploy\backup-db.ps1 -InstallScheduledTask
+```
+
+بينشئ مهمة مجدولة `MPOS-Daily-DB-Backup` تعمل كل يوم **الساعة 2:30 صباحاً**
+كـ `SYSTEM` (الحساب ده عنده `sysadmin` على SQL Server المحلي تلقائياً —
+ومفيش كلمة مرور متخزنة في المهمة).
+
+- **مكان النسخ**: `C:\inetpub\mpos\backups\`
+- **الصيغة**: `MsCashier-YYYYMMDD-HHmmss.bak` (native SQL backup + compression)
+- **الاحتفاظ**: آخر 14 يوم، القديم يُحذف تلقائياً
+
+**تشغيل يدوي** (اختبار / قبل deploy كبير):
+```powershell
+pwsh -File deploy\backup-db.ps1
+```
+
+**تغيير الاحتفاظ**:
+```powershell
+pwsh -File deploy\backup-db.ps1 -InstallScheduledTask -RetentionDays 30 -ScheduledTime '03:00'
+```
+
+**إلغاء المهمة المجدولة**:
+```powershell
+pwsh -File deploy\backup-db.ps1 -RemoveScheduledTask
+```
+
+**استرجاع نسخة** (في SSMS أو sqlcmd):
+```sql
+USE master;
+RESTORE DATABASE MsCashier
+    FROM DISK = N'C:\inetpub\mpos\backups\MsCashier-20260415-023000.bak'
+    WITH REPLACE, RECOVERY;
+```
 
 ---
 

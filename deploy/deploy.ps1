@@ -116,7 +116,20 @@ if (Get-Service -Name $StorefrontService -ErrorAction SilentlyContinue) {
     Start-Service -Name $StorefrontService
 }
 
+Write-Step "Waiting for services to warm up"
+Start-Sleep -Seconds 5
+
+# Run smoke test (skip public checks — may not have DNS yet on first deploy)
+$verifyScript = Join-Path $PSScriptRoot 'verify.ps1'
+if (Test-Path $verifyScript) {
+    Write-Step "Running post-deploy smoke test"
+    & $verifyScript -SkipPublic
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning "Smoke test reported failures. Re-run with: pwsh -File deploy\verify.ps1"
+    }
+}
+
 Write-Step "Deployment complete"
-Write-Host "Health check: https://mops.mmit.sa/api/health" -ForegroundColor Green
-Write-Host "Frontend:     https://mops.mmit.sa" -ForegroundColor Green
-Write-Host "Storefront:   https://mops.mmit.sa/store" -ForegroundColor Green
+Write-Host "Frontend:   https://mops.mmit.sa"         -ForegroundColor Green
+Write-Host "Storefront: https://mops.mmit.sa/store"   -ForegroundColor Green
+Write-Host "API:        http://127.0.0.1:5000 (via IIS reverse-proxy as /api/*)" -ForegroundColor Green

@@ -34,3 +34,6 @@ Thumbs.db
 .vscode/*
 !.vscode/settings.json
 !.vscode/launch.json
+
+# Deploy artifacts (build output, not committed)
+deploy/artifacts/
