@@ -15,6 +15,9 @@ public class WebhookController : ControllerBase
     private readonly IConfiguration _config;
     private readonly ILogger<WebhookController> _logger;
     private static bool _deploying;
+    private static DateTime? _lastDeployAt;
+    private static string? _lastDeployStatus;
+    private static string? _lastDeployPusher;
 
     public WebhookController(IConfiguration config, ILogger<WebhookController> logger)
     {
@@ -22,6 +25,20 @@ public class WebhookController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>Deploy status check</summary>
+    [HttpGet("status")]
+    public IActionResult Status()
+    {
+        return Ok(new
+        {
+            deploying = _deploying,
+            lastDeployAt = _lastDeployAt,
+            lastStatus = _lastDeployStatus,
+            lastPusher = _lastDeployPusher
+        });
+    }
+
+    /// <summary>GitHub webhook receiver</summary>
     [HttpPost("github")]
     public async Task<IActionResult> GitHub()
     {
@@ -60,22 +77,30 @@ public class WebhookController : ControllerBase
             return Ok(new { ok = true, message = $"ignored branch: {branch}" });
         }
 
-        var pusher = root.GetProperty("pusher").GetProperty("name").GetString();
-        _logger.LogInformation("Webhook: Push to main by {Pusher}", pusher);
+        var pusher = root.GetProperty("pusher").GetProperty("name").GetString() ?? "unknown";
+        var commitMsg = "";
+        if (root.TryGetProperty("head_commit", out var hc) && hc.TryGetProperty("message", out var cm))
+            commitMsg = cm.GetString() ?? "";
+
+        _logger.LogInformation("Webhook: Push to main by {Pusher}: {Message}", pusher, commitMsg);
 
         if (_deploying)
         {
-            _logger.LogWarning("Webhook: Deploy already in progress");
+            _logger.LogWarning("Webhook: Deploy already in progress, queued request ignored");
             return StatusCode(202, new { ok = false, message = "deploy already in progress" });
         }
 
-        // Start deploy in background
+        // Start zero-downtime deploy in background
         _deploying = true;
+        _lastDeployPusher = pusher;
+        _lastDeployAt = DateTime.UtcNow;
+        _lastDeployStatus = "running";
+
         _ = Task.Run(() =>
         {
             try
             {
-                _logger.LogInformation("Webhook: Starting deploy...");
+                _logger.LogInformation("Webhook: Starting zero-downtime deploy...");
                 var psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "cmd.exe",
@@ -87,21 +112,34 @@ public class WebhookController : ControllerBase
                     CreateNoWindow = true
                 };
                 var proc = System.Diagnostics.Process.Start(psi)!;
-                proc.WaitForExit(300_000); // 5 min timeout
-                var exitCode = proc.ExitCode;
-                _logger.LogInformation("Webhook: Deploy finished with exit code {ExitCode}", exitCode);
+                var stdout = proc.StandardOutput.ReadToEnd();
+                var stderr = proc.StandardError.ReadToEnd();
+                proc.WaitForExit(300_000);
+
+                if (proc.ExitCode == 0)
+                {
+                    _lastDeployStatus = "success";
+                    _logger.LogInformation("Webhook: Deploy SUCCESS by {Pusher}", pusher);
+                }
+                else
+                {
+                    _lastDeployStatus = $"failed (exit {proc.ExitCode}) - rolled back";
+                    _logger.LogError("Webhook: Deploy FAILED (exit {ExitCode}). Auto-rollback executed. stderr: {Stderr}", proc.ExitCode, stderr);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Webhook: Deploy failed");
+                _lastDeployStatus = $"error: {ex.Message}";
+                _logger.LogError(ex, "Webhook: Deploy exception");
             }
             finally
             {
                 _deploying = false;
+                _lastDeployAt = DateTime.UtcNow;
             }
         });
 
-        return Ok(new { ok = true, message = "deploy started" });
+        return Ok(new { ok = true, message = "zero-downtime deploy started", pusher, commit = commitMsg });
     }
 
     private static bool VerifySignature(string payload, string? signature, string secret)
