@@ -1,6 +1,6 @@
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
-using MsCashier.Application.Services.Accounting.Posting;
+using MsCashier.Application.Services.Accounting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
 using MsCashier.Domain.Enums;
@@ -18,10 +18,9 @@ public class PayrollManagementService : IPayrollService
     private readonly IUnitOfWork _uow;
     private readonly IAttendanceService _attendanceService;
     private readonly ICurrentTenantService _tenantService;
-    private readonly IPayrollPostingService _payrollPostingService;
-    private readonly IPostingFailureLogger _postingFailureLogger;
-    public PayrollManagementService(IUnitOfWork uow, IAttendanceService att, ICurrentTenantService tenant, IPayrollPostingService payrollPostingService, IPostingFailureLogger postingFailureLogger)
-    { _uow = uow; _attendanceService = att; _tenantService = tenant; _payrollPostingService = payrollPostingService; _postingFailureLogger = postingFailureLogger; }
+    private readonly IPostingDispatcher _dispatcher;
+    public PayrollManagementService(IUnitOfWork uow, IAttendanceService att, ICurrentTenantService tenant, IPostingDispatcher dispatcher)
+    { _uow = uow; _attendanceService = att; _tenantService = tenant; _dispatcher = dispatcher; }
 
     public async Task<Result<List<PayrollDetailDto>>> GeneratePayrollAsync(GeneratePayrollRequest req)
     {
@@ -125,22 +124,10 @@ public class PayrollManagementService : IPayrollService
             }
             await _uow.SaveChangesAsync();
 
-            // Post GL journal per approved payroll. Idempotency risk: engine does not enforce SourceType="Payroll"+SourceId uniqueness, so re-approval could double-post.
+            // Post GL journal per approved payroll (dispatched in isolated scope).
             foreach (var p in payrolls)
             {
-                try
-                {
-                    var postResult = await _payrollPostingService.PostPayrollRunAsync(p.Id);
-                    if (!postResult.IsSuccess)
-                    {
-                        // Captured in PostingFailures audit table — admin can retry from the dashboard.
-                        try { await _postingFailureLogger.LogAsync("Payroll", p.Id, "PayrollRun", string.Join("; ", postResult.Errors)); } catch { }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    try { await _postingFailureLogger.LogAsync("Payroll", p.Id, "PayrollRun", ex); } catch { }
-                }
+                await _dispatcher.DispatchPayrollAsync(p.Id);
             }
 
             return Result<bool>.Success(true, $"تم اعتماد {payrolls.Count} كشف راتب");

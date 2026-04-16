@@ -1,12 +1,11 @@
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
-using MsCashier.Application.Services.Accounting.Posting;
+using MsCashier.Application.Services.Accounting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
 using MsCashier.Domain.Enums;
 using MsCashier.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace MsCashier.Application.Services;
 
@@ -18,19 +17,16 @@ public class InstallmentService : IInstallmentService
 {
     private readonly IUnitOfWork _uow;
     private readonly ICurrentTenantService _tenant;
-    private readonly IInstallmentPaymentPostingService _posting;
-    private readonly ILogger<InstallmentService> _logger;
+    private readonly IPostingDispatcher _dispatcher;
 
     public InstallmentService(
         IUnitOfWork uow,
         ICurrentTenantService tenant,
-        IInstallmentPaymentPostingService posting,
-        ILogger<InstallmentService> logger)
+        IPostingDispatcher dispatcher)
     {
         _uow = uow;
         _tenant = tenant;
-        _posting = posting;
-        _logger = logger;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Result<InstallmentDto>> CreateAsync(CreateInstallmentRequest request)
@@ -234,22 +230,8 @@ public class InstallmentService : IInstallmentService
             await _uow.SaveChangesAsync();
             await _uow.CommitTransactionAsync();
 
-            // GL posting: Dr Cash/Bank, Cr AR (ContactId = installment.ContactId).
-            // Non-blocking: log and continue on failure; idempotency is enforced by JournalEntryService.
-            try
-            {
-                var postResult = await _posting.PostInstallmentPaymentAsync(payment.Id);
-                if (!postResult.IsSuccess)
-                    _logger.LogWarning(
-                        "GL posting failed for InstallmentPayment {Id}: {Error}",
-                        payment.Id, postResult.Message);
-            }
-            catch (Exception postEx)
-            {
-                _logger.LogError(postEx,
-                    "GL posting threw for InstallmentPayment {Id}; cash side preserved.",
-                    payment.Id);
-            }
+            // GL posting (dispatched in isolated scope).
+            await _dispatcher.DispatchInstallmentPaymentAsync(payment.Id);
 
             return Result<bool>.Success(true, "تم تسجيل الدفعة بنجاح");
         }
