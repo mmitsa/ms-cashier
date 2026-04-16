@@ -25,6 +25,7 @@ import type {
   PaymentMethod, PriceType, CreateInvoiceRequest,
 } from '@/types/api.types';
 import { VariantSelector } from './VariantSelector';
+import { AddCustomerForm } from './AddCustomerForm';
 import { LoyaltyWidget } from '@/features/loyalty/components/LoyaltyWidget';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -89,6 +90,7 @@ export function POSScreen() {
   const [editingQty, setEditingQty] = useState<number | null>(null);
   const [editQtyValue, setEditQtyValue] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
+  const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState('');
   const [lastSaleInvoice, setLastSaleInvoice] = useState<string | null>(null);
   const [salesRepId, setSalesRepId] = useState<number | null>(null);
@@ -962,66 +964,95 @@ export function POSScreen() {
         open={showCustomerPicker}
         onClose={() => {
           setShowCustomerPicker(false);
+          setShowAddCustomerForm(false);
           setCustomerSearch('');
         }}
-        title="اختيار عميل"
+        title={showAddCustomerForm ? 'إضافة عميل جديد' : 'اختيار عميل'}
+        size="lg"
       >
-        <div className="space-y-3">
-          <input
-            value={customerSearch}
-            onChange={(e) => setCustomerSearch(e.target.value)}
-            placeholder="بحث بالاسم أو الهاتف..."
-            className="input"
-            autoFocus
+        {showAddCustomerForm ? (
+          <AddCustomerForm
+            onCreated={(contact) => {
+              setCustomer(contact);
+              setShowCustomerPicker(false);
+              setShowAddCustomerForm(false);
+              setCustomerSearch('');
+            }}
+            onBack={() => setShowAddCustomerForm(false)}
           />
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <input
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+                placeholder="بحث بالاسم أو الهاتف..."
+                className="input flex-1"
+                autoFocus
+              />
+              <button
+                onClick={() => setShowAddCustomerForm(true)}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white text-sm font-semibold transition-colors"
+              >
+                <Plus size={16} />
+                <span className="hidden sm:inline">إضافة عميل جديد</span>
+              </button>
+            </div>
 
-          <div className="space-y-2 max-h-[300px] overflow-y-auto">
-            {contactsLoading && (
-              <div className="flex items-center justify-center py-8 text-gray-400">
-                <Loader2 size={24} className="animate-spin" />
-                <span className="mr-2 text-sm">جاري البحث...</span>
-              </div>
-            )}
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {contactsLoading && (
+                <div className="flex items-center justify-center py-8 text-gray-400">
+                  <Loader2 size={24} className="animate-spin" />
+                  <span className="mr-2 text-sm">جاري البحث...</span>
+                </div>
+              )}
 
-            {!contactsLoading && contacts.length === 0 && (
-              <div className="text-center py-8 text-gray-300">
-                <User size={32} strokeWidth={1} className="mx-auto mb-2" />
-                <p className="text-sm">لا يوجد عملاء</p>
-              </div>
-            )}
+              {!contactsLoading && contacts.length === 0 && (
+                <div className="text-center py-8 text-gray-300">
+                  <User size={32} strokeWidth={1} className="mx-auto mb-2" />
+                  <p className="text-sm">لا يوجد عملاء</p>
+                  <button
+                    onClick={() => setShowAddCustomerForm(true)}
+                    className="mt-2 text-brand-500 hover:text-brand-400 text-sm font-medium transition-colors"
+                  >
+                    إضافة عميل جديد
+                  </button>
+                </div>
+              )}
 
-            {!contactsLoading &&
-              contacts.map((customer: ContactDto) => (
-                <button
-                  key={customer.id}
-                  onClick={() => {
-                    setCustomer(customer);
-                    setShowCustomerPicker(false);
-                    setCustomerSearch('');
-                  }}
-                  className={cn(
-                    'w-full flex items-center gap-3 p-3 rounded-xl text-right transition-colors',
-                    selectedCustomer?.id === customer.id
-                      ? 'bg-brand-50 dark:bg-brand-950 border border-brand-200 dark:border-brand-800'
-                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
-                  )}
-                >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold shrink-0">
-                    {customer.name[0]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{customer.name}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{customer.phone || '—'}</p>
-                  </div>
-                  <div className="text-left shrink-0">
-                    <Badge variant={customer.balance >= 0 ? 'success' : 'danger'}>
-                      {formatCurrency(Math.abs(customer.balance))}
-                    </Badge>
-                  </div>
-                </button>
-              ))}
+              {!contactsLoading &&
+                contacts.map((customer: ContactDto) => (
+                  <button
+                    key={customer.id}
+                    onClick={() => {
+                      setCustomer(customer);
+                      setShowCustomerPicker(false);
+                      setCustomerSearch('');
+                    }}
+                    className={cn(
+                      'w-full flex items-center gap-3 p-3 rounded-xl text-right transition-colors',
+                      selectedCustomer?.id === customer.id
+                        ? 'bg-brand-50 dark:bg-brand-950 border border-brand-200 dark:border-brand-800'
+                        : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700',
+                    )}
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold shrink-0">
+                      {customer.name[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{customer.name}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">{customer.phone || '—'}</p>
+                    </div>
+                    <div className="text-left shrink-0">
+                      <Badge variant={customer.balance >= 0 ? 'success' : 'danger'}>
+                        {formatCurrency(Math.abs(customer.balance))}
+                      </Badge>
+                    </div>
+                  </button>
+                ))}
+            </div>
           </div>
-        </div>
+        )}
       </Modal>
 
       {/* ── Warehouse Picker Modal ────────────────────────────────────────── */}

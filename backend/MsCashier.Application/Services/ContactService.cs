@@ -36,6 +36,26 @@ public class ContactService : IContactService
             if (exists)
                 return Result<ContactDto>.Failure("جهة الاتصال موجودة بالفعل");
 
+            // Validation: company requires TaxNumber + CommercialRegister
+            if (request.IsCompany)
+            {
+                if (string.IsNullOrWhiteSpace(request.TaxNumber))
+                    return Result<ContactDto>.Failure("الرقم الضريبي مطلوب للشركات");
+                if (string.IsNullOrWhiteSpace(request.CommercialRegister))
+                    return Result<ContactDto>.Failure("السجل التجاري مطلوب للشركات");
+            }
+
+            // Validation: individual customer requires NationalId
+            if (!request.IsCompany && request.ContactType == ContactType.Customer)
+            {
+                if (string.IsNullOrWhiteSpace(request.NationalId))
+                    return Result<ContactDto>.Failure("رقم الهوية مطلوب للعملاء الأفراد");
+            }
+
+            // Validation: CreditPeriodDays must be > 0 if provided
+            if (request.CreditPeriodDays.HasValue && request.CreditPeriodDays.Value <= 0)
+                return Result<ContactDto>.Failure("مدة السداد يجب أن تكون أكبر من صفر");
+
             var contact = new Contact
             {
                 TenantId = _tenant.TenantId,
@@ -49,7 +69,17 @@ public class ContactService : IContactService
                 PriceType = request.PriceType,
                 CreditLimit = request.CreditLimit,
                 Balance = 0,
-                IsActive = true
+                IsActive = true,
+                IsCompany = request.IsCompany,
+                CommercialRegister = request.CommercialRegister,
+                NationalId = request.NationalId,
+                BankName = request.BankName,
+                BankAccountNumber = request.BankAccountNumber,
+                Iban = request.Iban,
+                CreditPeriodDays = request.CreditPeriodDays,
+                PaymentMethod = request.PaymentMethod,
+                ProjectName = request.ProjectName,
+                Notes = request.Notes
             };
 
             await _uow.Repository<Contact>().AddAsync(contact);
@@ -143,6 +173,26 @@ public class ContactService : IContactService
             if (contact is null)
                 return Result<ContactDto>.Failure("جهة الاتصال غير موجودة");
 
+            // Validation: company requires TaxNumber + CommercialRegister
+            if (request.IsCompany)
+            {
+                if (string.IsNullOrWhiteSpace(request.TaxNumber))
+                    return Result<ContactDto>.Failure("الرقم الضريبي مطلوب للشركات");
+                if (string.IsNullOrWhiteSpace(request.CommercialRegister))
+                    return Result<ContactDto>.Failure("السجل التجاري مطلوب للشركات");
+            }
+
+            // Validation: individual customer requires NationalId
+            if (!request.IsCompany && request.ContactType == ContactType.Customer)
+            {
+                if (string.IsNullOrWhiteSpace(request.NationalId))
+                    return Result<ContactDto>.Failure("رقم الهوية مطلوب للعملاء الأفراد");
+            }
+
+            // Validation: CreditPeriodDays must be > 0 if provided
+            if (request.CreditPeriodDays.HasValue && request.CreditPeriodDays.Value <= 0)
+                return Result<ContactDto>.Failure("مدة السداد يجب أن تكون أكبر من صفر");
+
             contact.ContactType = request.ContactType;
             contact.Name = request.Name;
             contact.Phone = request.Phone;
@@ -152,6 +202,16 @@ public class ContactService : IContactService
             contact.TaxNumber = request.TaxNumber;
             contact.PriceType = request.PriceType;
             contact.CreditLimit = request.CreditLimit;
+            contact.IsCompany = request.IsCompany;
+            contact.CommercialRegister = request.CommercialRegister;
+            contact.NationalId = request.NationalId;
+            contact.BankName = request.BankName;
+            contact.BankAccountNumber = request.BankAccountNumber;
+            contact.Iban = request.Iban;
+            contact.CreditPeriodDays = request.CreditPeriodDays;
+            contact.PaymentMethod = request.PaymentMethod;
+            contact.ProjectName = request.ProjectName;
+            contact.Notes = request.Notes;
             contact.UpdatedAt = DateTime.UtcNow;
 
             _uow.Repository<Contact>().Update(contact);
@@ -256,9 +316,11 @@ public class ContactService : IContactService
     }
 
     private static ContactDto MapContactToDto(Contact c) => new(
-        c.Id, c.ContactType, c.Name, c.Phone, c.Email,
+        c.Id, c.ContactType, c.Name, c.Phone, c.Phone2, c.Email,
         c.Address, c.PriceType, c.CreditLimit, c.Balance,
-        c.IsActive, c.TaxNumber);
+        c.IsActive, c.TaxNumber, c.IsCompany, c.CommercialRegister, c.NationalId,
+        c.BankName, c.BankAccountNumber, c.Iban,
+        c.CreditPeriodDays, c.PaymentMethod, c.ProjectName, c.Notes);
 }
 
 // ════════════════════════════════════════════════════════════════

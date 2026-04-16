@@ -47,6 +47,37 @@ public class Contact : TenantEntity
 
     public bool IsActive { get; set; } = true;
 
+    // Customer classification
+    public bool IsCompany { get; set; } // true=شركة, false=فرد
+
+    // Company-specific (required when IsCompany=true)
+    [MaxLength(50)]
+    public string? CommercialRegister { get; set; } // السجل التجاري
+
+    // Individual-specific (required when IsCompany=false for credit customers)
+    [MaxLength(20)]
+    public string? NationalId { get; set; } // رقم الهوية
+
+    // Bank details
+    [MaxLength(100)]
+    public string? BankName { get; set; }
+
+    [MaxLength(50)]
+    public string? BankAccountNumber { get; set; }
+
+    [MaxLength(34)]
+    public string? Iban { get; set; }
+
+    // Credit terms
+    public int? CreditPeriodDays { get; set; } // مدة السداد بالأيام
+
+    [MaxLength(50)]
+    public string? PaymentMethod { get; set; } // طريقة السداد المفضلة (تحويل/شيك/نقد)
+
+    // Project linkage
+    [MaxLength(200)]
+    public string? ProjectName { get; set; } // اسم المشروع (if credit is project-based)
+
     // Navigation
     public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }
