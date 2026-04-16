@@ -62,6 +62,17 @@ export const productsApi = {
 
   updatePrices: (id: number, data: { costPrice?: number; retailPrice?: number }) =>
     apiClient.patch<ApiResponse<ProductDto>>(`/products/${id}/prices`, data).then(r => r.data),
+
+  uploadImage: (id: number, file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return apiClient.post<ApiResponse<string>>(`/products/${id}/image`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data);
+  },
+
+  deleteImage: (id: number) =>
+    apiClient.delete<ApiResponse<boolean>>(`/products/${id}/image`).then(r => r.data),
 };
 
 // ==================== Units ====================

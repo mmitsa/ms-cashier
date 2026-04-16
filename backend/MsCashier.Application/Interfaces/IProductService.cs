@@ -17,5 +17,6 @@ public interface IProductService
     Task<Result<int>> BulkDeleteAsync(BulkDeleteProductsRequest request);
     Task<Result<ProductDto>> UpdateBarcodeAsync(int id, string barcode);
     Task<Result<ProductDto>> UpdatePricesAsync(int id, UpdatePricesRequest request);
+    Task<Result<string>> UpdateImageAsync(int id, string? imageUrl);
 }
 

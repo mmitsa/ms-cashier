@@ -91,6 +91,7 @@ export function POSScreen() {
   const [editQtyValue, setEditQtyValue] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
   const [showAddCustomerForm, setShowAddCustomerForm] = useState(false);
+  const [pendingCreditSale, setPendingCreditSale] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState('');
   const [lastSaleInvoice, setLastSaleInvoice] = useState<string | null>(null);
   const [salesRepId, setSalesRepId] = useState<number | null>(null);
@@ -220,7 +221,9 @@ export function POSScreen() {
     const total = getTotal();
     if (method === 4) {
       if (!selectedCustomer) {
-        toast.error('يجب اختيار عميل للبيع الآجل');
+        setPendingCreditSale(true);
+        setShowCustomerPicker(true);
+        toast('اختر عميلاً أو أضف عميلاً جديداً للبيع الآجل', { icon: '👤' });
         return;
       }
       setPaidAmount('0');
@@ -967,6 +970,7 @@ export function POSScreen() {
           setShowCustomerPicker(false);
           setShowAddCustomerForm(false);
           setCustomerSearch('');
+          setPendingCreditSale(false);
         }}
         title={showAddCustomerForm ? 'إضافة عميل جديد' : 'اختيار عميل'}
         size="lg"
@@ -978,6 +982,11 @@ export function POSScreen() {
               setShowCustomerPicker(false);
               setShowAddCustomerForm(false);
               setCustomerSearch('');
+              if (pendingCreditSale) {
+                setPendingCreditSale(false);
+                setPaidAmount('0');
+                completeSale(4, 0);
+              }
             }}
             onBack={() => setShowAddCustomerForm(false)}
           />
@@ -1029,6 +1038,11 @@ export function POSScreen() {
                       setCustomer(customer);
                       setShowCustomerPicker(false);
                       setCustomerSearch('');
+                      if (pendingCreditSale) {
+                        setPendingCreditSale(false);
+                        setPaidAmount('0');
+                        completeSale(4, 0);
+                      }
                     }}
                     className={cn(
                       'w-full flex items-center gap-3 p-3 rounded-xl text-right transition-colors',

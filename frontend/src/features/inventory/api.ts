@@ -53,6 +53,31 @@ export function useUpdatePrices() {
   });
 }
 
+export function useUploadProductImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) =>
+      productsApi.uploadImage(id, file),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+      toast.success('تم رفع الصورة بنجاح');
+    },
+    onError: () => toast.error('حدث خطأ أثناء رفع الصورة'),
+  });
+}
+
+export function useDeleteProductImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => productsApi.deleteImage(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+      toast.success('تم حذف الصورة');
+    },
+    onError: () => toast.error('حدث خطأ أثناء حذف الصورة'),
+  });
+}
+
 export function useAdjustStock() {
   const qc = useQueryClient();
   return useMutation({

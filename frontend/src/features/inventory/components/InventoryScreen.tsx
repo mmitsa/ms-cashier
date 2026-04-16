@@ -47,7 +47,10 @@ import {
   useUpdateBarcode,
   useUpdatePrices,
   useAdjustStock,
+  useUploadProductImage,
+  useDeleteProductImage,
 } from '../api';
+import { ImageUploader } from './ImageUploader';
 
 type StockStatus = 'low' | 'medium' | 'ok';
 
@@ -147,6 +150,8 @@ export function InventoryScreen() {
   const [hoveredPriceId, setHoveredPriceId] = useState<number | null>(null);
   const [editingQtyId, setEditingQtyId] = useState<number | null>(null);
   const [selectAllMode, setSelectAllMode] = useState<'page' | 'all' | null>(null);
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null);
 
   const { data: productsData, isLoading: productsLoading } = useProducts({
     searchTerm: searchTerm || undefined,
@@ -164,6 +169,9 @@ export function InventoryScreen() {
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+
+  const uploadImage = useUploadProductImage();
+  const deleteImage = useDeleteProductImage();
 
   const bulkUpdate = useBulkUpdateProducts();
   const bulkDelete = useBulkDeleteProducts();
@@ -330,8 +338,17 @@ export function InventoryScreen() {
     };
 
     createProduct.mutate(payload, {
-      onSuccess: () => {
+      onSuccess: (res) => {
+        const newId = res.data?.id;
+        if (newId && pendingImageFile) {
+          uploadImage.mutate({ id: newId, file: pendingImageFile });
+        }
         setFormData(initialFormData);
+        setPendingImageFile(null);
+        if (pendingImagePreview) {
+          URL.revokeObjectURL(pendingImagePreview);
+          setPendingImagePreview(null);
+        }
         setShowAddModal(false);
       },
     });
@@ -683,7 +700,16 @@ export function InventoryScreen() {
                         />
                       </td>
                       <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {product.name}
+                        <div className="flex items-center gap-2">
+                          {product.imageUrl && (
+                            <img
+                              src={product.imageUrl}
+                              alt=""
+                              className="w-5 h-5 rounded object-cover flex-shrink-0"
+                            />
+                          )}
+                          {product.name}
+                        </div>
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                         {product.categoryName || '-'}
@@ -843,11 +869,34 @@ export function InventoryScreen() {
         onClose={() => {
           setShowAddModal(false);
           setFormData(initialFormData);
+          setPendingImageFile(null);
+          if (pendingImagePreview) {
+            URL.revokeObjectURL(pendingImagePreview);
+            setPendingImagePreview(null);
+          }
         }}
         title="إضافة صنف جديد"
         size="lg"
       >
         <form onSubmit={handleAddProduct} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">صورة المنتج</label>
+            <ImageUploader
+              previewUrl={pendingImagePreview}
+              onFileSelect={(file) => {
+                setPendingImageFile(file);
+                if (pendingImagePreview) URL.revokeObjectURL(pendingImagePreview);
+                setPendingImagePreview(URL.createObjectURL(file));
+              }}
+              onPreviewClear={() => {
+                setPendingImageFile(null);
+                if (pendingImagePreview) {
+                  URL.revokeObjectURL(pendingImagePreview);
+                  setPendingImagePreview(null);
+                }
+              }}
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم الصنف</label>
             <input
@@ -972,6 +1021,11 @@ export function InventoryScreen() {
               onClick={() => {
                 setShowAddModal(false);
                 setFormData(initialFormData);
+                setPendingImageFile(null);
+                if (pendingImagePreview) {
+                  URL.revokeObjectURL(pendingImagePreview);
+                  setPendingImagePreview(null);
+                }
               }}
               className="btn-secondary"
             >
@@ -1001,6 +1055,21 @@ export function InventoryScreen() {
         size="lg"
       >
         <form onSubmit={handleUpdateProduct} className="space-y-4">
+          {editingProduct && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">صورة المنتج</label>
+              <ImageUploader
+                currentImageUrl={editingProduct.imageUrl}
+                onFileSelect={(file) => {
+                  uploadImage.mutate({ id: editingProduct.id, file });
+                }}
+                onDelete={() => {
+                  deleteImage.mutate(editingProduct.id);
+                }}
+                isPending={uploadImage.isPending || deleteImage.isPending}
+              />
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">اسم الصنف</label>
             <input

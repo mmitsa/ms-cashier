@@ -581,6 +581,32 @@ public class ProductService : IProductService
         }
         catch (Exception ex) { return Result<ProductDto>.Failure($"خطأ: {ex.Message}"); }
     }
+
+    public async Task<Result<string>> UpdateImageAsync(int id, string? imageUrl)
+    {
+        try
+        {
+            var product = await _uow.Repository<Product>().Query()
+                .FirstOrDefaultAsync(p =>
+                    p.Id == id &&
+                    p.TenantId == _tenant.TenantId &&
+                    !p.IsDeleted);
+
+            if (product is null)
+                return Result<string>.Failure("المنتج غير موجود");
+
+            product.ImageUrl = imageUrl;
+            product.UpdatedAt = DateTime.UtcNow;
+            _uow.Repository<Product>().Update(product);
+            await _uow.SaveChangesAsync();
+
+            return Result<string>.Success(imageUrl ?? "", "تم تحديث صورة المنتج بنجاح");
+        }
+        catch (Exception ex)
+        {
+            return Result<string>.Failure($"خطأ أثناء تحديث صورة المنتج: {ex.Message}");
+        }
+    }
 }
 
 // ════════════════════════════════════════════════════════════════
