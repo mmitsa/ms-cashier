@@ -47,6 +47,10 @@ public class Product : TenantEntity
     [Column(TypeName = "decimal(18,2)")]
     public decimal MinStock { get; set; }
 
+    /// <summary>حد إعادة الطلب — عند الوصول لهذا الرقم يظهر تنبيه لإعادة الطلب</summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? ReorderLevel { get; set; }
+
     [Column(TypeName = "decimal(18,2)")]
     public decimal? MaxStock { get; set; }
 

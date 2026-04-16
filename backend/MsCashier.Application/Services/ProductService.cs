@@ -51,6 +51,7 @@ public class ProductService : IProductService
                 WholesalePrice = request.WholesalePrice,
                 Price4 = request.Price4,
                 MinStock = request.MinStock,
+                ReorderLevel = request.ReorderLevel,
                 MaxStock = request.MaxStock,
                 TaxRate = request.TaxRate,
                 IsActive = true,
@@ -190,6 +191,8 @@ public class ProductService : IProductService
                     x.Product.WholesalePrice,
                     x.Product.Price4,
                     x.Product.MinStock,
+                    x.Product.ReorderLevel,
+                    x.Product.MaxStock,
                     x.Product.IsActive,
                     x.Product.TaxRate,
                     x.Product.ImageUrl,
@@ -216,6 +219,8 @@ public class ProductService : IProductService
                     g.Key.WholesalePrice,
                     g.Key.Price4,
                     g.Key.MinStock,
+                    g.Key.ReorderLevel,
+                    g.Key.MaxStock,
                     g.Key.IsActive,
                     g.Key.TaxRate,
                     g.Key.ImageUrl,
@@ -279,7 +284,7 @@ public class ProductService : IProductService
                 p.UnitId,
                 p.UnitId.HasValue && units.ContainsKey(p.UnitId.Value) ? units[p.UnitId.Value] : null,
                 p.CostPrice, p.RetailPrice, p.HalfWholesalePrice, p.WholesalePrice, p.Price4,
-                (int)p.MinStock, p.CurrentStock, p.IsActive, p.TaxRate, p.ImageUrl,
+                (int)p.MinStock, p.ReorderLevel, p.MaxStock, p.CurrentStock, p.IsActive, p.TaxRate, p.ImageUrl,
                 p.IsBundle, p.BundleDiscountType, p.BundleDiscountValue, p.BundleHasOwnStock,
                 p.BundleValidFrom, p.BundleValidTo, p.BundlePricingMode,
                 bundleItemsByProduct.GetValueOrDefault(p.Id)
@@ -374,6 +379,8 @@ public class ProductService : IProductService
             product.WholesalePrice = request.WholesalePrice;
             product.Price4 = request.Price4;
             product.MinStock = request.MinStock;
+            product.ReorderLevel = request.ReorderLevel;
+            product.MaxStock = request.MaxStock;
             product.TaxRate = request.TaxRate;
             product.UpdatedAt = DateTime.UtcNow;
 
@@ -502,7 +509,7 @@ public class ProductService : IProductService
         new(p.Id, p.Barcode, p.SKU, p.Name, p.Description,
             p.CategoryId, p.Category?.Name, p.UnitId, p.Unit?.Name,
             p.CostPrice, p.RetailPrice, p.HalfWholesalePrice, p.WholesalePrice, p.Price4,
-            (int)p.MinStock, currentStock, p.IsActive, p.TaxRate, p.ImageUrl,
+            (int)p.MinStock, p.ReorderLevel, p.MaxStock, currentStock, p.IsActive, p.TaxRate, p.ImageUrl,
             p.IsBundle, p.BundleDiscountType, p.BundleDiscountValue, p.BundleHasOwnStock,
             p.BundleValidFrom, p.BundleValidTo, p.BundlePricingMode, bundleItems);
 

@@ -136,6 +136,8 @@ export interface ProductDto {
   wholesalePrice?: number;
   price4?: number;
   minStock: number;
+  reorderLevel?: number;
+  maxStock?: number;
   currentStock: number;
   isActive: boolean;
   taxRate?: number;
@@ -567,6 +569,8 @@ export interface LowStockProductDto {
   barcode?: string;
   quantity: number;
   minStock: number;
+  reorderLevel?: number;
+  maxStock?: number;
 }
 
 export interface DailySalesDto {
