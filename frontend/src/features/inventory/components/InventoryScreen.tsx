@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import {
   Package,
   Layers,
@@ -183,7 +183,7 @@ export function InventoryScreen() {
 
   const allOnPageSelected = products.length > 0 && products.every((p) => selectedIds.has(p.id));
 
-  const toggleSelectAll = useCallback(() => {
+  const toggleSelectAll = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (allOnPageSelected) {
@@ -193,83 +193,62 @@ export function InventoryScreen() {
       }
       return next;
     });
-  }, [allOnPageSelected, products]);
+  };
 
-  const toggleSelect = useCallback((id: number) => {
+  const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }, []);
+  };
 
-  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+  const clearSelection = () => setSelectedIds(new Set());
 
-  const handleBulkDelete = useCallback(
-    (ids: number[]) => {
-      bulkDelete.mutate(ids, { onSuccess: () => clearSelection() });
-    },
-    [bulkDelete, clearSelection],
-  );
+  const handleBulkDelete = (ids: number[]) => {
+    bulkDelete.mutate(ids, { onSuccess: () => clearSelection() });
+  };
 
-  const handleBulkChangeCategory = useCallback(
-    (ids: number[], catId: number) => {
-      bulkUpdate.mutate({ productIds: ids, categoryId: catId }, { onSuccess: () => clearSelection() });
-    },
-    [bulkUpdate, clearSelection],
-  );
+  const handleBulkChangeCategory = (ids: number[], catId: number) => {
+    bulkUpdate.mutate({ productIds: ids, categoryId: catId }, { onSuccess: () => clearSelection() });
+  };
 
-  const handleBulkToggleActive = useCallback(
-    (ids: number[], isActive: boolean) => {
-      bulkUpdate.mutate({ productIds: ids, isActive }, { onSuccess: () => clearSelection() });
-    },
-    [bulkUpdate, clearSelection],
-  );
+  const handleBulkToggleActive = (ids: number[], isActive: boolean) => {
+    bulkUpdate.mutate({ productIds: ids, isActive }, { onSuccess: () => clearSelection() });
+  };
 
-  const handleBulkUpdatePrices = useCallback(
-    (ids: number[], costPrice?: number, retailPrice?: number) => {
-      bulkUpdate.mutate({ productIds: ids, costPrice, retailPrice }, { onSuccess: () => clearSelection() });
-    },
-    [bulkUpdate, clearSelection],
-  );
+  const handleBulkUpdatePrices = (ids: number[], costPrice?: number, retailPrice?: number) => {
+    bulkUpdate.mutate({ productIds: ids, costPrice, retailPrice }, { onSuccess: () => clearSelection() });
+  };
 
-  const handleBarcodeSave = useCallback(
-    (productId: number, barcode: string) => {
-      setEditingBarcodeId(productId);
-      updateBarcode.mutate(
-        { id: productId, barcode },
-        { onSettled: () => setEditingBarcodeId(null) },
-      );
-    },
-    [updateBarcode],
-  );
+  const handleBarcodeSave = (productId: number, barcode: string) => {
+    setEditingBarcodeId(productId);
+    updateBarcode.mutate(
+      { id: productId, barcode },
+      { onSettled: () => setEditingBarcodeId(null) },
+    );
+  };
 
-  const handleCostSave = useCallback(
-    (productId: number, val: string) => {
-      const cost = Number(val);
-      if (isNaN(cost) || cost < 0) return;
-      setEditingCostId(productId);
-      updatePrices.mutate(
-        { id: productId, data: { costPrice: cost } },
-        { onSettled: () => setEditingCostId(null) },
-      );
-    },
-    [updatePrices],
-  );
+  const handleCostSave = (productId: number, val: string) => {
+    const cost = Number(val);
+    if (isNaN(cost) || cost < 0) return;
+    setEditingCostId(productId);
+    updatePrices.mutate(
+      { id: productId, data: { costPrice: cost } },
+      { onSettled: () => setEditingCostId(null) },
+    );
+  };
 
-  const handleRetailSave = useCallback(
-    (productId: number, val: string) => {
-      const retail = Number(val);
-      if (isNaN(retail) || retail < 0) return;
-      setEditingRetailId(productId);
-      updatePrices.mutate(
-        { id: productId, data: { retailPrice: retail } },
-        { onSettled: () => setEditingRetailId(null) },
-      );
-    },
-    [updatePrices],
-  );
+  const handleRetailSave = (productId: number, val: string) => {
+    const retail = Number(val);
+    if (isNaN(retail) || retail < 0) return;
+    setEditingRetailId(productId);
+    updatePrices.mutate(
+      { id: productId, data: { retailPrice: retail } },
+      { onSettled: () => setEditingRetailId(null) },
+    );
+  };
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();

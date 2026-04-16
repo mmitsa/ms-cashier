@@ -79,6 +79,26 @@ public class ProductsController : BaseApiController
         var result = await _productService.GetLowStockAsync();
         return HandleResult(result);
     }
+
+    /// <summary>تحديث جماعي (أسعار، فئة، حالة)</summary>
+    [HttpPatch("bulk")]
+    public async Task<IActionResult> BulkUpdate([FromBody] BulkUpdateProductsRequest request)
+        => HandleResult(await _productService.BulkUpdateAsync(request));
+
+    /// <summary>حذف جماعي</summary>
+    [HttpDelete("bulk")]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkDeleteProductsRequest request)
+        => HandleResult(await _productService.BulkDeleteAsync(request));
+
+    /// <summary>تحديث الباركود لمنتج محدد</summary>
+    [HttpPatch("{id:int}/barcode")]
+    public async Task<IActionResult> UpdateBarcode(int id, [FromBody] UpdateBarcodeRequest request)
+        => HandleResult(await _productService.UpdateBarcodeAsync(id, request.Barcode));
+
+    /// <summary>تحديث الأسعار لمنتج محدد</summary>
+    [HttpPatch("{id:int}/prices")]
+    public async Task<IActionResult> UpdatePrices(int id, [FromBody] UpdatePricesRequest request)
+        => HandleResult(await _productService.UpdatePricesAsync(id, request));
 }
 
 // ============================================================

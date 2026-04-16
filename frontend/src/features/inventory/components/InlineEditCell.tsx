@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
@@ -49,63 +49,56 @@ export function InlineEditCell({
     setEditValue(value);
   }, [value]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = () => {
     const trimmed = editValue.trim();
     if (trimmed !== value) {
       onSave(trimmed);
     }
     setEditing(false);
-  }, [editValue, value, onSave]);
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     setEditValue(value);
     setEditing(false);
-  }, [value]);
+  };
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleSubmit();
-      } else if (e.key === 'Escape') {
-        e.preventDefault();
-        handleCancel();
-      }
-    },
-    [handleSubmit, handleCancel],
-  );
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancel();
+    }
+  };
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newVal = e.target.value;
-      setEditValue(newVal);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = e.target.value;
+    setEditValue(newVal);
 
-      if (scannerMode) {
-        const now = Date.now();
-        keystrokeTimestamps.current.push(now);
+    if (scannerMode) {
+      const now = Date.now();
+      keystrokeTimestamps.current.push(now);
 
-        if (keystrokeTimestamps.current.length > 6) {
-          const oldest = keystrokeTimestamps.current[keystrokeTimestamps.current.length - 7] ?? now;
-          const elapsed = now - oldest;
-          if (elapsed < 150) {
-            setTimeout(() => {
-              const val = inputRef.current?.value ?? newVal;
-              if (val.trim() !== value) {
-                onSave(val.trim());
-              }
-              setEditing(false);
-            }, 50);
-          }
-        }
-
-        // Cleanup old timestamps
-        if (keystrokeTimestamps.current.length > 20) {
-          keystrokeTimestamps.current = keystrokeTimestamps.current.slice(-10);
+      if (keystrokeTimestamps.current.length > 6) {
+        const oldest = keystrokeTimestamps.current[keystrokeTimestamps.current.length - 7] ?? now;
+        const elapsed = now - oldest;
+        if (elapsed < 150) {
+          setTimeout(() => {
+            const val = inputRef.current?.value ?? newVal;
+            if (val.trim() !== value) {
+              onSave(val.trim());
+            }
+            setEditing(false);
+          }, 50);
         }
       }
-    },
-    [scannerMode, value, onSave],
-  );
+
+      if (keystrokeTimestamps.current.length > 20) {
+        keystrokeTimestamps.current = keystrokeTimestamps.current.slice(-10);
+      }
+    }
+  };
 
   if (isPending) {
     return (

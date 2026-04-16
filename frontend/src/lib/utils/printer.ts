@@ -126,24 +126,28 @@ interface BarcodeLabelData {
   quantity?: number;
 }
 
-export function printBarcodeLabels(labels: BarcodeLabelData[]) {
+export function printBarcodeLabels(labels: BarcodeLabelData[], storeName?: string) {
   const printWindow = window.open('', '_blank', 'width=400,height=600');
   if (!printWindow) return;
 
+  const shop = storeName || 'MPOS';
+
   const labelsHtml = labels
     .map(
-      (label) => `
+      (label, i) => `
     <div class="label">
+      <div class="store-name">${shop}</div>
       <div class="product-name">${label.name}</div>
       <div class="barcode-container">
-        <svg class="barcode" data-barcode="${label.barcode}"></svg>
+        <svg id="bc-${i}"></svg>
       </div>
-      <div class="barcode-text">${label.barcode}</div>
       <div class="price">${formatCurrency(label.price)}</div>
     </div>
   `
     )
     .join('');
+
+  const barcodeValues = JSON.stringify(labels.map(l => l.barcode || ''));
 
   printWindow.document.write(`
     <!DOCTYPE html>
@@ -151,19 +155,20 @@ export function printBarcodeLabels(labels: BarcodeLabelData[]) {
     <head>
       <meta charset="UTF-8">
       <title>طباعة باركود</title>
+      <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Arial', sans-serif; }
         .label {
-          width: 50mm; height: 30mm; border: 1px dashed #ccc;
+          width: 50mm; height: 35mm; border: 1px dashed #ccc;
           display: inline-flex; flex-direction: column; align-items: center;
           justify-content: center; padding: 2mm; margin: 1mm;
           page-break-inside: avoid;
         }
+        .store-name { font-size: 8px; font-weight: bold; color: #333; margin-bottom: 1px; }
         .product-name { font-size: 9px; font-weight: bold; text-align: center; max-height: 18px; overflow: hidden; }
         .barcode-container { margin: 2px 0; }
-        .barcode-text { font-size: 10px; font-family: monospace; }
-        .price { font-size: 12px; font-weight: bold; }
+        .price { font-size: 12px; font-weight: bold; margin-top: 1px; }
         @media print {
           .label { border: none; }
           body { margin: 0; }
@@ -172,7 +177,30 @@ export function printBarcodeLabels(labels: BarcodeLabelData[]) {
     </head>
     <body>
       ${labelsHtml}
-      <script>window.onload=function(){window.print();}</script>
+      <script>
+        window.onload = function() {
+          var codes = ${barcodeValues};
+          codes.forEach(function(code, i) {
+            if (code) {
+              try {
+                JsBarcode('#bc-' + i, code, {
+                  format: 'CODE128',
+                  width: 1.5,
+                  height: 30,
+                  displayValue: true,
+                  fontSize: 10,
+                  margin: 0,
+                  font: 'monospace'
+                });
+              } catch(e) {
+                document.getElementById('bc-' + i).outerHTML =
+                  '<div style="font-family:monospace;font-size:10px">' + code + '</div>';
+              }
+            }
+          });
+          setTimeout(function() { window.print(); }, 300);
+        };
+      <\/script>
     </body>
     </html>
   `);
