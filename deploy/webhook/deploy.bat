@@ -98,15 +98,17 @@ copy /Y %IIS_FRONTEND%\web.config %STAGING%\frontend\web.config >nul
 robocopy %STAGING%\frontend %IIS_FRONTEND% /MIR /NFL /NDL /NJH /NJS /nc /ns /np >nul
 call :log "Frontend deployed (zero downtime - static files)."
 
-:: 5b. Deploy backend (preserve production config + web.config, then recycle)
+:: 5b. Deploy backend (stop pool -> copy -> start pool)
 copy /Y %IIS_BACKEND%\appsettings.Production.json %STAGING%\backend\appsettings.Production.json >nul
 copy /Y %IIS_BACKEND%\web.config %STAGING%\backend\web.config >nul
 if not exist %STAGING%\backend\logs mkdir %STAGING%\backend\logs
 
-:: Overlap recycle: IIS InProcess keeps old worker alive until new one starts
+:: Stop pool to release DLL locks, copy, restart
+%APPCMD% stop apppool /apppool.name:"mpos-api" >nul 2>&1
+timeout /t 3 /nobreak >nul
 robocopy %STAGING%\backend %IIS_BACKEND% /MIR /NFL /NDL /NJH /NJS /nc /ns /np >nul
-%APPCMD% recycle apppool /apppool.name:"mpos-api" >nul 2>&1
-call :log "Backend deployed (overlap recycle - minimal gap)."
+%APPCMD% start apppool /apppool.name:"mpos-api" >nul 2>&1
+call :log "Backend deployed (stop-copy-start)."
 
 :: 5c. Deploy storefront (restart service)
 robocopy %STAGING%\storefront %IIS_STOREFRONT% /MIR /NFL /NDL /NJH /NJS /nc /ns /np >nul
