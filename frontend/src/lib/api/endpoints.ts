@@ -3,6 +3,7 @@ import type {
   ApiResponse, PagedResult, LoginRequest, LoginResponse,
   ProductDto, CreateProductRequest, UpdateProductRequest, ProductSearchRequest,
   CategoryDto, UpdateCategoryRequest, MoveProductsRequest,
+  StockCountDto, StockCountItemDto, BulkOpeningBalanceRow,
   CreateInvoiceRequest, InvoiceDto, InvoiceItemRequest,
   InvoiceSearchRequest, ContactDto, CreateContactRequest,
   WarehouseDto, FinanceAccountDto, FinanceTransactionDto,
@@ -158,6 +159,36 @@ export const categoriesApi = {
 
   moveProducts: (sourceCategoryId: number, data: MoveProductsRequest) =>
     apiClient.post<ApiResponse<number>>(`/categories/${sourceCategoryId}/move-products`, data).then(r => r.data),
+};
+
+// ==================== Stock Count ====================
+export const stockCountApi = {
+  getAll: () =>
+    apiClient.get<ApiResponse<StockCountDto[]>>('/stock-counts').then(r => r.data),
+
+  get: (id: number) =>
+    apiClient.get<ApiResponse<StockCountDto>>(`/stock-counts/${id}`).then(r => r.data),
+
+  start: (data: { warehouseId: number; notes?: string }) =>
+    apiClient.post<ApiResponse<StockCountDto>>('/stock-counts', data).then(r => r.data),
+
+  getItems: (id: number) =>
+    apiClient.get<ApiResponse<StockCountItemDto[]>>(`/stock-counts/${id}/items`).then(r => r.data),
+
+  scan: (id: number, data: { productId: number; quantity?: number }) =>
+    apiClient.post<ApiResponse<StockCountItemDto>>(`/stock-counts/${id}/scan`, data).then(r => r.data),
+
+  settleItem: (countId: number, itemId: number, data: { notes?: string }) =>
+    apiClient.post<ApiResponse<StockCountItemDto>>(`/stock-counts/${countId}/items/${itemId}/settle`, data).then(r => r.data),
+
+  complete: (id: number) =>
+    apiClient.post<ApiResponse<StockCountDto>>(`/stock-counts/${id}/complete`).then(r => r.data),
+
+  cancel: (id: number) =>
+    apiClient.post<ApiResponse<StockCountDto>>(`/stock-counts/${id}/cancel`).then(r => r.data),
+
+  setOpeningBalances: (data: { items: BulkOpeningBalanceRow[]; notes?: string }) =>
+    apiClient.post<ApiResponse<number>>('/stock-counts/opening-balances', data).then(r => r.data),
 };
 
 // ==================== Invoices ====================

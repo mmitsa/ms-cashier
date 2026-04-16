@@ -320,6 +320,40 @@ export interface MoveProductsRequest {
   productIds: number[];
 }
 
+// ==================== Stock Count ====================
+
+export interface StockCountDto {
+  id: number;
+  warehouseId: number;
+  warehouseName: string;
+  status: string;
+  notes?: string;
+  createdAt: string;
+  completedAt?: string;
+  totalItems: number;
+  countedItems: number;
+  settledItems: number;
+}
+
+export interface StockCountItemDto {
+  id: number;
+  productId: number;
+  productName: string;
+  barcode?: string;
+  systemQty: number;
+  countedQty: number;
+  variance: number;
+  status: string;
+  isSettled: boolean;
+  notes?: string;
+}
+
+export interface BulkOpeningBalanceRow {
+  productId: number;
+  warehouseId: number;
+  quantity: number;
+}
+
 // ==================== Invoice ====================
 
 export interface InvoiceSearchRequest {

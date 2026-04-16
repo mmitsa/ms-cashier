@@ -36,6 +36,8 @@ import { StockManagementTabs } from './StockManagementTabs';
 import { CsvImportModal } from './CsvImportModal';
 import { VariantManager } from './VariantManager';
 import { CategoryManagement } from './CategoryManagement';
+import { OpeningBalancesTab } from './OpeningBalancesTab';
+import { StockCountTab } from './StockCountTab';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { InlineEditCell } from './InlineEditCell';
 import {
@@ -118,7 +120,7 @@ function formatPriceDisplay(amount: number): string {
 }
 
 export function InventoryScreen() {
-  const [view, setView] = useState<'products' | 'stock'>('products');
+  const [view, setView] = useState<'products' | 'stock' | 'opening' | 'count'>('products');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [lowStockOnly, setLowStockOnly] = useState(false);
@@ -443,22 +445,25 @@ export function InventoryScreen() {
       </div>
 
       {/* View Toggle */}
-      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
-        <button onClick={() => setView('products')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-            view === 'products' ? 'bg-white dark:bg-gray-900 text-brand-700 dark:text-brand-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'
-          }`}>
-          <Package size={16} /> الأصناف
-        </button>
-        <button onClick={() => setView('stock')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
-            view === 'stock' ? 'bg-white dark:bg-gray-900 text-brand-700 dark:text-brand-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'
-          }`}>
-          <Layers size={16} /> إدارة المخزون والحركات
-        </button>
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 overflow-x-auto">
+        {([
+          { key: 'products', icon: <Package size={16} />, label: 'الأصناف' },
+          { key: 'stock', icon: <Layers size={16} />, label: 'إدارة المخزون' },
+          { key: 'opening', icon: <DollarSign size={16} />, label: 'أرصدة افتتاحية' },
+          { key: 'count', icon: <Search size={16} />, label: 'الجرد' },
+        ] as const).map(tab => (
+          <button key={tab.key} onClick={() => setView(tab.key)}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+              view === tab.key ? 'bg-white dark:bg-gray-900 text-brand-700 dark:text-brand-300 shadow-sm' : 'text-gray-500 dark:text-gray-400'
+            }`}>
+            {tab.icon} {tab.label}
+          </button>
+        ))}
       </div>
 
       {view === 'stock' && <StockManagementTabs />}
+      {view === 'opening' && <OpeningBalancesTab />}
+      {view === 'count' && <StockCountTab />}
 
       {view === 'products' && <>
       {/* StatCards */}

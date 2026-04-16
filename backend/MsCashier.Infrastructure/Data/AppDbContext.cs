@@ -150,6 +150,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Product>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<Warehouse>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<StockTransfer>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<StockCount>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<Contact>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<Invoice>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<Installment>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
@@ -386,6 +387,27 @@ public class AppDbContext : DbContext
             e.Property(x => x.Quantity).HasPrecision(18, 2);
             e.Property(x => x.ReceivedQty).HasPrecision(18, 2);
             e.HasOne<Product>().WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // StockCount
+        modelBuilder.Entity<StockCount>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.TenantId);
+            e.HasOne(x => x.Warehouse).WithMany().HasForeignKey(x => x.WarehouseId).OnDelete(DeleteBehavior.Restrict);
+            e.HasMany(x => x.Items).WithOne(x => x.StockCount).HasForeignKey(x => x.StockCountId).OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.Notes).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<StockCountItem>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.StockCountId);
+            e.Property(x => x.SystemQty).HasPrecision(18, 2);
+            e.Property(x => x.CountedQty).HasPrecision(18, 2);
+            e.Property(x => x.Notes).HasMaxLength(500);
+            e.Ignore(x => x.Variance); // computed property, not persisted
+            e.HasOne(x => x.Product).WithMany().HasForeignKey(x => x.ProductId).OnDelete(DeleteBehavior.Restrict);
         });
 
         // Contact
