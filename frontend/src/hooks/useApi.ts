@@ -256,6 +256,42 @@ export function useCreateCategory() {
   });
 }
 
+export function useUpdateCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: { name: string; parentId?: number; sortOrder?: number } }) =>
+      categoriesApi.update(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.categories });
+      toast.success('تم تحديث التصنيف');
+    },
+  });
+}
+
+export function useDeleteCategory() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => categoriesApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.categories });
+      toast.success('تم حذف التصنيف');
+    },
+  });
+}
+
+export function useMoveProducts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ sourceCategoryId, data }: { sourceCategoryId: number; data: { targetCategoryId: number; productIds: number[] } }) =>
+      categoriesApi.moveProducts(sourceCategoryId, data),
+    onSuccess: (res) => {
+      qc.invalidateQueries({ queryKey: queryKeys.categories });
+      qc.invalidateQueries({ queryKey: queryKeys.products.all });
+      toast.success(res.message ?? 'تم نقل الأصناف');
+    },
+  });
+}
+
 // ==================== Invoices ====================
 export function useInvoices(params: InvoiceSearchRequest = {}) {
   return useQuery({

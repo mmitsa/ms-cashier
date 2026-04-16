@@ -34,12 +34,27 @@ public class CategoriesController : BaseApiController
         return HandleResult(result);
     }
 
+    /// <summary>تحديث تصنيف</summary>
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request)
+    {
+        var result = await _categoryService.UpdateAsync(id, request);
+        return HandleResult(result);
+    }
+
     /// <summary>حذف تصنيف</summary>
-    /// <param name="id">معرف التصنيف</param>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _categoryService.DeleteAsync(id);
+        return HandleResult(result);
+    }
+
+    /// <summary>نقل أصناف من تصنيف لآخر</summary>
+    [HttpPost("{id:int}/move-products")]
+    public async Task<IActionResult> MoveProducts(int id, [FromBody] MoveProductsRequest request)
+    {
+        var result = await _categoryService.MoveProductsAsync(id, request);
         return HandleResult(result);
     }
 }

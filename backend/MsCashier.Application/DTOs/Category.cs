@@ -5,4 +5,6 @@ namespace MsCashier.Application.DTOs;
 // Category
 public record CategoryDto(int Id, string Name, int? ParentId, int SortOrder, int ProductCount);
 public record CreateCategoryRequest(string Name, int? ParentId, int SortOrder = 0);
+public record UpdateCategoryRequest(string Name, int? ParentId, int SortOrder = 0);
+public record MoveProductsRequest(int TargetCategoryId, List<int> ProductIds);
 

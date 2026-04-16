@@ -309,6 +309,17 @@ export interface CategoryDto {
   productCount: number;
 }
 
+export interface UpdateCategoryRequest {
+  name: string;
+  parentId?: number;
+  sortOrder?: number;
+}
+
+export interface MoveProductsRequest {
+  targetCategoryId: number;
+  productIds: number[];
+}
+
 // ==================== Invoice ====================
 
 export interface InvoiceSearchRequest {

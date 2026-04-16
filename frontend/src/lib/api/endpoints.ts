@@ -2,7 +2,8 @@ import { apiClient } from './client';
 import type {
   ApiResponse, PagedResult, LoginRequest, LoginResponse,
   ProductDto, CreateProductRequest, UpdateProductRequest, ProductSearchRequest,
-  CategoryDto, CreateInvoiceRequest, InvoiceDto, InvoiceItemRequest,
+  CategoryDto, UpdateCategoryRequest, MoveProductsRequest,
+  CreateInvoiceRequest, InvoiceDto, InvoiceItemRequest,
   InvoiceSearchRequest, ContactDto, CreateContactRequest,
   WarehouseDto, FinanceAccountDto, FinanceTransactionDto,
   EmployeeDto, CreateEmployeeRequest, InstallmentDto,
@@ -48,6 +49,18 @@ export const productsApi = {
 
   getLowStock: () =>
     apiClient.get<ApiResponse<Array<{ id: number; name: string; barcode?: string; quantity: number; minStock: number }>>>('/products/low-stock').then(r => r.data),
+
+  bulkUpdate: (data: { productIds: number[]; categoryId?: number; isActive?: boolean; costPrice?: number; retailPrice?: number }) =>
+    apiClient.patch<ApiResponse<boolean>>('/products/bulk', data).then(r => r.data),
+
+  bulkDelete: (productIds: number[]) =>
+    apiClient.delete<ApiResponse<boolean>>('/products/bulk', { data: { productIds } }).then(r => r.data),
+
+  updateBarcode: (id: number, barcode: string) =>
+    apiClient.patch<ApiResponse<ProductDto>>(`/products/${id}/barcode`, { barcode }).then(r => r.data),
+
+  updatePrices: (id: number, data: { costPrice?: number; retailPrice?: number }) =>
+    apiClient.patch<ApiResponse<ProductDto>>(`/products/${id}/prices`, data).then(r => r.data),
 };
 
 // ==================== Units ====================
@@ -137,8 +150,14 @@ export const categoriesApi = {
   create: (data: { name: string; parentId?: number; sortOrder?: number }) =>
     apiClient.post<ApiResponse<CategoryDto>>('/categories', data).then(r => r.data),
 
+  update: (id: number, data: UpdateCategoryRequest) =>
+    apiClient.put<ApiResponse<CategoryDto>>(`/categories/${id}`, data).then(r => r.data),
+
   delete: (id: number) =>
     apiClient.delete<ApiResponse<boolean>>(`/categories/${id}`).then(r => r.data),
+
+  moveProducts: (sourceCategoryId: number, data: MoveProductsRequest) =>
+    apiClient.post<ApiResponse<number>>(`/categories/${sourceCategoryId}/move-products`, data).then(r => r.data),
 };
 
 // ==================== Invoices ====================

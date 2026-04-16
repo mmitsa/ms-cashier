@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   Package,
   Layers,
@@ -33,6 +33,15 @@ import type { ProductDto, CreateProductRequest, UpdateProductRequest } from '@/t
 import { StockManagementTabs } from './StockManagementTabs';
 import { CsvImportModal } from './CsvImportModal';
 import { VariantManager } from './VariantManager';
+import { CategoryManagement } from './CategoryManagement';
+import { BulkActionToolbar } from './BulkActionToolbar';
+import { InlineEditCell } from './InlineEditCell';
+import {
+  useBulkUpdateProducts,
+  useBulkDeleteProducts,
+  useUpdateBarcode,
+  useUpdatePrices,
+} from '../api';
 
 type StockStatus = 'low' | 'medium' | 'ok';
 
@@ -98,6 +107,13 @@ function productToFormData(p: ProductDto): ProductFormData {
   };
 }
 
+function formatPriceDisplay(amount: number): string {
+  return new Intl.NumberFormat('ar-SA', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount) + ' ر.س';
+}
+
 export function InventoryScreen() {
   const [view, setView] = useState<'products' | 'stock'>('products');
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,11 +128,17 @@ export function InventoryScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPrintBarcodeModal, setShowPrintBarcodeModal] = useState(false);
   const [showVariantManager, setShowVariantManager] = useState(false);
+  const [showCategoryManagement, setShowCategoryManagement] = useState(false);
   const [variantProduct, setVariantProduct] = useState<ProductDto | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductDto | null>(null);
   const [deletingProduct, setDeletingProduct] = useState<ProductDto | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [printSelectedIds, setPrintSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [editingBarcodeId, setEditingBarcodeId] = useState<number | null>(null);
+  const [editingCostId, setEditingCostId] = useState<number | null>(null);
+  const [editingRetailId, setEditingRetailId] = useState<number | null>(null);
+  const [hoveredPriceId, setHoveredPriceId] = useState<number | null>(null);
 
   const { data: productsData, isLoading: productsLoading } = useProducts({
     searchTerm: searchTerm || undefined,
@@ -132,6 +154,11 @@ export function InventoryScreen() {
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
+
+  const bulkUpdate = useBulkUpdateProducts();
+  const bulkDelete = useBulkDeleteProducts();
+  const updateBarcode = useUpdateBarcode();
+  const updatePrices = useUpdatePrices();
 
   const products = productsData?.items ?? [];
   const paged = productsData
@@ -153,6 +180,96 @@ export function InventoryScreen() {
     lowStockCount,
     stockValue: products.reduce((sum, p) => sum + p.costPrice * p.currentStock, 0),
   };
+
+  const allOnPageSelected = products.length > 0 && products.every((p) => selectedIds.has(p.id));
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) {
+        products.forEach((p) => next.delete(p.id));
+      } else {
+        products.forEach((p) => next.add(p.id));
+      }
+      return next;
+    });
+  }, [allOnPageSelected, products]);
+
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
+
+  const handleBulkDelete = useCallback(
+    (ids: number[]) => {
+      bulkDelete.mutate(ids, { onSuccess: () => clearSelection() });
+    },
+    [bulkDelete, clearSelection],
+  );
+
+  const handleBulkChangeCategory = useCallback(
+    (ids: number[], catId: number) => {
+      bulkUpdate.mutate({ productIds: ids, categoryId: catId }, { onSuccess: () => clearSelection() });
+    },
+    [bulkUpdate, clearSelection],
+  );
+
+  const handleBulkToggleActive = useCallback(
+    (ids: number[], isActive: boolean) => {
+      bulkUpdate.mutate({ productIds: ids, isActive }, { onSuccess: () => clearSelection() });
+    },
+    [bulkUpdate, clearSelection],
+  );
+
+  const handleBulkUpdatePrices = useCallback(
+    (ids: number[], costPrice?: number, retailPrice?: number) => {
+      bulkUpdate.mutate({ productIds: ids, costPrice, retailPrice }, { onSuccess: () => clearSelection() });
+    },
+    [bulkUpdate, clearSelection],
+  );
+
+  const handleBarcodeSave = useCallback(
+    (productId: number, barcode: string) => {
+      setEditingBarcodeId(productId);
+      updateBarcode.mutate(
+        { id: productId, barcode },
+        { onSettled: () => setEditingBarcodeId(null) },
+      );
+    },
+    [updateBarcode],
+  );
+
+  const handleCostSave = useCallback(
+    (productId: number, val: string) => {
+      const cost = Number(val);
+      if (isNaN(cost) || cost < 0) return;
+      setEditingCostId(productId);
+      updatePrices.mutate(
+        { id: productId, data: { costPrice: cost } },
+        { onSettled: () => setEditingCostId(null) },
+      );
+    },
+    [updatePrices],
+  );
+
+  const handleRetailSave = useCallback(
+    (productId: number, val: string) => {
+      const retail = Number(val);
+      if (isNaN(retail) || retail < 0) return;
+      setEditingRetailId(productId);
+      updatePrices.mutate(
+        { id: productId, data: { retailPrice: retail } },
+        { onSettled: () => setEditingRetailId(null) },
+      );
+    },
+    [updatePrices],
+  );
 
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,6 +418,10 @@ export function InventoryScreen() {
             <Upload size={18} />
             استيراد
           </button>
+          <button onClick={() => setShowCategoryManagement(true)} className="btn-secondary">
+            <Settings2 size={18} />
+            التصنيفات
+          </button>
         </div>
       </div>
 
@@ -351,6 +472,21 @@ export function InventoryScreen() {
           color="bg-emerald-600"
         />
       </div>
+
+      {/* Bulk Action Toolbar */}
+      <BulkActionToolbar
+        selectedCount={selectedIds.size}
+        categories={categories}
+        products={products}
+        selectedIds={selectedIds}
+        onClearSelection={clearSelection}
+        onBulkDelete={handleBulkDelete}
+        onBulkChangeCategory={handleBulkChangeCategory}
+        onBulkToggleActive={handleBulkToggleActive}
+        onBulkUpdatePrices={handleBulkUpdatePrices}
+        isDeleting={bulkDelete.isPending}
+        isUpdating={bulkUpdate.isPending}
+      />
 
       {/* Filters & Table */}
       <div className="card overflow-hidden">
@@ -404,6 +540,15 @@ export function InventoryScreen() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                <th className="py-3 px-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allOnPageSelected}
+                    onChange={toggleSelectAll}
+                    className="rounded"
+                    title="تحديد الكل"
+                  />
+                </th>
                 <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   الباركود
                 </th>
@@ -417,7 +562,7 @@ export function InventoryScreen() {
                   التكلفة
                 </th>
                 <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  التجزئة
+                  سعر البيع
                 </th>
                 <th className="text-right py-3 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   الكمية
@@ -433,20 +578,39 @@ export function InventoryScreen() {
             <tbody>
               {productsLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-500">
+                  <td colSpan={9} className="py-12 text-center text-gray-500">
                     جاري التحميل...
                   </td>
                 </tr>
               ) : (
                 products.map((product) => {
                   const status = getStockStatus(product);
+                  const hasPriceTiers = !!(product.wholesalePrice || product.halfWholesalePrice);
                   return (
                     <tr
                       key={product.id}
-                      className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
+                      className={cn(
+                        'border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors',
+                        selectedIds.has(product.id) && 'bg-brand-50/50 dark:bg-brand-950/30',
+                      )}
                     >
-                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300 font-mono">
-                        {product.barcode || '-'}
+                      <td className="py-3 px-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(product.id)}
+                          onChange={() => toggleSelect(product.id)}
+                          className="rounded"
+                        />
+                      </td>
+                      <td className="py-3 px-4 font-mono">
+                        <InlineEditCell
+                          value={product.barcode || ''}
+                          onSave={(val) => handleBarcodeSave(product.id, val)}
+                          isPending={editingBarcodeId === product.id}
+                          scannerMode
+                          emptyDisplay="\u2014"
+                          placeholder="أدخل الباركود"
+                        />
                       </td>
                       <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {product.name}
@@ -454,11 +618,61 @@ export function InventoryScreen() {
                       <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
                         {product.categoryName || '-'}
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
-                        {formatCurrency(product.costPrice)}
+                      <td className="py-3 px-4">
+                        <InlineEditCell
+                          value={String(product.costPrice)}
+                          displayValue={formatPriceDisplay(product.costPrice)}
+                          onSave={(val) => handleCostSave(product.id, val)}
+                          isPending={editingCostId === product.id}
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          dangerWhenZero
+                        />
                       </td>
-                      <td className="py-3 px-4 text-sm text-gray-700 dark:text-gray-300">
-                        {formatCurrency(product.retailPrice)}
+                      <td
+                        className="py-3 px-4 relative"
+                        onMouseEnter={() => hasPriceTiers ? setHoveredPriceId(product.id) : undefined}
+                        onMouseLeave={() => setHoveredPriceId(null)}
+                      >
+                        <InlineEditCell
+                          value={String(product.retailPrice)}
+                          displayValue={formatPriceDisplay(product.retailPrice)}
+                          onSave={(val) => handleRetailSave(product.id, val)}
+                          isPending={editingRetailId === product.id}
+                          type="number"
+                          step="0.01"
+                          min="0"
+                        />
+                        {hasPriceTiers && hoveredPriceId === product.id && (
+                          <div className="absolute top-full right-0 mt-1 z-30 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-3 min-w-[180px]">
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">مستويات الأسعار</p>
+                            <div className="space-y-1.5 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600 dark:text-gray-400">قطاعي:</span>
+                                <span className="font-medium text-gray-900 dark:text-gray-100">{formatPriceDisplay(product.retailPrice)}</span>
+                              </div>
+                              {product.halfWholesalePrice != null && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">نصف جملة:</span>
+                                  <span className="font-medium text-gray-900 dark:text-gray-100">{formatPriceDisplay(product.halfWholesalePrice)}</span>
+                                </div>
+                              )}
+                              {product.wholesalePrice != null && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">جملة:</span>
+                                  <span className="font-medium text-gray-900 dark:text-gray-100">{formatPriceDisplay(product.wholesalePrice)}</span>
+                                </div>
+                              )}
+                              {product.price4 != null && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600 dark:text-gray-400">سعر 4:</span>
+                                  <span className="font-medium text-gray-900 dark:text-gray-100">{formatPriceDisplay(product.price4)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
                         {product.currentStock}
@@ -624,7 +838,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر التجزئة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر البيع</label>
               <input
                 type="number"
                 min="0"
@@ -759,7 +973,7 @@ export function InventoryScreen() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر التجزئة</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">سعر البيع</label>
               <input
                 type="number"
                 min="0"
@@ -936,6 +1150,12 @@ export function InventoryScreen() {
           product={variantProduct}
         />
       )}
+
+      {/* Category Management Modal */}
+      <CategoryManagement
+        open={showCategoryManagement}
+        onClose={() => setShowCategoryManagement(false)}
+      />
     </div>
   );
 }

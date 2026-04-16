@@ -134,6 +134,96 @@ public class CategoryService : ICategoryService
             return Result<bool>.Failure($"خطأ: {ex.Message}");
         }
     }
+
+    public async Task<Result<CategoryDto>> UpdateAsync(int id, UpdateCategoryRequest request)
+    {
+        try
+        {
+            var category = await _uow.Repository<Category>().Query()
+                .FirstOrDefaultAsync(c =>
+                    c.Id == id &&
+                    c.TenantId == _tenant.TenantId &&
+                    !c.IsDeleted);
+
+            if (category is null)
+                return Result<CategoryDto>.Failure("التصنيف غير موجود");
+
+            var duplicate = await _uow.Repository<Category>().AnyAsync(c =>
+                c.TenantId == _tenant.TenantId &&
+                c.Name == request.Name &&
+                c.Id != id &&
+                !c.IsDeleted);
+
+            if (duplicate)
+                return Result<CategoryDto>.Failure("يوجد تصنيف آخر بنفس الاسم");
+
+            if (request.ParentId == id)
+                return Result<CategoryDto>.Failure("لا يمكن أن يكون التصنيف أبًا لنفسه");
+
+            category.Name = request.Name;
+            category.ParentId = request.ParentId;
+            category.SortOrder = request.SortOrder;
+            category.UpdatedAt = DateTime.UtcNow;
+            _uow.Repository<Category>().Update(category);
+            await _uow.SaveChangesAsync();
+
+            var productCount = await _uow.Repository<Product>().Query()
+                .CountAsync(p => p.CategoryId == id && p.TenantId == _tenant.TenantId && !p.IsDeleted);
+
+            return Result<CategoryDto>.Success(
+                new CategoryDto(category.Id, category.Name, category.ParentId, category.SortOrder, productCount),
+                "تم تحديث التصنيف بنجاح");
+        }
+        catch (Exception ex)
+        {
+            return Result<CategoryDto>.Failure($"خطأ: {ex.Message}");
+        }
+    }
+
+    public async Task<Result<int>> MoveProductsAsync(int sourceCategoryId, MoveProductsRequest request)
+    {
+        try
+        {
+            var targetCategory = await _uow.Repository<Category>().Query()
+                .FirstOrDefaultAsync(c =>
+                    c.Id == request.TargetCategoryId &&
+                    c.TenantId == _tenant.TenantId &&
+                    !c.IsDeleted);
+
+            if (targetCategory is null)
+                return Result<int>.Failure("التصنيف المستهدف غير موجود");
+
+            if (sourceCategoryId == request.TargetCategoryId)
+                return Result<int>.Failure("التصنيف المصدر والمستهدف متطابقان");
+
+            var products = await _uow.Repository<Product>().Query()
+                .Where(p =>
+                    p.TenantId == _tenant.TenantId &&
+                    !p.IsDeleted &&
+                    p.CategoryId == sourceCategoryId &&
+                    request.ProductIds.Contains(p.Id))
+                .ToListAsync();
+
+            if (products.Count == 0)
+                return Result<int>.Failure("لم يتم العثور على أصناف للنقل");
+
+            foreach (var product in products)
+            {
+                product.CategoryId = request.TargetCategoryId;
+                product.UpdatedAt = DateTime.UtcNow;
+                _uow.Repository<Product>().Update(product);
+            }
+
+            await _uow.SaveChangesAsync();
+
+            return Result<int>.Success(products.Count,
+                $"تم نقل {products.Count} صنف إلى التصنيف \"{targetCategory.Name}\"");
+        }
+        catch (Exception ex)
+        {
+            return Result<int>.Failure($"خطأ: {ex.Message}");
+        }
+    }
 }
 
 // ════════════════════════════════════════════════════════════════
