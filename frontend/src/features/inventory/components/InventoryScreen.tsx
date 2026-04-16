@@ -41,6 +41,7 @@ import {
   useBulkDeleteProducts,
   useUpdateBarcode,
   useUpdatePrices,
+  useAdjustStock,
 } from '../api';
 
 type StockStatus = 'low' | 'medium' | 'ok';
@@ -139,6 +140,8 @@ export function InventoryScreen() {
   const [editingCostId, setEditingCostId] = useState<number | null>(null);
   const [editingRetailId, setEditingRetailId] = useState<number | null>(null);
   const [hoveredPriceId, setHoveredPriceId] = useState<number | null>(null);
+  const [editingQtyId, setEditingQtyId] = useState<number | null>(null);
+  const [selectAllMode, setSelectAllMode] = useState<'page' | 'all' | null>(null);
 
   const { data: productsData, isLoading: productsLoading } = useProducts({
     searchTerm: searchTerm || undefined,
@@ -159,6 +162,7 @@ export function InventoryScreen() {
   const bulkDelete = useBulkDeleteProducts();
   const updateBarcode = useUpdateBarcode();
   const updatePrices = useUpdatePrices();
+  const adjustStock = useAdjustStock();
 
   const products = productsData?.items ?? [];
   const paged = productsData
@@ -181,19 +185,32 @@ export function InventoryScreen() {
     stockValue: products.reduce((sum, p) => sum + p.costPrice * p.currentStock, 0),
   };
 
+  const totalCount = paged?.totalCount ?? 0;
   const allOnPageSelected = products.length > 0 && products.every((p) => selectedIds.has(p.id));
+  const isAllSelected = selectAllMode === 'all';
 
   const toggleSelectAll = () => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (allOnPageSelected) {
+    if (allOnPageSelected) {
+      // deselect current page
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
         products.forEach((p) => next.delete(p.id));
-      } else {
+        return next;
+      });
+      setSelectAllMode(null);
+    } else {
+      // select current page
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
         products.forEach((p) => next.add(p.id));
-      }
-      return next;
-    });
+        return next;
+      });
+      setSelectAllMode('page');
+    }
   };
+
+  const selectAllProducts = () => setSelectAllMode('all');
+  const clearSelectAll = () => setSelectAllMode(null);
 
   const toggleSelect = (id: number) => {
     setSelectedIds((prev) => {
@@ -202,9 +219,26 @@ export function InventoryScreen() {
       else next.add(id);
       return next;
     });
+    setSelectAllMode(null);
   };
 
-  const clearSelection = () => setSelectedIds(new Set());
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+    setSelectAllMode(null);
+  };
+
+  // Default warehouse for stock adjust (first in list)
+  const defaultWarehouseId = warehouses?.[0]?.id ?? 1;
+
+  const handleQuantitySave = (productId: number, val: string) => {
+    const qty = parseFloat(val);
+    if (isNaN(qty) || qty < 0) return;
+    setEditingQtyId(productId);
+    adjustStock.mutate(
+      { productId, warehouseId: defaultWarehouseId, newQuantity: qty },
+      { onSettled: () => setEditingQtyId(null) },
+    );
+  };
 
   const handleBulkDelete = (ids: number[]) => {
     bulkDelete.mutate(ids, { onSuccess: () => clearSelection() });
@@ -454,7 +488,7 @@ export function InventoryScreen() {
 
       {/* Bulk Action Toolbar */}
       <BulkActionToolbar
-        selectedCount={selectedIds.size}
+        selectedCount={isAllSelected ? totalCount : selectedIds.size}
         categories={categories}
         products={products}
         selectedIds={selectedIds}
@@ -554,6 +588,32 @@ export function InventoryScreen() {
                 </th>
               </tr>
             </thead>
+            {allOnPageSelected && selectAllMode === 'page' && totalCount > products.length && (
+              <tr className="bg-blue-50 dark:bg-blue-950/40">
+                <td colSpan={9} className="py-2 px-4 text-center text-sm text-blue-700 dark:text-blue-300">
+                  تم اختيار <strong>{products.length}</strong> منتج في هذه الصفحة.{' '}
+                  <button
+                    onClick={selectAllProducts}
+                    className="underline font-bold hover:text-blue-900 dark:hover:text-blue-100"
+                  >
+                    اختيار جميع الـ {totalCount} منتج
+                  </button>
+                </td>
+              </tr>
+            )}
+            {selectAllMode === 'all' && (
+              <tr className="bg-blue-100 dark:bg-blue-900/50">
+                <td colSpan={9} className="py-2 px-4 text-center text-sm font-bold text-blue-800 dark:text-blue-200">
+                  تم اختيار جميع الـ {totalCount} منتج.{' '}
+                  <button
+                    onClick={clearSelection}
+                    className="underline hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    إلغاء الاختيار
+                  </button>
+                </td>
+              </tr>
+            )}
             <tbody>
               {productsLoading ? (
                 <tr>
@@ -653,8 +713,16 @@ export function InventoryScreen() {
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {product.currentStock}
+                      <td className="py-3 px-4">
+                        <InlineEditCell
+                          value={String(product.currentStock)}
+                          displayValue={String(product.currentStock)}
+                          onSave={(val) => handleQuantitySave(product.id, val)}
+                          isPending={editingQtyId === product.id}
+                          type="number"
+                          step="1"
+                          min="0"
+                        />
                       </td>
                       <td className="py-3 px-4">
                         <Badge variant={getStockStatusVariant(status)}>

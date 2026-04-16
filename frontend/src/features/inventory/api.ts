@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { productsApi } from '@/lib/api/endpoints';
+import { productsApi, inventoryApi } from '@/lib/api/endpoints';
 import toast from 'react-hot-toast';
 
 export function useBulkUpdateProducts() {
@@ -50,5 +50,18 @@ export function useUpdatePrices() {
       toast.success('تم تحديث الأسعار');
     },
     onError: () => toast.error('حدث خطأ أثناء تحديث الأسعار'),
+  });
+}
+
+export function useAdjustStock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ productId, warehouseId, newQuantity, notes }: { productId: number; warehouseId: number; newQuantity: number; notes?: string }) =>
+      inventoryApi.adjust({ productId, warehouseId, newQuantity, notes }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+      toast.success('تم تعديل الكمية');
+    },
+    onError: () => toast.error('حدث خطأ أثناء تعديل الكمية'),
   });
 }
