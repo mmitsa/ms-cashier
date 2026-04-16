@@ -152,7 +152,7 @@ public class InventoryService : IInventoryService
             await _uow.Repository<InventoryTransaction>().AddAsync(transaction);
             await _uow.SaveChangesAsync();
 
-            _ = _audit.LogAsync("AdjustStock", "Inventory", productId.ToString(),
+            await _audit.LogAsync("AdjustStock", "Inventory", productId.ToString(),
                 oldValues: $"Qty={previousQty}", newValues: $"Qty={newQuantity},Warehouse={warehouseId}");
             return Result<bool>.Success(true, "تم تعديل المخزون بنجاح");
         }

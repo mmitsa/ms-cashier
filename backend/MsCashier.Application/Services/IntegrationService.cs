@@ -93,7 +93,7 @@ public class IntegrationService : IIntegrationService
             _uow.Repository<TenantIntegration>().Update(item);
             await _uow.SaveChangesAsync();
 
-            _ = _audit.LogAsync(id.HasValue ? "UpdateIntegration" : "CreateIntegration",
+            await _audit.LogAsync(id.HasValue ? "UpdateIntegration" : "CreateIntegration",
                 "TenantIntegration", item.Id.ToString(), newValues: $"Provider={item.Provider}");
 
             return Result<TenantIntegrationDto>.Success(Map(item), "تم حفظ التكامل");
@@ -111,7 +111,7 @@ public class IntegrationService : IIntegrationService
             item.IsEnabled = false;
             _uow.Repository<TenantIntegration>().Update(item);
             await _uow.SaveChangesAsync();
-            _ = _audit.LogAsync("DeleteIntegration", "TenantIntegration", id.ToString());
+            await _audit.LogAsync("DeleteIntegration", "TenantIntegration", id.ToString());
             return Result<bool>.Success(true, "تم حذف التكامل");
         }
         catch (Exception ex) { return Result<bool>.Failure(ex.Message); }

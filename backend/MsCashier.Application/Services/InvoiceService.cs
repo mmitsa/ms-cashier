@@ -372,14 +372,14 @@ public class InvoiceService : IInvoiceService
                     if (inventory.Quantity <= 0)
                     {
                         var prodName = (await _uow.Repository<Product>().GetByIdAsync(item.ProductId))?.Name ?? $"#{item.ProductId}";
-                        _ = _notif.SendAsync(null, $"نفاد مخزون: {prodName}", $"الرصيد وصل {inventory.Quantity} في المخزن", "warning", "Product", item.ProductId.ToString());
+                        await _notif.SendAsync(null, $"نفاد مخزون: {prodName}", $"الرصيد وصل {inventory.Quantity} في المخزن", "warning", "Product", item.ProductId.ToString());
                     }
                     else
                     {
                         var prod = await _uow.Repository<Product>().GetByIdAsync(item.ProductId);
                         if (prod is not null && inventory.Quantity <= prod.MinStock)
                         {
-                            _ = _notif.SendAsync(null, $"مخزون منخفض: {prod.Name}", $"الرصيد {inventory.Quantity} (الحد الأدنى: {prod.MinStock})", "warning", "Product", item.ProductId.ToString());
+                            await _notif.SendAsync(null, $"مخزون منخفض: {prod.Name}", $"الرصيد {inventory.Quantity} (الحد الأدنى: {prod.MinStock})", "warning", "Product", item.ProductId.ToString());
                         }
                     }
                 }
@@ -456,7 +456,7 @@ public class InvoiceService : IInvoiceService
                 // Notify admin if rep's balance exceeds 10,000
                 if (salesRep.OutstandingBalance > 10_000)
                 {
-                    _ = _notif.SendAsync(null,
+                    await _notif.SendAsync(null,
                         $"تنبيه: رصيد المندوب {salesRep.Name} مرتفع",
                         $"الرصيد المعلق: {salesRep.OutstandingBalance:N0}",
                         "danger", "SalesRep", salesRep.Id.ToString());
@@ -473,7 +473,7 @@ public class InvoiceService : IInvoiceService
         }
 
         // === Post-commit work (outside transaction, never fails the response) ===
-        try { _ = _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
+        try { await _audit.LogAsync("CreateSale", "Invoice", invoice.Id.ToString(),
             newValues: $"Total={invoice.TotalAmount},Rep={invoice.SalesRepId},Warehouse={effectiveWarehouseId}"); } catch { }
 
         // Auto-post sale to GL (accounting side-effect; never blocks invoice creation).
