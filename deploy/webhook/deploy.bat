@@ -98,17 +98,23 @@ copy /Y %IIS_FRONTEND%\web.config %STAGING%\frontend\web.config >nul
 robocopy %STAGING%\frontend %IIS_FRONTEND% /MIR /NFL /NDL /NJH /NJS /nc /ns /np >nul
 call :log "Frontend deployed (zero downtime - static files)."
 
-:: 5b. Deploy backend (stop pool -> copy -> start pool)
+:: 5b. Deploy backend (app_offline -> copy -> remove app_offline)
+:: app_offline.htm tells IIS to gracefully unload the app, release DLL locks
 copy /Y %IIS_BACKEND%\appsettings.Production.json %STAGING%\backend\appsettings.Production.json >nul
 copy /Y %IIS_BACKEND%\web.config %STAGING%\backend\web.config >nul
 if not exist %STAGING%\backend\logs mkdir %STAGING%\backend\logs
 
-:: Stop pool to release DLL locks, copy, restart
-%APPCMD% stop apppool /apppool.name:"mpos-api" >nul 2>&1
-timeout /t 3 /nobreak >nul
-robocopy %STAGING%\backend %IIS_BACKEND% /MIR /NFL /NDL /NJH /NJS /nc /ns /np >nul
-%APPCMD% start apppool /apppool.name:"mpos-api" >nul 2>&1
-call :log "Backend deployed (stop-copy-start)."
+:: Drop app_offline.htm to gracefully stop the app (IIS releases DLLs)
+echo ^<html^>^<body^>^<h1^>Updating... Please wait^</h1^>^</body^>^</html^> > %IIS_BACKEND%\app_offline.htm
+call :log "Backend: app_offline.htm placed, waiting for graceful shutdown..."
+timeout /t 5 /nobreak >nul
+
+:: Now copy files (DLLs are unlocked)
+robocopy %STAGING%\backend %IIS_BACKEND% /MIR /XF app_offline.htm /NFL /NDL /NJH /NJS /nc /ns /np >nul
+
+:: Remove app_offline.htm to bring the app back online
+del /q %IIS_BACKEND%\app_offline.htm 2>nul
+call :log "Backend deployed (app_offline swap - near zero downtime)."
 
 :: 5c. Deploy storefront (restart service)
 robocopy %STAGING%\storefront %IIS_STOREFRONT% /MIR /NFL /NDL /NJH /NJS /nc /ns /np >nul
