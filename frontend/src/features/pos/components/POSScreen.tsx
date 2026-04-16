@@ -477,7 +477,8 @@ export function POSScreen() {
             products.map((product: ProductDto) => {
               const price = getPriceByType(product, priceType);
               const inCart = cart.find((c) => c.product.id === product.id);
-              const isLowStock = product.currentStock <= product.minStock;
+              const displayStock = product.currentStock - (inCart?.quantity ?? 0);
+              const isLowStock = displayStock <= product.minStock;
 
               return (
                 <button
@@ -525,8 +526,8 @@ export function POSScreen() {
                   </p>
 
                   <div className="flex items-center justify-between mt-2">
-                    <Badge variant={isLowStock ? 'danger' : 'success'}>
-                      {product.currentStock} {product.unitName}
+                    <Badge variant={isLowStock ? 'danger' : displayStock < product.currentStock ? 'warning' : 'success'}>
+                      {displayStock} {product.unitName}
                     </Badge>
                     {product.isBundle && product.bundleItems?.length ? (
                       <div className="flex items-center gap-1">
