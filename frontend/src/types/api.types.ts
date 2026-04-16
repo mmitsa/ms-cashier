@@ -441,6 +441,15 @@ export interface ContactDto {
   creditLimit?: number;
   balance: number;
   isActive: boolean;
+  isCompany?: boolean;
+  commercialRegister?: string;
+  nationalId?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  iban?: string;
+  creditPeriodDays?: number;
+  paymentMethod?: string;
+  projectName?: string;
 }
 
 export interface CreateContactRequest {
@@ -452,6 +461,15 @@ export interface CreateContactRequest {
   notes?: string;
   priceType: PriceType;
   creditLimit?: number;
+  isCompany?: boolean;
+  commercialRegister?: string;
+  nationalId?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  iban?: string;
+  creditPeriodDays?: number;
+  paymentMethod?: string;
+  projectName?: string;
 }
 
 // ==================== Warehouse ====================
