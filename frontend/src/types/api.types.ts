@@ -434,6 +434,7 @@ export interface ContactDto {
   contactType: ContactType;
   name: string;
   phone?: string;
+  phone2?: string;
   email?: string;
   address?: string;
   notes?: string;
@@ -441,6 +442,7 @@ export interface ContactDto {
   creditLimit?: number;
   balance: number;
   isActive: boolean;
+  taxNumber?: string;
   isCompany?: boolean;
   commercialRegister?: string;
   nationalId?: string;
@@ -450,15 +452,29 @@ export interface ContactDto {
   creditPeriodDays?: number;
   paymentMethod?: string;
   projectName?: string;
+  // ZATCA fields
+  street?: string;
+  district?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  countryCode?: string;
+  buildingNumber?: string;
+  plotIdentification?: string;
+  idScheme?: string;
+  otherId?: string;
+  contactPerson?: string;
 }
 
 export interface CreateContactRequest {
   contactType: ContactType;
   name: string;
   phone?: string;
+  phone2?: string;
   email?: string;
   address?: string;
   notes?: string;
+  taxNumber?: string;
   priceType: PriceType;
   creditLimit?: number;
   isCompany?: boolean;
@@ -470,6 +486,18 @@ export interface CreateContactRequest {
   creditPeriodDays?: number;
   paymentMethod?: string;
   projectName?: string;
+  // ZATCA fields
+  street?: string;
+  district?: string;
+  city?: string;
+  province?: string;
+  postalCode?: string;
+  countryCode?: string;
+  buildingNumber?: string;
+  plotIdentification?: string;
+  idScheme?: string;
+  otherId?: string;
+  contactPerson?: string;
 }
 
 // ==================== Warehouse ====================

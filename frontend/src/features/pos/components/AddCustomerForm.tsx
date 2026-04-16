@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Building2, Loader2, Plus, User } from 'lucide-react';
+import { ArrowRight, Building2, Loader2, MapPin, Plus, ShieldCheck, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCreateContact } from '@/hooks/useApi';
 import { cn } from '@/lib/utils/cn';
@@ -12,18 +12,33 @@ type CustomerMode = 'individual' | 'company';
 
 type FormData = {
   name: string;
+  contactPerson: string;
   phone: string;
   email: string;
-  address: string;
+  // ZATCA structured address
+  street: string;
+  district: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  countryCode: string;
+  buildingNumber: string;
+  plotIdentification: string;
+  // Identification
+  idScheme: string;
+  nationalId: string;
+  commercialRegister: string;
+  otherId: string;
+  taxNumber: string;
+  // Credit & payment
   creditLimit: string;
   creditPeriodDays: string;
   preferredPayment: string;
+  // Bank
   bankName: string;
   bankAccountNumber: string;
   iban: string;
-  taxNumber: string;
-  commercialRegister: string;
-  nationalId: string;
+  // Project
   hasProject: boolean;
   projectName: string;
 };
@@ -32,23 +47,45 @@ type FormErrors = Partial<Record<keyof FormData, string>>;
 
 const INITIAL_FORM: FormData = {
   name: '',
+  contactPerson: '',
   phone: '',
   email: '',
-  address: '',
+  street: '',
+  district: '',
+  city: '',
+  province: '',
+  postalCode: '',
+  countryCode: 'SA',
+  buildingNumber: '',
+  plotIdentification: '',
+  idScheme: '',
+  nationalId: '',
+  commercialRegister: '',
+  otherId: '',
+  taxNumber: '',
   creditLimit: '',
   creditPeriodDays: '',
   preferredPayment: '',
   bankName: '',
   bankAccountNumber: '',
   iban: '',
-  taxNumber: '',
-  commercialRegister: '',
-  nationalId: '',
   hasProject: false,
   projectName: '',
 };
 
-// ── Field component (outside render) ────────────────────────────────────────
+const ID_SCHEMES = [
+  { value: 'CRN', label: 'سجل تجاري (CRN)' },
+  { value: 'MOM', label: 'وزارة التجارة (MOM)' },
+  { value: 'MLS', label: 'رخصة بلدية (MLS)' },
+  { value: 'SAG', label: 'اتفاقية سعودية (SAG)' },
+  { value: 'NAT', label: 'هوية وطنية (NAT)' },
+  { value: 'GCC', label: 'هوية خليجية (GCC)' },
+  { value: 'IQA', label: 'إقامة (IQA)' },
+  { value: 'PAS', label: 'جواز سفر (PAS)' },
+  { value: 'OTH', label: 'أخرى (OTH)' },
+];
+
+// ── Field component ────────────────────────────────────────────────────────
 
 function FormField({
   label,
@@ -60,6 +97,7 @@ function FormField({
   value,
   error,
   onChange,
+  className: extraClass,
 }: {
   label: string;
   field: keyof FormData;
@@ -70,11 +108,12 @@ function FormField({
   value: string;
   error?: string;
   onChange: (field: keyof FormData, value: string) => void;
+  className?: string;
 }) {
   return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-        {required && <span className="text-red-500 mr-0.5">*</span>}
+    <div className={extraClass}>
+      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+        {required && <span className="text-red-500 ml-0.5">*</span>}
         {label}
       </label>
       <input
@@ -84,13 +123,22 @@ function FormField({
         placeholder={placeholder}
         dir={dir}
         className={cn(
-          'input w-full',
+          'input w-full text-sm',
           error && 'border-red-500 dark:border-red-500 focus:ring-red-500',
         )}
       />
-      {error && (
-        <p className="text-xs text-red-500 mt-1">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+    </div>
+  );
+}
+
+function SectionHeader({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+  return (
+    <div className="flex items-center gap-2 pt-3 pb-1.5 border-t border-gray-100 dark:border-gray-800">
+      <Icon size={14} className="text-brand-500" />
+      <span className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+        {label}
+      </span>
     </div>
   );
 }
@@ -109,8 +157,6 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const createContact = useCreateContact();
-
-  // ── Helpers ─────────────────────────────────────────────────────────────
 
   const set = (field: keyof FormData, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -153,6 +199,14 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
       errs.email = 'البريد الإلكتروني غير صالح';
     }
 
+    if (form.postalCode && !/^\d{5}$/.test(form.postalCode.trim())) {
+      errs.postalCode = 'الرمز البريدي يجب أن يكون 5 أرقام';
+    }
+
+    if (form.buildingNumber && !/^\d{4}$/.test(form.buildingNumber.trim())) {
+      errs.buildingNumber = 'رقم المبنى يجب أن يكون 4 أرقام';
+    }
+
     if (form.iban.trim()) {
       const iban = form.iban.trim().toUpperCase();
       if (!iban.startsWith('SA') || iban.length !== 24) {
@@ -178,12 +232,31 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
       name: form.name.trim(),
       phone: form.phone.trim() || undefined,
       email: form.email.trim() || undefined,
-      address: form.address.trim() || undefined,
       priceType: PriceType.Retail,
       creditLimit: form.creditLimit ? Number(form.creditLimit) : undefined,
       isCompany: mode === 'company',
+      taxNumber: form.taxNumber.trim() || undefined,
       commercialRegister: mode === 'company' ? form.commercialRegister.trim() || undefined : undefined,
       nationalId: mode === 'individual' ? form.nationalId.trim() || undefined : undefined,
+      contactPerson: form.contactPerson.trim() || undefined,
+      // Structured address
+      street: form.street.trim() || undefined,
+      district: form.district.trim() || undefined,
+      city: form.city.trim() || undefined,
+      province: form.province.trim() || undefined,
+      postalCode: form.postalCode.trim() || undefined,
+      countryCode: form.countryCode || 'SA',
+      buildingNumber: form.buildingNumber.trim() || undefined,
+      plotIdentification: form.plotIdentification.trim() || undefined,
+      // Legacy address (composed from structured fields)
+      address: [form.street, form.district, form.city, form.province]
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join('، ') || undefined,
+      // Identification
+      idScheme: form.idScheme || undefined,
+      otherId: form.otherId.trim() || undefined,
+      // Bank & credit
       bankName: form.bankName.trim() || undefined,
       bankAccountNumber: form.bankAccountNumber.trim() || undefined,
       iban: form.iban.trim().toUpperCase() || undefined,
@@ -206,8 +279,6 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
     });
   };
 
-  // ── Render helper ───────────────────────────────────────────────────────
-
   const fieldProps = (field: keyof FormData) => ({
     field,
     value: form[field] as string,
@@ -218,7 +289,7 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Back button */}
       <button
         onClick={onBack}
@@ -258,39 +329,84 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
         </button>
       </div>
 
-      {/* Scrollable form area */}
-      <div className="max-h-[400px] overflow-y-auto space-y-3 pe-1">
-        {/* Common fields */}
-        <FormField label="الاسم" required placeholder={mode === 'company' ? 'اسم الشركة' : 'اسم العميل'} {...fieldProps('name')} />
-        <FormField label="الهاتف" type="tel" placeholder="05xxxxxxxx" {...fieldProps('phone')} />
-        <FormField label="البريد الإلكتروني" type="email" placeholder="example@email.com" dir="ltr" {...fieldProps('email')} />
-        <FormField label="العنوان" placeholder="المدينة، الحي" {...fieldProps('address')} />
+      {/* Scrollable form */}
+      <div className="max-h-[400px] overflow-y-auto space-y-2.5 pe-1">
+        {/* ── Basic info ─────────────────────────────────────── */}
+        <FormField label="الاسم (شركة أو شخص)" required placeholder={mode === 'company' ? 'اسم الشركة' : 'اسم العميل'} {...fieldProps('name')} />
+        {mode === 'company' && (
+          <FormField label="الشخص المسؤول" placeholder="صاحب العمل في الشركة" {...fieldProps('contactPerson')} />
+        )}
+        <div className="grid grid-cols-2 gap-2">
+          <FormField label="البريد الإلكتروني" type="email" placeholder="example@email.com" dir="ltr" {...fieldProps('email')} />
+          <FormField label="الهاتف" type="tel" placeholder="05xxxxxxxx" {...fieldProps('phone')} />
+        </div>
 
-        {/* Identity fields based on mode */}
+        {/* ── Address (ZATCA) ─────────────────────────────────── */}
+        <SectionHeader icon={MapPin} label="العنوان" />
+        <FormField label="الشارع" placeholder="اسم الشارع" {...fieldProps('street')} />
+        <div className="grid grid-cols-2 gap-2">
+          <FormField label="الحي" placeholder="District" {...fieldProps('district')} />
+          <FormField label="المدينة" placeholder="المدينة" {...fieldProps('city')} />
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <FormField label="المحافظة" placeholder="المحافظة" {...fieldProps('province')} />
+          <FormField label="الرمز البريدي" placeholder="12345" dir="ltr" {...fieldProps('postalCode')} />
+          <FormField label="رمز الدولة" placeholder="SA" dir="ltr" {...fieldProps('countryCode')} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <FormField label="رقم المبنى" placeholder="1234" dir="ltr" {...fieldProps('buildingNumber')} />
+          <FormField label="معرّف قطعة الأرض" placeholder="الرقم الإضافي" dir="ltr" {...fieldProps('plotIdentification')} />
+        </div>
+
+        {/* ── Identification (ZATCA) ────────────────────────────── */}
+        <SectionHeader icon={ShieldCheck} label="خطة التعريف" />
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">نوع المعرف</label>
+            <select
+              value={form.idScheme}
+              onChange={(e) => set('idScheme', e.target.value)}
+              className="input w-full text-sm"
+            >
+              <option value="">-- اختر --</option>
+              {ID_SCHEMES.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+          <FormField label="معرف آخر" placeholder="معرف إضافي" dir="ltr" {...fieldProps('otherId')} />
+        </div>
+
         {mode === 'individual' && (
-          <FormField label="رقم الهوية" required placeholder="10 أرقام" dir="ltr" {...fieldProps('nationalId')} />
+          <FormField label="رقم الهوية / الإقامة" required placeholder="10 أرقام" dir="ltr" {...fieldProps('nationalId')} />
         )}
         {mode === 'company' && (
-          <>
-            <FormField label="الرقم الضريبي" required placeholder="15 رقمًا" dir="ltr" {...fieldProps('taxNumber')} />
-            <FormField label="السجل التجاري" required placeholder="رقم السجل التجاري" dir="ltr" {...fieldProps('commercialRegister')} />
-          </>
+          <FormField label="السجل التجاري" required placeholder="رقم السجل" dir="ltr" {...fieldProps('commercialRegister')} />
         )}
 
-        {/* Credit & payment */}
+        {/* ── VAT ──────────────────────────────────────────────── */}
+        <div className="pt-2">
+          <FormField
+            label="رقم تسجيل ضريبة القيمة المضافة"
+            required={mode === 'company'}
+            placeholder="3xxxxxxxxxx00003"
+            dir="ltr"
+            {...fieldProps('taxNumber')}
+          />
+        </div>
+
+        {/* ── Credit & payment ─────────────────────────────────── */}
+        <SectionHeader icon={Building2} label="الائتمان والدفع" />
         <div className="grid grid-cols-2 gap-2">
           <FormField label="الحد الائتماني (ر.س)" type="number" placeholder="0" {...fieldProps('creditLimit')} />
           <FormField label="مدة السداد (بالأيام)" type="number" placeholder="30" {...fieldProps('creditPeriodDays')} />
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            طريقة السداد المفضلة
-          </label>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">طريقة السداد المفضلة</label>
           <select
             value={form.preferredPayment}
             onChange={(e) => set('preferredPayment', e.target.value)}
-            className="input w-full"
+            className="input w-full text-sm"
           >
             <option value="">-- اختر --</option>
             <option value="تحويل بنكي">تحويل بنكي</option>
