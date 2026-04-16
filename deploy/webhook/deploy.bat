@@ -23,6 +23,9 @@ call :log "============================================"
 :: ── Phase 1: Pull code ──────────────────────
 call :log "[1/8] Pulling latest code..."
 cd /d %REPO_DIR%
+git config --global --add safe.directory %REPO_DIR% 2>nul
+git config --global --add safe.directory D:/Mohamed/mpos/ms-cashier 2>nul
+git stash 2>>%LOG_FILE%
 git pull origin main 2>>%LOG_FILE%
 if errorlevel 1 (
     call :log "ERROR: git pull failed. ABORTING."
