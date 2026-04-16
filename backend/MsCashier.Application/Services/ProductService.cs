@@ -505,6 +505,82 @@ public class ProductService : IProductService
             (int)p.MinStock, currentStock, p.IsActive, p.TaxRate, p.ImageUrl,
             p.IsBundle, p.BundleDiscountType, p.BundleDiscountValue, p.BundleHasOwnStock,
             p.BundleValidFrom, p.BundleValidTo, p.BundlePricingMode, bundleItems);
+
+    public async Task<Result<int>> BulkUpdateAsync(BulkUpdateProductsRequest request)
+    {
+        try
+        {
+            var products = await _uow.Repository<Product>().Query()
+                .Where(p => request.ProductIds.Contains(p.Id))
+                .ToListAsync();
+            if (!products.Any()) return Result<int>.Failure("لم يتم العثور على أي منتج");
+
+            foreach (var p in products)
+            {
+                if (request.CostPrice.HasValue) p.CostPrice = request.CostPrice.Value;
+                if (request.RetailPrice.HasValue) p.RetailPrice = request.RetailPrice.Value;
+                if (request.CategoryId.HasValue) p.CategoryId = request.CategoryId.Value;
+                if (request.IsActive.HasValue) p.IsActive = request.IsActive.Value;
+            }
+            await _uow.SaveChangesAsync();
+            return Result<int>.Success(products.Count);
+        }
+        catch (Exception ex) { return Result<int>.Failure($"خطأ: {ex.Message}"); }
+    }
+
+    public async Task<Result<int>> BulkDeleteAsync(BulkDeleteProductsRequest request)
+    {
+        try
+        {
+            var products = await _uow.Repository<Product>().Query()
+                .Where(p => request.ProductIds.Contains(p.Id))
+                .ToListAsync();
+            if (!products.Any()) return Result<int>.Failure("لم يتم العثور على أي منتج");
+
+            foreach (var p in products) p.IsDeleted = true;
+            await _uow.SaveChangesAsync();
+            return Result<int>.Success(products.Count);
+        }
+        catch (Exception ex) { return Result<int>.Failure($"خطأ: {ex.Message}"); }
+    }
+
+    public async Task<Result<ProductDto>> UpdateBarcodeAsync(int id, string barcode)
+    {
+        try
+        {
+            var product = await _uow.Repository<Product>().Query()
+                .FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return Result<ProductDto>.Failure("المنتج غير موجود");
+
+            var trimmed = barcode?.Trim();
+            if (!string.IsNullOrEmpty(trimmed))
+            {
+                var exists = await _uow.Repository<Product>().Query()
+                    .AnyAsync(p => p.Barcode == trimmed && p.Id != id);
+                if (exists) return Result<ProductDto>.Failure("هذا الباركود مستخدم بالفعل لمنتج آخر");
+            }
+            product.Barcode = trimmed;
+            await _uow.SaveChangesAsync();
+            return Result<ProductDto>.Success(await BuildProductDto(product.Id) ?? throw new InvalidOperationException());
+        }
+        catch (Exception ex) { return Result<ProductDto>.Failure($"خطأ: {ex.Message}"); }
+    }
+
+    public async Task<Result<ProductDto>> UpdatePricesAsync(int id, UpdatePricesRequest request)
+    {
+        try
+        {
+            var product = await _uow.Repository<Product>().Query()
+                .FirstOrDefaultAsync(p => p.Id == id);
+            if (product == null) return Result<ProductDto>.Failure("المنتج غير موجود");
+
+            if (request.CostPrice.HasValue) product.CostPrice = request.CostPrice.Value;
+            if (request.RetailPrice.HasValue) product.RetailPrice = request.RetailPrice.Value;
+            await _uow.SaveChangesAsync();
+            return Result<ProductDto>.Success(await BuildProductDto(product.Id) ?? throw new InvalidOperationException());
+        }
+        catch (Exception ex) { return Result<ProductDto>.Failure($"خطأ: {ex.Message}"); }
+    }
 }
 
 // ════════════════════════════════════════════════════════════════

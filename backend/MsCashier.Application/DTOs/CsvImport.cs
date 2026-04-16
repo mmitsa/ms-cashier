@@ -43,8 +43,8 @@ public record ProductCsvRow
     public string? Description { get; set; }
     public string? CategoryName { get; set; }
     public string? UnitName { get; set; }
-    public decimal CostPrice { get; set; }
-    public decimal RetailPrice { get; set; }
+    public decimal? CostPrice { get; set; }
+    public decimal? RetailPrice { get; set; }
     public decimal? HalfWholesalePrice { get; set; }
     public decimal? WholesalePrice { get; set; }
     public decimal? TaxRate { get; set; }

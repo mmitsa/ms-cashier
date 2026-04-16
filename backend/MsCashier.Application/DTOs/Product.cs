@@ -41,3 +41,9 @@ public record BundleItemDto(int Id, int ComponentId, string ComponentName, strin
     decimal Quantity, int SortOrder, decimal ComponentRetailPrice, decimal ComponentCostPrice);
 
 public record BundleItemRequest(int ComponentId, decimal Quantity, int SortOrder = 0);
+
+// Bulk & Inline operations
+public record BulkUpdateProductsRequest(IReadOnlyList<int> ProductIds, decimal? CostPrice = null, decimal? RetailPrice = null, int? CategoryId = null, bool? IsActive = null);
+public record BulkDeleteProductsRequest(IReadOnlyList<int> ProductIds);
+public record UpdateBarcodeRequest(string Barcode);
+public record UpdatePricesRequest(decimal? CostPrice = null, decimal? RetailPrice = null);

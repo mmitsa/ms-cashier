@@ -130,8 +130,8 @@ public class CsvImportService : ICsvImportService
                     Name = row.Name.Trim(),
                                         CategoryId = categoryId,
                     UnitId = unitId,
-                    CostPrice = row.CostPrice,
-                    RetailPrice = row.RetailPrice,
+                    CostPrice = row.CostPrice ?? 0,
+                    RetailPrice = row.RetailPrice ?? 0,
                     HalfWholesalePrice = row.HalfWholesalePrice,
                     WholesalePrice = row.WholesalePrice,
                     TaxRate = row.TaxRate,
@@ -140,6 +140,11 @@ public class CsvImportService : ICsvImportService
                     IsActive = true,
                     TrackInventory = true,
                 };
+
+                if (!row.CostPrice.HasValue)
+                    warnings.Add($"السطر {rowNum}: سعر التكلفة غير محدد — تم تعيينه إلى 0");
+                if (!row.RetailPrice.HasValue)
+                    warnings.Add($"السطر {rowNum}: سعر البيع غير محدد — تم تعيينه إلى 0");
 
                 await _uow.Repository<Product>().AddAsync(product);
                 await _uow.SaveChangesAsync();
