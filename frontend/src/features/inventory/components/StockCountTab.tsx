@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Play, Square, CheckCircle, XCircle, ClipboardCheck,
-  ScanBarcode, AlertTriangle, ArrowDownUp, Search, Loader2,
+  ScanBarcode, AlertTriangle, ArrowDownUp, Search, Loader2, Minus, Plus,
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
@@ -20,11 +20,11 @@ export function StockCountTab() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [showStartModal, setShowStartModal] = useState(false);
+  const [flashItemId, setFlashItemId] = useState<number | null>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
 
   const { data: warehouses = [] } = useWarehouses();
 
-  // Load sessions on mount
   useEffect(() => {
     loadSessions();
   }, []);
@@ -33,7 +33,6 @@ export function StockCountTab() {
     try {
       const res = await stockCountApi.getAll();
       setSessions(res.data ?? []);
-      // Auto-select active session
       const active = (res.data ?? []).find(s => s.status === 'InProgress');
       if (active) {
         setActiveSession(active);
@@ -50,12 +49,17 @@ export function StockCountTab() {
     } catch {} finally { setLoading(false); }
   }
 
+  // Flash highlight on scanned item
+  const flashItem = useCallback((productId: number) => {
+    setFlashItemId(productId);
+    setTimeout(() => setFlashItemId(null), 800);
+  }, []);
+
   // Barcode scanner handler
   const handleBarcodeScan = useCallback(async (barcode: string) => {
     if (!activeSession || activeSession.status !== 'InProgress') return;
 
     try {
-      // Lookup product by barcode
       const prodRes = await productsApi.getByBarcode(barcode);
       const product = prodRes.data;
       if (!product) {
@@ -63,11 +67,10 @@ export function StockCountTab() {
         return;
       }
 
-      // Scan (increment count)
       const res = await stockCountApi.scan(activeSession.id, { productId: product.id });
       toast.success(res.message ?? `تم تسجيل ${product.name}`);
+      flashItem(product.id);
 
-      // Update items list
       setItems(prev => {
         const idx = prev.findIndex(i => i.productId === product.id);
         if (idx >= 0) {
@@ -80,7 +83,7 @@ export function StockCountTab() {
     } catch (err: any) {
       toast.error(err?.response?.data?.errors?.[0] ?? 'خطأ في التسجيل');
     }
-  }, [activeSession]);
+  }, [activeSession, flashItem]);
 
   useBarcodeScanner({ onScan: handleBarcodeScan, enabled: !!activeSession && activeSession.status === 'InProgress' });
 
@@ -90,6 +93,17 @@ export function StockCountTab() {
     await handleBarcodeScan(barcode);
     if (scanInputRef.current) scanInputRef.current.value = '';
     scanInputRef.current?.focus();
+  }
+
+  // Set counted qty directly (manual edit)
+  async function handleSetCount(item: StockCountItemDto, newQty: number) {
+    if (!activeSession || newQty < 0) return;
+    try {
+      const res = await stockCountApi.setCount(activeSession.id, item.id, newQty);
+      setItems(prev => prev.map(i => i.id === item.id ? res.data! : i));
+    } catch (err: any) {
+      toast.error(err?.response?.data?.errors?.[0] ?? 'فشل تحديث الكمية');
+    }
   }
 
   async function handleSettle(item: StockCountItemDto) {
@@ -310,15 +324,25 @@ export function StockCountTab() {
                 <tr
                   key={item.id}
                   className={cn(
-                    'border-b border-gray-100 dark:border-gray-800 transition-colors',
-                    item.isSettled && 'bg-green-50/50 dark:bg-green-900/10'
+                    'border-b border-gray-100 dark:border-gray-800 transition-all duration-500',
+                    item.isSettled && 'bg-green-50/50 dark:bg-green-900/10',
+                    flashItemId === item.productId && 'bg-brand-100 dark:bg-brand-900/30',
                   )}
                 >
                   <td className="py-2 px-3 text-sm font-mono text-gray-500">{item.barcode || '—'}</td>
                   <td className="py-2 px-3 text-sm font-medium text-gray-900 dark:text-gray-100">{item.productName}</td>
                   <td className="py-2 px-3 text-sm text-center text-gray-600">{item.systemQty}</td>
-                  <td className="py-2 px-3 text-sm text-center font-semibold text-gray-900 dark:text-gray-100">
-                    {item.countedQty}
+                  <td className="py-1.5 px-2 text-center">
+                    {isActive && !item.isSettled ? (
+                      <CountedQtyInput
+                        value={item.countedQty}
+                        onChange={(qty) => handleSetCount(item, qty)}
+                      />
+                    ) : (
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        {item.countedQty}
+                      </span>
+                    )}
                   </td>
                   <td className={cn(
                     'py-2 px-3 text-sm text-center font-semibold',
@@ -360,6 +384,93 @@ export function StockCountTab() {
   );
 }
 
+// ── Inline editable qty input ──────────────────────────────────────────
+
+function CountedQtyInput({ value, onChange }: { value: number; onChange: (qty: number) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(value));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync draft when value changes externally (e.g., scanner increment)
+  useEffect(() => {
+    if (!editing) setDraft(String(value));
+  }, [value, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    const num = parseFloat(draft);
+    if (!isNaN(num) && num >= 0 && num !== value) {
+      onChange(num);
+    } else {
+      setDraft(String(value));
+    }
+  };
+
+  if (!editing) {
+    return (
+      <button
+        onClick={() => {
+          setEditing(true);
+          setDraft(String(value));
+          setTimeout(() => inputRef.current?.select(), 0);
+        }}
+        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition-colors group"
+      >
+        <span className="text-sm font-bold text-gray-900 dark:text-gray-100 min-w-[2ch] text-center">
+          {value}
+        </span>
+        <span className="text-[10px] text-gray-400 group-hover:text-brand-500">تعديل</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="inline-flex items-center gap-0.5">
+      <button
+        type="button"
+        onClick={() => {
+          const num = Math.max(0, parseFloat(draft) - 1);
+          setDraft(String(num));
+          onChange(num);
+          setEditing(false);
+        }}
+        className="w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-500 hover:text-red-600 flex items-center justify-center transition-colors"
+      >
+        <Minus size={12} />
+      </button>
+      <input
+        ref={inputRef}
+        type="number"
+        min={0}
+        step="any"
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') { setEditing(false); setDraft(String(value)); }
+        }}
+        className="w-16 text-center text-sm font-bold rounded-md border border-brand-300 dark:border-brand-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-1 outline-none focus:ring-2 focus:ring-brand-500/30"
+        autoFocus
+      />
+      <button
+        type="button"
+        onClick={() => {
+          const num = parseFloat(draft) + 1;
+          setDraft(String(num));
+          onChange(num);
+          setEditing(false);
+        }}
+        className="w-7 h-7 rounded-md bg-gray-100 dark:bg-gray-800 hover:bg-green-100 dark:hover:bg-green-900/30 text-gray-500 hover:text-green-600 flex items-center justify-center transition-colors"
+      >
+        <Plus size={12} />
+      </button>
+    </div>
+  );
+}
+
+// ── Status badge ───────────────────────────────────────────────────────
+
 function StatusBadge({ status, isSettled }: { status: string; isSettled: boolean }) {
   if (isSettled) return <Badge variant="success">تمت التسوية</Badge>;
   switch (status) {
@@ -369,6 +480,8 @@ function StatusBadge({ status, isSettled }: { status: string; isSettled: boolean
     default:         return <Badge variant="default">لم يُعد</Badge>;
   }
 }
+
+// ── Start count modal ──────────────────────────────────────────────────
 
 function StartCountModal({
   open, onClose, warehouses, onStarted,

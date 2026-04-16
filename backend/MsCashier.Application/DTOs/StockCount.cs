@@ -16,6 +16,8 @@ public record StartStockCountRequest(int WarehouseId, string? Notes);
 
 public record ScanProductRequest(int ProductId, decimal Quantity = 1);
 
+public record SetCountedQtyRequest(decimal CountedQty);
+
 public record SettleItemRequest(string? Notes);
 
 public record BulkOpeningBalanceRow(int ProductId, int WarehouseId, decimal Quantity);
