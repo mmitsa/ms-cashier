@@ -202,10 +202,8 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
       }
     }
 
-    if (mode === 'individual') {
-      if (!form.nationalId.trim()) {
-        errs.nationalId = 'رقم الهوية مطلوب';
-      } else if (!/^\d{10}$/.test(form.nationalId.trim())) {
+    if (mode === 'individual' && form.nationalId.trim()) {
+      if (!/^\d{10}$/.test(form.nationalId.trim())) {
         errs.nationalId = 'رقم الهوية يجب أن يكون 10 أرقام';
       }
     }
@@ -424,7 +422,7 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
         </div>
 
         {mode === 'individual' && (
-          <FormField label="رقم الهوية / الإقامة" required placeholder="10 أرقام" dir="ltr" {...fieldProps('nationalId')} />
+          <FormField label="رقم الهوية / الإقامة" placeholder="10 أرقام (اختياري)" dir="ltr" {...fieldProps('nationalId')} />
         )}
         {mode === 'company' && (
           <FormField label="السجل التجاري" required placeholder="رقم السجل" dir="ltr" {...fieldProps('commercialRegister')} />

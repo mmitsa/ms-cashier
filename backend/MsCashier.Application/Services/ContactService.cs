@@ -45,13 +45,6 @@ public class ContactService : IContactService
                     return Result<ContactDto>.Failure("السجل التجاري مطلوب للشركات");
             }
 
-            // Validation: individual customer requires NationalId
-            if (!request.IsCompany && request.ContactType == ContactType.Customer)
-            {
-                if (string.IsNullOrWhiteSpace(request.NationalId))
-                    return Result<ContactDto>.Failure("رقم الهوية مطلوب للعملاء الأفراد");
-            }
-
             // Validation: CreditPeriodDays must be > 0 if provided
             if (request.CreditPeriodDays.HasValue && request.CreditPeriodDays.Value <= 0)
                 return Result<ContactDto>.Failure("مدة السداد يجب أن تكون أكبر من صفر");
@@ -192,13 +185,6 @@ public class ContactService : IContactService
                     return Result<ContactDto>.Failure("الرقم الضريبي مطلوب للشركات");
                 if (string.IsNullOrWhiteSpace(request.CommercialRegister))
                     return Result<ContactDto>.Failure("السجل التجاري مطلوب للشركات");
-            }
-
-            // Validation: individual customer requires NationalId
-            if (!request.IsCompany && request.ContactType == ContactType.Customer)
-            {
-                if (string.IsNullOrWhiteSpace(request.NationalId))
-                    return Result<ContactDto>.Failure("رقم الهوية مطلوب للعملاء الأفراد");
             }
 
             // Validation: CreditPeriodDays must be > 0 if provided
