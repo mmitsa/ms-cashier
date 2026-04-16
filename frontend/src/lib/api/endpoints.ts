@@ -189,6 +189,9 @@ export const stockCountApi = {
   scan: (id: number, data: { productId: number; quantity?: number }) =>
     apiClient.post<ApiResponse<StockCountItemDto>>(`/stock-counts/${id}/scan`, data).then(r => r.data),
 
+  setCount: (countId: number, itemId: number, countedQty: number) =>
+    apiClient.put<ApiResponse<StockCountItemDto>>(`/stock-counts/${countId}/items/${itemId}/count`, { countedQty }).then(r => r.data),
+
   settleItem: (countId: number, itemId: number, data: { notes?: string }) =>
     apiClient.post<ApiResponse<StockCountItemDto>>(`/stock-counts/${countId}/items/${itemId}/settle`, data).then(r => r.data),
 

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   UserPlus, Users, Wallet, CreditCard, Search, X, Loader2,
-  AlertCircle, Phone, MapPin, ChevronLeft, ChevronRight, Banknote,
+  AlertCircle, MapPin, ChevronLeft, ChevronRight, Banknote,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { StatCard } from '@/components/ui/StatCard';
@@ -11,6 +11,7 @@ import {
 import { formatCurrency, getPriceTypeLabel, cn } from '@/lib/utils/cn';
 import type { ContactDto, CreateContactRequest } from '@/types/api.types';
 import { ContactType, PriceType } from '@/types/api.types';
+import { countries, getRegions, getCities } from '@/lib/data/saudi-locations';
 
 type TabType = 'customers' | 'suppliers';
 
@@ -273,25 +274,46 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
     address: '',
     priceType: PriceType.Retail,
     creditLimit: 0,
+    countryCode: 'SA',
+    province: '',
+    city: '',
+    district: '',
+    street: '',
   });
+
+  const regions = useMemo(() => getRegions(form.countryCode ?? 'SA'), [form.countryCode]);
+  const citiesList = useMemo(() => getCities(form.countryCode ?? 'SA', form.province ?? ''), [form.countryCode, form.province]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    createContact.mutate(form, { onSuccess: () => onClose() });
+    // Compose legacy address from structured fields
+    const composed = [form.street, form.district, form.city, form.province]
+      .map(s => s?.trim())
+      .filter(Boolean)
+      .join('، ');
+    createContact.mutate({ ...form, address: composed || form.address }, { onSuccess: () => onClose() });
   };
 
-  const updateField = <K extends keyof CreateContactRequest>(key: K, value: CreateContactRequest[K]) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const updateField = <K extends keyof CreateContactRequest>(key: K, value: CreateContactRequest[K]) => {
+    setForm((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === 'countryCode') { next.province = ''; next.city = ''; }
+      else if (key === 'province') { next.city = ''; }
+      return next;
+    });
+  };
+
+  const inputClass = "w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md"
+        className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
         dir="rtl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
             {isCustomer ? 'إضافة عميل جديد' : 'إضافة مورد جديد'}
           </h2>
@@ -300,74 +322,73 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               الاسم <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => updateField('name', e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none text-sm"
-              placeholder={isCustomer ? 'اسم العميل' : 'اسم المورد'}
-              required
-            />
+            <input type="text" value={form.name} onChange={(e) => updateField('name', e.target.value)} className={inputClass} placeholder={isCustomer ? 'اسم العميل' : 'اسم المورد'} required />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الهاتف</label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => updateField('phone', e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
-                placeholder="01xxxxxxxxx"
-              />
+              <input type="tel" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} className={inputClass} placeholder="05xxxxxxxx" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">البريد</label>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
-                placeholder="email@example.com"
-              />
+              <input type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} className={inputClass} placeholder="email@example.com" />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
-            <input
-              type="text"
-              value={form.address}
-              onChange={(e) => updateField('address', e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
-              placeholder="العنوان"
-            />
+          {/* Address dropdowns */}
+          <div className="space-y-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              <MapPin size={14} className="text-brand-500" /> العنوان
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الدولة</label>
+              <select value={form.countryCode ?? 'SA'} onChange={(e) => updateField('countryCode', e.target.value)} className={inputClass}>
+                {countries.map((c) => <option key={c.code} value={c.code}>{c.nameAr}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">المنطقة</label>
+                <select value={form.province ?? ''} onChange={(e) => updateField('province', e.target.value)} className={inputClass}>
+                  <option value="">-- اختر --</option>
+                  {regions.map((r) => <option key={r.nameAr} value={r.nameAr}>{r.nameAr}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">المدينة</label>
+                <select value={form.city ?? ''} onChange={(e) => updateField('city', e.target.value)} className={inputClass} disabled={!form.province}>
+                  <option value="">-- اختر --</option>
+                  {citiesList.map((c) => <option key={c.nameAr} value={c.nameAr}>{c.nameAr}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الحي</label>
+                <input type="text" value={form.district ?? ''} onChange={(e) => updateField('district', e.target.value)} className={inputClass} placeholder="اسم الحي" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">الشارع</label>
+                <input type="text" value={form.street ?? ''} onChange={(e) => updateField('street', e.target.value)} className={inputClass} placeholder="اسم الشارع" />
+              </div>
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ملاحظات</label>
-            <textarea
-              value={form.notes ?? ''}
-              onChange={(e) => updateField('notes', e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm resize-none"
-              placeholder="ملاحظات إضافية..."
-              rows={3}
-            />
+            <textarea value={form.notes ?? ''} onChange={(e) => updateField('notes', e.target.value)} className={cn(inputClass, 'resize-none')} placeholder="ملاحظات إضافية..." rows={2} />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">نوع السعر</label>
-              <select
-                value={form.priceType}
-                onChange={(e) => updateField('priceType', Number(e.target.value) as PriceType)}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
-              >
+              <select value={form.priceType} onChange={(e) => updateField('priceType', Number(e.target.value) as PriceType)} className={inputClass}>
                 <option value={PriceType.Retail}>قطاعي</option>
                 <option value={PriceType.HalfWholesale}>نصف جملة</option>
                 <option value={PriceType.Wholesale}>جملة</option>
@@ -375,22 +396,12 @@ function AddContactModal({ contactType, onClose }: { contactType: ContactType; o
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">حد الائتمان</label>
-              <input
-                type="number"
-                min={0}
-                value={form.creditLimit ?? 0}
-                onChange={(e) => updateField('creditLimit', Number(e.target.value))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 focus:border-brand-500 outline-none text-sm"
-              />
+              <input type="number" min={0} value={form.creditLimit ?? 0} onChange={(e) => updateField('creditLimit', Number(e.target.value))} className={inputClass} />
             </div>
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <button
-              type="submit"
-              disabled={createContact.isPending || !form.name.trim()}
-              className="btn-primary flex-1 disabled:opacity-50"
-            >
+            <button type="submit" disabled={createContact.isPending || !form.name.trim()} className="btn-primary flex-1 disabled:opacity-50">
               {createContact.isPending ? <Loader2 size={18} className="animate-spin" /> : <UserPlus size={18} />}
               حفظ
             </button>

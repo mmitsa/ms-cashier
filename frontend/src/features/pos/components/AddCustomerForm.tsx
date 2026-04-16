@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ArrowRight, Building2, Loader2, MapPin, Plus, ShieldCheck, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useCreateContact } from '@/hooks/useApi';
 import { cn } from '@/lib/utils/cn';
 import { ContactType, PriceType } from '@/types/api.types';
 import type { ContactDto, CreateContactRequest } from '@/types/api.types';
+import { countries, getRegions, getCities } from '@/lib/data/saudi-locations';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -158,8 +159,22 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const createContact = useCreateContact();
 
+  // Cascading location data
+  const regions = useMemo(() => getRegions(form.countryCode), [form.countryCode]);
+  const cities = useMemo(() => getCities(form.countryCode, form.province), [form.countryCode, form.province]);
+
   const set = (field: keyof FormData, value: string | boolean) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      // Reset dependent fields on cascade
+      if (field === 'countryCode') {
+        next.province = '';
+        next.city = '';
+      } else if (field === 'province') {
+        next.city = '';
+      }
+      return next;
+    });
     if (errors[field]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -343,19 +358,50 @@ export function AddCustomerForm({ onCreated, onBack }: AddCustomerFormProps) {
 
         {/* ── Address (ZATCA) ─────────────────────────────────── */}
         <SectionHeader icon={MapPin} label="العنوان" />
-        <FormField label="الشارع" placeholder="اسم الشارع" {...fieldProps('street')} />
-        <div className="grid grid-cols-2 gap-2">
-          <FormField label="الحي" placeholder="District" {...fieldProps('district')} />
-          <FormField label="المدينة" placeholder="المدينة" {...fieldProps('city')} />
+
+        {/* Country */}
+        <div>
+          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">الدولة</label>
+          <select value={form.countryCode} onChange={(e) => set('countryCode', e.target.value)} className="input w-full text-sm">
+            {countries.map((c) => (
+              <option key={c.code} value={c.code}>{c.nameAr}</option>
+            ))}
+          </select>
         </div>
+
+        {/* Province → City */}
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">المنطقة / المحافظة</label>
+            <select value={form.province} onChange={(e) => set('province', e.target.value)} className="input w-full text-sm">
+              <option value="">-- اختر المنطقة --</option>
+              {regions.map((r) => (
+                <option key={r.nameAr} value={r.nameAr}>{r.nameAr}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">المدينة</label>
+            <select value={form.city} onChange={(e) => set('city', e.target.value)} className="input w-full text-sm" disabled={!form.province}>
+              <option value="">-- اختر المدينة --</option>
+              {cities.map((c) => (
+                <option key={c.nameAr} value={c.nameAr}>{c.nameAr}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* District (free text) + Street */}
+        <div className="grid grid-cols-2 gap-2">
+          <FormField label="الحي" placeholder="اسم الحي" {...fieldProps('district')} />
+          <FormField label="الشارع" placeholder="اسم الشارع" {...fieldProps('street')} />
+        </div>
+
+        {/* Postal + Building + Plot */}
         <div className="grid grid-cols-3 gap-2">
-          <FormField label="المحافظة" placeholder="المحافظة" {...fieldProps('province')} />
           <FormField label="الرمز البريدي" placeholder="12345" dir="ltr" {...fieldProps('postalCode')} />
-          <FormField label="رمز الدولة" placeholder="SA" dir="ltr" {...fieldProps('countryCode')} />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
           <FormField label="رقم المبنى" placeholder="1234" dir="ltr" {...fieldProps('buildingNumber')} />
-          <FormField label="معرّف قطعة الأرض" placeholder="الرقم الإضافي" dir="ltr" {...fieldProps('plotIdentification')} />
+          <FormField label="الرقم الإضافي" placeholder="معرّف قطعة الأرض" dir="ltr" {...fieldProps('plotIdentification')} />
         </div>
 
         {/* ── Identification (ZATCA) ────────────────────────────── */}

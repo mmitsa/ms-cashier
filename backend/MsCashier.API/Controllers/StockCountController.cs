@@ -37,6 +37,11 @@ public class StockCountController : BaseApiController
     public async Task<IActionResult> Scan(int id, [FromBody] ScanProductRequest request)
         => HandleResult(await _service.ScanProductAsync(id, request));
 
+    /// <summary>تعديل الكمية المعدودة يدوياً</summary>
+    [HttpPut("{id:int}/items/{itemId:long}/count")]
+    public async Task<IActionResult> SetCount(int id, long itemId, [FromBody] SetCountedQtyRequest request)
+        => HandleResult(await _service.SetCountedQtyAsync(id, itemId, request));
+
     /// <summary>تسوية صنف (مطابقة الرصيد الفعلي مع المخزون)</summary>
     [HttpPost("{id:int}/items/{itemId:long}/settle")]
     public async Task<IActionResult> Settle(int id, long itemId, [FromBody] SettleItemRequest request)

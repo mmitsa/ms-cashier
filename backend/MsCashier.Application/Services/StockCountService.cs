@@ -189,6 +189,46 @@ public class StockCountService : IStockCountService
         }
     }
 
+    public async Task<Result<StockCountItemDto>> SetCountedQtyAsync(int stockCountId, long itemId, SetCountedQtyRequest request)
+    {
+        try
+        {
+            var sc = await _uow.Repository<StockCount>().Query()
+                .FirstOrDefaultAsync(s => s.Id == stockCountId && s.TenantId == _tenant.TenantId && !s.IsDeleted);
+
+            if (sc is null)
+                return Result<StockCountItemDto>.Failure("جلسة الجرد غير موجودة");
+            if (sc.Status != StockCountStatus.InProgress)
+                return Result<StockCountItemDto>.Failure("جلسة الجرد مكتملة أو ملغاة");
+
+            var item = await _uow.Repository<StockCountItem>().Query()
+                .Include(i => i.Product)
+                .FirstOrDefaultAsync(i => i.Id == itemId && i.StockCountId == stockCountId);
+
+            if (item is null)
+                return Result<StockCountItemDto>.Failure("سطر الجرد غير موجود");
+
+            if (request.CountedQty < 0)
+                return Result<StockCountItemDto>.Failure("الكمية لا يمكن أن تكون سالبة");
+
+            item.CountedQty = request.CountedQty;
+
+            var variance = item.CountedQty - item.SystemQty;
+            item.Status = variance == 0 ? StockCountItemStatus.Matched
+                        : variance < 0 ? StockCountItemStatus.Shortage
+                        : StockCountItemStatus.Surplus;
+
+            await _uow.SaveChangesAsync();
+
+            return Result<StockCountItemDto>.Success(ToItemDto(item),
+                $"تم تحديث الكمية إلى {item.CountedQty} لـ {item.Product.Name}");
+        }
+        catch (Exception ex)
+        {
+            return Result<StockCountItemDto>.Failure($"خطأ: {ex.Message}");
+        }
+    }
+
     public async Task<Result<StockCountItemDto>> SettleItemAsync(int stockCountId, long itemId, SettleItemRequest request)
     {
         try
