@@ -261,7 +261,7 @@ function SidebarGroupHeader({
 export function Sidebar() {
   const { sidebarOpen, activeModule, setActiveModule, toggleSidebar } = useUIStore();
   const user = useAuthStore((s) => s.user);
-  const isSuperAdmin = user?.role === 'SuperAdmin' || user?.role === 'Admin';
+  const isSuperAdmin = user?.role === 'SuperAdmin';
   const { isModuleEnabled } = useEnabledModules();
 
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(loadCollapsedGroups);

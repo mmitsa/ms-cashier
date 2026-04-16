@@ -37,3 +37,6 @@ Thumbs.db
 
 # Deploy artifacts (build output, not committed)
 deploy/artifacts/
+publish/
+deploy/webhook/*.log
+deploy/webhook/*-log.txt
