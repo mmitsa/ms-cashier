@@ -448,13 +448,16 @@ export function InventoryScreen() {
     <div className="space-y-6" dir="rtl">
       {/* Low Stock Alert Banner */}
       {lowStockCount > 0 && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200">
+        <button
+          onClick={() => { setLowStockOnly(true); setPage(1); }}
+          className="w-full flex items-center gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900 transition-colors text-right cursor-pointer"
+        >
           <AlertTriangle size={24} className="flex-shrink-0" />
-          <div>
+          <div className="flex-1">
             <p className="font-semibold">تنبيه: {lowStockCount} صنف تحت الحد الأدنى للمخزون</p>
-            <p className="text-sm text-amber-700 dark:text-amber-300">يرجى مراجعة المخزون وإعادة الطلب</p>
+            <p className="text-sm text-amber-700 dark:text-amber-300">اضغط هنا لعرض الأصناف المنخفضة وإعادة الطلب ←</p>
           </div>
-        </div>
+        </button>
       )}
 
       {/* Header */}

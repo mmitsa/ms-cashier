@@ -78,7 +78,7 @@ public class InventoryService : IInventoryService
                 p.UnitId,
                 p.UnitId.HasValue && units.ContainsKey(p.UnitId.Value) ? units[p.UnitId.Value] : null,
                 p.CostPrice, p.RetailPrice, p.HalfWholesalePrice, p.WholesalePrice, p.Price4,
-                (int)p.MinStock,
+                (int)p.MinStock, p.ReorderLevel, p.MaxStock,
                 inventoryDict.ContainsKey(p.Id) ? inventoryDict[p.Id] : 0,
                 p.IsActive, p.TaxRate, p.ImageUrl
             )).ToList();
