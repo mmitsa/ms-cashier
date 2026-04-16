@@ -452,6 +452,9 @@ if (app.Environment.IsDevelopment())
 // 3. HTTPS redirection
 app.UseHttpsRedirection();
 
+// 3.5 Static files (product images served from wwwroot/)
+app.UseStaticFiles();
+
 // 4. CORS
 app.UseCors();
 

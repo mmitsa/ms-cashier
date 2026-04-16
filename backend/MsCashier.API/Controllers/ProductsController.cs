@@ -5,6 +5,7 @@ using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Enums;
+using MsCashier.Domain.Interfaces;
 
 namespace MsCashier.API.Controllers;
 
@@ -13,8 +14,18 @@ namespace MsCashier.API.Controllers;
 public class ProductsController : BaseApiController
 {
     private readonly IProductService _productService;
+    private readonly ICurrentTenantService _tenant;
+    private readonly IWebHostEnvironment _env;
 
-    public ProductsController(IProductService productService) => _productService = productService;
+    public ProductsController(
+        IProductService productService,
+        ICurrentTenantService tenant,
+        IWebHostEnvironment env)
+    {
+        _productService = productService;
+        _tenant = tenant;
+        _env = env;
+    }
 
     /// <summary>إنشاء منتج جديد</summary>
     /// <param name="request">بيانات المنتج</param>
@@ -99,6 +110,67 @@ public class ProductsController : BaseApiController
     [HttpPatch("{id:int}/prices")]
     public async Task<IActionResult> UpdatePrices(int id, [FromBody] UpdatePricesRequest request)
         => HandleResult(await _productService.UpdatePricesAsync(id, request));
+
+    /// <summary>رفع صورة المنتج</summary>
+    [HttpPost("{id:int}/image")]
+    [RequestSizeLimit(5_000_000)]
+    public async Task<IActionResult> UploadImage(int id, IFormFile file)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest(new { success = false, errors = new[] { "لم يتم اختيار ملف" } });
+
+        if (!file.ContentType.StartsWith("image/"))
+            return BadRequest(new { success = false, errors = new[] { "يجب أن يكون الملف صورة" } });
+
+        if (file.Length > 5_000_000)
+            return BadRequest(new { success = false, errors = new[] { "حجم الصورة يجب ألا يتجاوز 5 ميغابايت" } });
+
+        var tenantId = _tenant.TenantId;
+        var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? ".jpg";
+        var fileName = $"{id}_{Guid.NewGuid():N}{ext}";
+        var tenantFolder = Path.Combine(_env.WebRootPath, "uploads", "products", tenantId.ToString());
+
+        Directory.CreateDirectory(tenantFolder);
+
+        // Delete old image if exists
+        var oldResult = await _productService.GetByIdAsync(id);
+        if (!oldResult.IsSuccess)
+            return BadRequest(new { success = false, errors = oldResult.Errors });
+
+        if (!string.IsNullOrEmpty(oldResult.Data?.ImageUrl))
+        {
+            var oldPath = Path.Combine(_env.WebRootPath, oldResult.Data.ImageUrl.TrimStart('/'));
+            if (System.IO.File.Exists(oldPath))
+                System.IO.File.Delete(oldPath);
+        }
+
+        var filePath = Path.Combine(tenantFolder, fileName);
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        var imageUrl = $"/uploads/products/{tenantId}/{fileName}";
+        var result = await _productService.UpdateImageAsync(id, imageUrl);
+        return HandleResult(result);
+    }
+
+    /// <summary>حذف صورة المنتج</summary>
+    [HttpDelete("{id:int}/image")]
+    public async Task<IActionResult> DeleteImage(int id)
+    {
+        var existing = await _productService.GetByIdAsync(id);
+        if (!existing.IsSuccess)
+            return BadRequest(new { success = false, errors = existing.Errors });
+
+        if (!string.IsNullOrEmpty(existing.Data?.ImageUrl))
+        {
+            var oldPath = Path.Combine(_env.WebRootPath, existing.Data.ImageUrl.TrimStart('/'));
+            if (System.IO.File.Exists(oldPath))
+                System.IO.File.Delete(oldPath);
+        }
+
+        var result = await _productService.UpdateImageAsync(id, null);
+        return HandleResult(result);
+    }
 }
 
 // ============================================================
