@@ -30,6 +30,8 @@ import {
   useLowStockProducts,
 } from '@/hooks/useApi';
 import type { ProductDto, CreateProductRequest, UpdateProductRequest } from '@/types/api.types';
+import { storeSettingsApi } from '@/lib/api/endpoints';
+import { useQuery } from '@tanstack/react-query';
 import { StockManagementTabs } from './StockManagementTabs';
 import { CsvImportModal } from './CsvImportModal';
 import { VariantManager } from './VariantManager';
@@ -154,6 +156,8 @@ export function InventoryScreen() {
   const { data: categories = [] } = useCategories();
   const { data: warehouses = [] } = useWarehouses();
   const { data: lowStockProducts = [] } = useLowStockProducts();
+  const { data: storeSettings } = useQuery({ queryKey: ['store-settings'], queryFn: () => storeSettingsApi.get().then(r => r.data), staleTime: 5 * 60_000 });
+  const storeName = storeSettings?.storeName || storeSettings?.StoreName || '';
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
@@ -366,7 +370,7 @@ export function InventoryScreen() {
       const barcode = product.barcode || product.sku || `P${product.id}`;
       printBarcodeLabels([
         { barcode, name: product.name, price: product.retailPrice },
-      ]);
+      ], storeName);
     } else {
       setShowPrintBarcodeModal(true);
       setPrintSelectedIds(new Set());
@@ -391,7 +395,7 @@ export function InventoryScreen() {
       name: p.name,
       price: p.retailPrice,
     }));
-    printBarcodeLabels(labels);
+    printBarcodeLabels(labels, storeName);
     setShowPrintBarcodeModal(false);
   };
 
