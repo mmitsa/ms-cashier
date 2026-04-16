@@ -29,6 +29,7 @@ import {
   useDeleteProduct,
   useLowStockProducts,
 } from '@/hooks/useApi';
+import { productsApi } from '@/lib/api/endpoints';
 import type { ProductDto, CreateProductRequest, UpdateProductRequest } from '@/types/api.types';
 import { storeSettingsApi } from '@/lib/api/endpoints';
 import { useQuery } from '@tanstack/react-query';
@@ -246,20 +247,41 @@ export function InventoryScreen() {
     );
   };
 
-  const handleBulkDelete = (ids: number[]) => {
-    bulkDelete.mutate(ids, { onSuccess: () => clearSelection() });
+  // When isAllSelected, fetch ALL matching product IDs first
+  const resolveIds = async (pageIds: number[]): Promise<number[]> => {
+    if (!isAllSelected) return pageIds;
+    try {
+      const res = await productsApi.search({
+        searchTerm: searchTerm || undefined,
+        categoryId,
+        lowStockOnly: lowStockOnly || undefined,
+        page: 1,
+        pageSize: 10000,
+      });
+      return res.data?.items?.map((p: ProductDto) => p.id) ?? pageIds;
+    } catch {
+      return pageIds;
+    }
   };
 
-  const handleBulkChangeCategory = (ids: number[], catId: number) => {
-    bulkUpdate.mutate({ productIds: ids, categoryId: catId }, { onSuccess: () => clearSelection() });
+  const handleBulkDelete = async (ids: number[]) => {
+    const allIds = await resolveIds(ids);
+    bulkDelete.mutate(allIds, { onSuccess: () => clearSelection() });
   };
 
-  const handleBulkToggleActive = (ids: number[], isActive: boolean) => {
-    bulkUpdate.mutate({ productIds: ids, isActive }, { onSuccess: () => clearSelection() });
+  const handleBulkChangeCategory = async (ids: number[], catId: number) => {
+    const allIds = await resolveIds(ids);
+    bulkUpdate.mutate({ productIds: allIds, categoryId: catId }, { onSuccess: () => clearSelection() });
   };
 
-  const handleBulkUpdatePrices = (ids: number[], costPrice?: number, retailPrice?: number) => {
-    bulkUpdate.mutate({ productIds: ids, costPrice, retailPrice }, { onSuccess: () => clearSelection() });
+  const handleBulkToggleActive = async (ids: number[], isActive: boolean) => {
+    const allIds = await resolveIds(ids);
+    bulkUpdate.mutate({ productIds: allIds, isActive }, { onSuccess: () => clearSelection() });
+  };
+
+  const handleBulkUpdatePrices = async (ids: number[], costPrice?: number, retailPrice?: number) => {
+    const allIds = await resolveIds(ids);
+    bulkUpdate.mutate({ productIds: allIds, costPrice, retailPrice }, { onSuccess: () => clearSelection() });
   };
 
   const handleBarcodeSave = (productId: number, barcode: string) => {
