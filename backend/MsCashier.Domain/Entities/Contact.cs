@@ -31,6 +31,42 @@ public class Contact : TenantEntity
     [MaxLength(500)]
     public string? Address { get; set; }
 
+    // ZATCA structured address fields
+    [MaxLength(200)]
+    public string? Street { get; set; } // الشارع
+
+    [MaxLength(100)]
+    public string? District { get; set; } // الحي
+
+    [MaxLength(100)]
+    public string? City { get; set; } // المدينة
+
+    [MaxLength(100)]
+    public string? Province { get; set; } // المحافظة
+
+    [MaxLength(10)]
+    public string? PostalCode { get; set; } // الرمز البريدي
+
+    [MaxLength(5)]
+    public string? CountryCode { get; set; } = "SA"; // رمز الدولة (ISO 3166-1 alpha-2)
+
+    [MaxLength(10)]
+    public string? BuildingNumber { get; set; } // رقم المبنى
+
+    [MaxLength(50)]
+    public string? PlotIdentification { get; set; } // معرّف قطعة الأرض (الرقم الإضافي)
+
+    // ZATCA identification scheme
+    [MaxLength(10)]
+    public string? IdScheme { get; set; } // CRN, MOM, MLS, SAG, NAT, GCC, IQA, PAS, OTH
+
+    [MaxLength(50)]
+    public string? OtherId { get; set; } // معرف آخر
+
+    // Contact person (for companies)
+    [MaxLength(200)]
+    public string? ContactPerson { get; set; } // صاحب العمل / الشخص المسؤول
+
     [MaxLength(50)]
     public string? TaxNumber { get; set; }
 

@@ -79,7 +79,19 @@ public class ContactService : IContactService
                 CreditPeriodDays = request.CreditPeriodDays,
                 PaymentMethod = request.PaymentMethod,
                 ProjectName = request.ProjectName,
-                Notes = request.Notes
+                Notes = request.Notes,
+                // ZATCA
+                Street = request.Street,
+                District = request.District,
+                City = request.City,
+                Province = request.Province,
+                PostalCode = request.PostalCode,
+                CountryCode = request.CountryCode ?? "SA",
+                BuildingNumber = request.BuildingNumber,
+                PlotIdentification = request.PlotIdentification,
+                IdScheme = request.IdScheme,
+                OtherId = request.OtherId,
+                ContactPerson = request.ContactPerson,
             };
 
             await _uow.Repository<Contact>().AddAsync(contact);
@@ -212,6 +224,18 @@ public class ContactService : IContactService
             contact.PaymentMethod = request.PaymentMethod;
             contact.ProjectName = request.ProjectName;
             contact.Notes = request.Notes;
+            // ZATCA
+            contact.Street = request.Street;
+            contact.District = request.District;
+            contact.City = request.City;
+            contact.Province = request.Province;
+            contact.PostalCode = request.PostalCode;
+            contact.CountryCode = request.CountryCode ?? "SA";
+            contact.BuildingNumber = request.BuildingNumber;
+            contact.PlotIdentification = request.PlotIdentification;
+            contact.IdScheme = request.IdScheme;
+            contact.OtherId = request.OtherId;
+            contact.ContactPerson = request.ContactPerson;
             contact.UpdatedAt = DateTime.UtcNow;
 
             _uow.Repository<Contact>().Update(contact);
@@ -320,7 +344,10 @@ public class ContactService : IContactService
         c.Address, c.PriceType, c.CreditLimit, c.Balance,
         c.IsActive, c.TaxNumber, c.IsCompany, c.CommercialRegister, c.NationalId,
         c.BankName, c.BankAccountNumber, c.Iban,
-        c.CreditPeriodDays, c.PaymentMethod, c.ProjectName, c.Notes);
+        c.CreditPeriodDays, c.PaymentMethod, c.ProjectName, c.Notes,
+        c.Street, c.District, c.City, c.Province, c.PostalCode,
+        c.CountryCode, c.BuildingNumber, c.PlotIdentification,
+        c.IdScheme, c.OtherId, c.ContactPerson);
 }
 
 // ════════════════════════════════════════════════════════════════
