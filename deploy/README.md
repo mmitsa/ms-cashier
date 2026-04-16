@@ -259,6 +259,82 @@ RESTORE DATABASE MsCashier
 pwsh -File deploy\pull-release.ps1 -Tag v1.0.0
 ```
 
+### الطريقة التلقائية بالكامل — Auto-Deploy (بدون تدخل يدوي)
+
+بعد إعداد الـ webhook مرة واحدة، الفلو يكون:
+```
+git tag v1.2.0 && git push origin v1.2.0
+```
+وانتهى! الباقي يحصل تلقائياً:
+1. GitHub Actions يبني الـ 3 مشاريع
+2. ينشر `mpos-v1.2.0.zip` في Releases
+3. يرسل webhook للسيرفر (أو GitHub يرسله تلقائياً عبر release event)
+4. السيرفر يشغل `auto-deploy.ps1`:
+   - backup الداتابيز ← pull release ← snapshot + deploy ← smoke test
+
+**إعداد الـ Auto-Deploy (مرة واحدة على السيرفر):**
+
+```powershell
+# 1. إعداد خدمة الـ webhook
+pwsh -File deploy\setup-webhook.ps1
+
+# 2. سجّل الـ secret و الـ URL اللي طلعوا (مهم!)
+# 3. اذهب إلى GitHub > الـ repo > Settings > Webhooks > Add webhook:
+#      Payload URL:  https://mops.mmit.sa/deploy-webhook/webhook
+#      Content type: application/json
+#      Secret:       <الـ secret اللي طلع>
+#      Events:       ✓ Releases
+# 4. أضف في GitHub > Settings > Secrets and variables > Actions:
+#      WEBHOOK_URL:    https://mops.mmit.sa/deploy-webhook/deploy
+#      WEBHOOK_SECRET: <نفس الـ secret>
+```
+
+**كيف يعمل (المعمارية):**
+```
+                     ┌─────────────────────────────┐
+git tag v1.2.0 ───→ │     GitHub Actions           │
+                     │  build → release → webhook   │
+                     └──────────┬──────────────────┘
+                                │ POST /deploy-webhook/webhook
+                                ▼
+                     ┌─────────────────────────────┐
+                     │  IIS (mops.mmit.sa:443)      │
+                     │  URL Rewrite → 127.0.0.1:9850│
+                     └──────────┬──────────────────┘
+                                │
+                                ▼
+                     ┌─────────────────────────────┐
+                     │  webhook-server.js (NSSM)    │
+                     │  verify HMAC → auto-deploy   │
+                     └──────────┬──────────────────┘
+                                │ pwsh auto-deploy.ps1
+                                ▼
+                     ┌─────────────────────────────┐
+                     │  1. backup-db.ps1            │
+                     │  2. pull-release.ps1 -Tag    │
+                     │  3. deploy.ps1 (+ snapshot)  │
+                     │  4. verify.ps1               │
+                     └─────────────────────────────┘
+```
+
+**مراقبة حالة الـ webhook:**
+```powershell
+# صحة الخدمة
+curl http://127.0.0.1:9850/health
+
+# سجلات
+type C:\inetpub\mpos\deploy\webhook\logs\stdout.log
+type C:\inetpub\mpos\deploy\webhook\auto-deploy-log.txt
+```
+
+**أمان الـ webhook:**
+- الـ secret يُستخدم بطريقتين: HMAC-SHA256 (GitHub webhooks) و Bearer token (GitHub Actions)
+- الـ webhook listener يسمع على **127.0.0.1 فقط** (مش مكشوف مباشرة على الإنترنت)
+- IIS يعمل reverse proxy عبر HTTPS — لا حاجة لفتح port إضافي
+- concurrent deploys ممنوعة (الثاني ينتظر)
+
+---
+
 ### الطريقة البديلة — بناء محلي
 
 ```powershell

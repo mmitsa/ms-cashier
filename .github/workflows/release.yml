@@ -95,3 +95,23 @@ jobs:
             ```
 
             The archive contains pre-built artifacts — no build step needed on the server.
+
+      # --- Notify production server to auto-deploy ---
+      - name: Trigger auto-deploy via webhook
+        if: startsWith(github.ref, 'refs/tags/v')
+        continue-on-error: true  # don't fail the release if webhook is unreachable
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          echo "Triggering auto-deploy for $TAG..."
+          HTTP_CODE=$(curl -s -o /tmp/webhook-response.txt -w "%{http_code}" \
+            -X POST "${{ secrets.WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag\": \"$TAG\"}")
+          echo "Response code: $HTTP_CODE"
+          cat /tmp/webhook-response.txt
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "202" ]; then
+            echo "✓ Auto-deploy triggered successfully"
+          else
+            echo "⚠ Webhook returned $HTTP_CODE — deploy manually if needed"
+          fi
