@@ -75,15 +75,36 @@ public class InvoiceService : IInvoiceService
 
                 if (product.TrackInventory && !product.AllowNegativeStock)
                 {
+                    // Check stock in the target warehouse first
                     var available = await _uow.Repository<Inventory>().Query()
                         .Where(i =>
-                            i.TenantId == _tenant.TenantId &&
                             i.ProductId == item.ProductId &&
                             i.WarehouseId == effectiveWarehouseId)
                         .SumAsync(i => i.Quantity - i.ReservedQty);
 
                     if (available < item.Quantity)
                     {
+                        // Check ALL warehouses to give a helpful error
+                        var totalAllWarehouses = await _uow.Repository<Inventory>().Query()
+                            .Where(i => i.ProductId == item.ProductId)
+                            .SumAsync(i => i.Quantity - i.ReservedQty);
+
+                        if (totalAllWarehouses >= item.Quantity)
+                        {
+                            // Stock exists but in another warehouse — find which one
+                            var otherStock = await _uow.Repository<Inventory>().Query()
+                                .Include(i => i.Warehouse)
+                                .Where(i => i.ProductId == item.ProductId && i.WarehouseId != effectiveWarehouseId && (i.Quantity - i.ReservedQty) > 0)
+                                .Select(i => new { i.Warehouse!.Name, Qty = i.Quantity - i.ReservedQty })
+                                .FirstOrDefaultAsync();
+
+                            await _uow.RollbackTransactionAsync();
+                            return Result<InvoiceDto>.Failure(
+                                $"الكمية غير كافية في المستودع الحالي للمنتج: {product.Name} (المتوفر: {available}). " +
+                                $"يتوفر {totalAllWarehouses} في مستودعات أخرى" +
+                                (otherStock != null ? $" ({otherStock.Name}: {otherStock.Qty})" : ""));
+                        }
+
                         await _uow.RollbackTransactionAsync();
                         return Result<InvoiceDto>.Failure($"الكمية غير كافية للمنتج: {product.Name} (المتوفر: {available})");
                     }
