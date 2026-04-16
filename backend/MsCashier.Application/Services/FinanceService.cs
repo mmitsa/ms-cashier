@@ -1,10 +1,9 @@
 using MsCashier.Application.DTOs;
 using MsCashier.Application.Interfaces;
 using MsCashier.Application.Interfaces.Accounting;
-using MsCashier.Application.Services.Accounting.Posting;
+using MsCashier.Application.Services.Accounting;
 using MsCashier.Domain.Common;
 using MsCashier.Domain.Entities;
-using MsCashier.Domain.Entities.Accounting;
 using MsCashier.Domain.Enums;
 using MsCashier.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -20,74 +19,22 @@ public class FinanceService : IFinanceService
 {
     private readonly IUnitOfWork _uow;
     private readonly ICurrentTenantService _tenant;
-    private readonly IPaymentPostingService _paymentPosting;
-    private readonly IReceiptPostingService _receiptPosting;
     private readonly IFinanceAccountGlBridge _glBridge;
     private readonly ILogger<FinanceService> _logger;
-    private readonly IPostingFailureLogger _postingFailureLogger;
+    private readonly IPostingDispatcher _dispatcher;
 
     public FinanceService(
         IUnitOfWork uow,
         ICurrentTenantService tenant,
-        IPaymentPostingService paymentPosting,
-        IReceiptPostingService receiptPosting,
         IFinanceAccountGlBridge glBridge,
         ILogger<FinanceService> logger,
-        IPostingFailureLogger postingFailureLogger)
+        IPostingDispatcher dispatcher)
     {
         _uow = uow;
         _tenant = tenant;
-        _paymentPosting = paymentPosting;
-        _receiptPosting = receiptPosting;
         _glBridge = glBridge;
         _logger = logger;
-        _postingFailureLogger = postingFailureLogger;
-    }
-
-    /// <summary>
-    /// Resolves the GL ChartOfAccount.Id corresponding to a FinanceAccount.
-    /// Primary path: use FinanceAccount.ChartOfAccountId (the explicit link set by the user/admin).
-    /// Fallback behavior:
-    ///   - Bank / Digital: if ChartOfAccountId is null, we DO NOT fall back — log a warning and skip GL posting.
-    ///     These accounts must be explicitly mapped to a real GL leaf (per-bank, per-wallet) to avoid
-    ///     silently misposting to Main Cash.
-    ///   - Cash: if ChartOfAccountId is null, fall back to system code "1101" (Main Cash) since
-    ///     cash accounts typically share that single leaf.
-    /// Returns null if no usable ChartOfAccount is found (caller should skip posting).
-    /// </summary>
-    private async Task<int?> ResolveGlCashAccountIdAsync(FinanceAccount account, CancellationToken ct = default)
-    {
-        if (account.ChartOfAccountId.HasValue)
-        {
-            var mapped = await _uow.Repository<ChartOfAccount>().Query()
-                .FirstOrDefaultAsync(x =>
-                    x.Id == account.ChartOfAccountId.Value &&
-                    x.TenantId == _tenant.TenantId &&
-                    !x.IsGroup &&
-                    !x.IsDeleted, ct);
-            if (mapped is not null)
-                return mapped.Id;
-
-            _logger.LogWarning(
-                "FinanceAccount {AccountId} points to ChartOfAccountId {CoaId} which is missing, deleted, or a group account.",
-                account.Id, account.ChartOfAccountId.Value);
-        }
-
-        if (account.AccountType == AccountType.Cash)
-        {
-            var coa = await _uow.Repository<ChartOfAccount>().Query()
-                .FirstOrDefaultAsync(x =>
-                    x.TenantId == _tenant.TenantId &&
-                    x.Code == "1101" &&
-                    !x.IsGroup &&
-                    !x.IsDeleted, ct);
-            return coa?.Id;
-        }
-
-        _logger.LogWarning(
-            "FinanceAccount {AccountId} (type {AccountType}) has no GL link — skipping posting.",
-            account.Id, account.AccountType);
-        return null;
+        _dispatcher = dispatcher;
     }
 
     public async Task<Result<List<FinanceAccountDto>>> GetAccountsAsync()
@@ -195,57 +142,14 @@ public class FinanceService : IFinanceService
             await _uow.SaveChangesAsync();
 
             // ─────────────────────────────────────────────────────────────
-            // GL posting (double-entry accounting)
+            // GL posting (double-entry accounting) — dispatched in isolated scope.
             // Only post when a contact is supplied — a generic cash movement
             // (e.g., owner withdrawal) has no AP/AR counter-party to post to.
-            // Posting failures are logged but never roll back the cash transaction.
             // ─────────────────────────────────────────────────────────────
             if (request.ContactId.HasValue)
             {
-                var glCashAccountId = await ResolveGlCashAccountIdAsync(account);
-                if (!glCashAccountId.HasValue)
-                {
-                    _logger.LogWarning(
-                        "GL posting skipped for FinanceTransaction {TxId}: no non-group ChartOfAccount found for FinanceAccount {AccountId} (type {AccountType}).",
-                        transaction.Id, account.Id, account.AccountType);
-                }
-                else
-                {
-                    var operation = request.TransactionType == TransactionType.Expense ? "Payment" : "Receipt";
-                    try
-                    {
-                        var reference = $"FT-{transaction.Id}";
-                        if (request.TransactionType == TransactionType.Expense)
-                        {
-                            // Money OUT to supplier → supplier payment (Dr AP / Cr Cash)
-                            var result = await _paymentPosting.PostSupplierPaymentAsync(
-                                request.ContactId.Value, request.Amount, glCashAccountId.Value,
-                                transaction.CreatedAt, reference, transaction.Id);
-                            if (!result.IsSuccess)
-                            {
-                                _logger.LogWarning("Supplier payment GL posting failed for FT {TxId}: {Error}", transaction.Id, result.Message);
-                                try { await _postingFailureLogger.LogAsync("FinanceTransaction", transaction.Id, operation, string.Join("; ", result.Errors)); } catch { }
-                            }
-                        }
-                        else if (request.TransactionType == TransactionType.Income)
-                        {
-                            // Money IN from customer → customer receipt (Dr Cash / Cr AR)
-                            var result = await _receiptPosting.PostCustomerReceiptAsync(
-                                request.ContactId.Value, request.Amount, glCashAccountId.Value,
-                                transaction.CreatedAt, reference, transaction.Id);
-                            if (!result.IsSuccess)
-                            {
-                                _logger.LogWarning("Customer receipt GL posting failed for FT {TxId}: {Error}", transaction.Id, result.Message);
-                                try { await _postingFailureLogger.LogAsync("FinanceTransaction", transaction.Id, operation, string.Join("; ", result.Errors)); } catch { }
-                            }
-                        }
-                    }
-                    catch (Exception postEx)
-                    {
-                        _logger.LogError(postEx, "GL posting threw for FinanceTransaction {TxId}; cash transaction preserved.", transaction.Id);
-                        try { await _postingFailureLogger.LogAsync("FinanceTransaction", transaction.Id, operation, postEx); } catch { }
-                    }
-                }
+                var operation = request.TransactionType == TransactionType.Expense ? "Payment" : "Receipt";
+                await _dispatcher.DispatchFinanceTransactionAsync(transaction.Id, operation);
             }
 
             var dto = new FinanceTransactionDto(
