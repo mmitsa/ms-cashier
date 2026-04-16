@@ -222,7 +222,7 @@ public class SalesRepService : ISalesRepService
             await _uow.Repository<SalesRepTransaction>().AddAsync(txn);
             await _uow.SaveChangesAsync();
 
-            _ = _audit.LogAsync("CollectPayment", "SalesRep", salesRepId.ToString(),
+            await _audit.LogAsync("CollectPayment", "SalesRep", salesRepId.ToString(),
                 newValues: $"Invoice={request.InvoiceId},Amount={request.Amount},Method={request.PaymentMethod}");
             return Result<SalesRepTransactionDto>.Success(MapTxn(txn), "تم تسجيل السداد بنجاح");
         }
@@ -332,7 +332,7 @@ public class SalesRepService : ISalesRepService
             await _uow.SaveChangesAsync();
 
             var repName = rep?.Name ?? "";
-            _ = _audit.LogAsync("PayCommission", "SalesRepCommission", commissionId.ToString(),
+            await _audit.LogAsync("PayCommission", "SalesRepCommission", commissionId.ToString(),
                 newValues: $"Amount={request.Amount},Rep={commission.SalesRepId}");
             return Result<SalesRepCommissionDto>.Success(MapCommission(commission, repName), "تم صرف العمولة");
         }
