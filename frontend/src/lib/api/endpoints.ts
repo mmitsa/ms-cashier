@@ -1137,6 +1137,24 @@ export const accountingApi = {
     apiClient.patch<ApiResponse<any>>(`/accounting/chart-of-accounts/${id}`, payload).then(r => r.data),
 };
 
+// ==================== Cashier Shifts ====================
+export const cashierShiftsApi = {
+  open: (data: { openingCash: number; warehouseId?: number; notes?: string }) =>
+    apiClient.post<ApiResponse<any>>('/cashier-shifts/open', data).then(r => r.data),
+
+  close: (data: { actualCash: number; notes?: string }) =>
+    apiClient.post<ApiResponse<any>>('/cashier-shifts/close', data).then(r => r.data),
+
+  current: () =>
+    apiClient.get<ApiResponse<any>>('/cashier-shifts/current').then(r => r.data),
+
+  summary: (id: number) =>
+    apiClient.get<ApiResponse<any>>(`/cashier-shifts/${id}/summary`).then(r => r.data),
+
+  list: (params?: { page?: number; pageSize?: number; from?: string; to?: string }) =>
+    apiClient.get<ApiResponse<PagedResult<any>>>('/cashier-shifts', { params }).then(r => r.data),
+};
+
 // ==================== Posting Failures (Admin) ====================
 export const postingFailuresApi = {
   list: (params: { resolved?: boolean; source?: string; page?: number; pageSize?: number }) =>

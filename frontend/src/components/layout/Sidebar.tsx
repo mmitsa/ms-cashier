@@ -5,7 +5,7 @@ import {
   ChevronRight, ChevronLeft, ChevronDown, FileText, Shield, Fingerprint, Banknote,
   GitBranch, ClipboardCheck, UtensilsCrossed, ChefHat, MapPin, QrCode, CreditCard,
   LayoutGrid, Store, Utensils, Landmark, UserCog, ShieldCheck, Ruler, Gift,
-  Megaphone, Globe, ScanLine, Code, BookOpen, AlertOctagon,
+  Megaphone, Globe, ScanLine, Code, BookOpen, AlertOctagon, Clock,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
@@ -84,6 +84,7 @@ const sidebarGroups: ModuleGroup[] = [
       { id: 'posting-failures', label: 'القيود الفاشلة', icon: AlertOctagon, adminOnly: true },
       { id: 'payroll', label: 'الرواتب والشيكات', icon: Banknote, permission: MODULE_PERMISSIONS.payroll, moduleKey: 'Payroll' },
       { id: 'payment-terminals', label: 'ماكينات الدفع', icon: CreditCard, permission: MODULE_PERMISSIONS.settings, moduleKey: 'Terminals' },
+      { id: 'shifts-history', label: 'سجل الشيفتات', icon: Clock, permission: MODULE_PERMISSIONS.finance, moduleKey: 'Finance' },
       { id: 'reports', label: 'التقارير', icon: BarChart3, permission: MODULE_PERMISSIONS.reports, moduleKey: 'Reports' },
     ],
   },
