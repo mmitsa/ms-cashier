@@ -49,10 +49,13 @@ import { ApiManagementScreen } from '@/features/api-management/components/ApiMan
 import { AccountingScreen } from '@/features/accounting/AccountingScreen';
 import { BankAccountsScreen } from '@/features/bank-accounts/BankAccountsScreen';
 import { PostingFailuresScreen } from '@/features/posting-failures/PostingFailuresScreen';
+import { ShiftsHistoryScreen } from '@/features/shifts/components/ShiftsHistoryScreen';
+import { useIdleLogout } from '@/hooks/useIdleLogout';
 import { initSyncEngine, destroySyncEngine, syncAll, onSyncStatusChange, type SyncStatus } from '@/lib/offline/syncEngine';
 import { hasPermission } from '@/lib/permissions/usePermissions';
 import { PERMISSIONS } from '@/lib/permissions/permissions';
 import { InstallPrompt } from '@/components/ui/InstallPrompt';
+import { Modal } from '@/components/ui/Modal';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,6 +100,7 @@ const consoleModules: Record<string, React.FC> = {
   'api-management': ApiManagementScreen,
   'bank-accounts': BankAccountsScreen,
   'posting-failures': PostingFailuresScreen,
+  'shifts-history': ShiftsHistoryScreen,
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -210,6 +214,47 @@ function TrialBanner() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// IDLE LOGOUT GUARD — Auto-logout after inactivity
+// ═══════════════════════════════════════════════════════════
+
+function IdleLogoutGuard({ minutes = 15 }: { minutes?: number }) {
+  const { warning, extend, logoutNow } = useIdleLogout(minutes);
+
+  if (!warning.visible) return null;
+
+  const mins = Math.floor(warning.remaining / 60);
+  const secs = warning.remaining % 60;
+  const countdown = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+  return (
+    <Modal open onClose={extend} size="sm">
+      <div className="text-center space-y-4" dir="rtl">
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950 flex items-center justify-center mx-auto">
+          <Clock size={28} className="text-amber-600" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+          هل مازلت هنا؟
+        </h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          سيتم تسجيل خروجك خلال دقيقتين بسبب عدم النشاط
+        </p>
+        <div className="text-3xl font-mono font-bold text-amber-600 tabular-nums">
+          {countdown}
+        </div>
+        <div className="flex gap-2">
+          <button onClick={logoutNow} className="btn-secondary flex-1 py-2.5 text-sm text-red-500">
+            <LogOut size={14} /> تسجيل الخروج الآن
+          </button>
+          <button onClick={extend} className="btn-primary flex-1 py-2.5 text-sm">
+            البقاء مسجلاً
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
 // CASHIER LAYOUT — Full-screen POS with compact toolbar
 // ═══════════════════════════════════════════════════════════
 
@@ -308,6 +353,8 @@ function CashierLayout() {
       <div className="flex-1 overflow-hidden">
         <POSScreen />
       </div>
+
+      <IdleLogoutGuard />
     </div>
   );
 }
@@ -346,6 +393,7 @@ function ConsoleLayout() {
           <ActiveComponent />
         </div>
       </main>
+      <IdleLogoutGuard />
     </div>
   );
 }

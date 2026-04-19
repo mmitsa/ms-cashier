@@ -45,6 +45,7 @@ public class AppDbContext : DbContext
     public DbSet<FinanceAccount> FinanceAccounts => Set<FinanceAccount>();
     public DbSet<FinanceTransaction> FinanceTransactions => Set<FinanceTransaction>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<CashierShift> CashierShifts => Set<CashierShift>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<Payroll> Payrolls => Set<Payroll>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
@@ -156,6 +157,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Installment>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<FinanceAccount>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
         modelBuilder.Entity<Employee>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
+        modelBuilder.Entity<CashierShift>().HasQueryFilter(e => _tenantService == null || (!e.IsDeleted && e.TenantId == _tenantService.TenantId));
 
         // Entities with TenantId but NOT extending TenantEntity — add manual filters
         modelBuilder.Entity<Inventory>().HasQueryFilter(e => _tenantService == null || e.TenantId == _tenantService.TenantId);
@@ -521,6 +523,16 @@ public class AppDbContext : DbContext
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.TenantId, x.EmployeeId, x.AttendanceDate }).IsUnique();
             e.HasOne<Employee>().WithMany().HasForeignKey(x => x.EmployeeId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Cashier Shift
+        modelBuilder.Entity<CashierShift>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.UserId, x.Status });
+            e.HasIndex(x => x.TenantId);
+            e.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.Warehouse).WithMany().HasForeignKey(x => x.WarehouseId).OnDelete(DeleteBehavior.SetNull);
         });
 
         // Payroll

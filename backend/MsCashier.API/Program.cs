@@ -180,6 +180,7 @@ builder.Services.AddScoped<IFloorSectionService, FloorSectionService>();
 builder.Services.AddScoped<IQrConfigService, QrConfigService>();
 builder.Services.AddScoped<ICustomerOrderService, CustomerOrderService>();
 builder.Services.AddScoped<IPaymentTerminalService, PaymentTerminalService>();
+builder.Services.AddScoped<ICashierShiftService, CashierShiftService>();
 // Email & SMS
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
 builder.Services.AddScoped<IEmailService, EmailService>();

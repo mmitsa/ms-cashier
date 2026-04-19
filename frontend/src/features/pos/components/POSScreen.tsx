@@ -3,6 +3,7 @@ import {
   Search, Plus, Minus, Trash2, CreditCard, Banknote, Smartphone,
   Clock, ShoppingCart, Box, CheckCircle, Printer, Scale, ScanBarcode,
   ChevronDown, X, Percent, User, Warehouse, Loader2, AlertCircle,
+  StopCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Badge } from '@/components/ui/Badge';
@@ -27,6 +28,9 @@ import type {
 import { VariantSelector } from './VariantSelector';
 import { AddCustomerForm } from './AddCustomerForm';
 import { LoyaltyWidget } from '@/features/loyalty/components/LoyaltyWidget';
+import { useCurrentShift } from '@/features/shifts/api';
+import { OpenShiftModal } from '@/features/shifts/components/OpenShiftModal';
+import { CloseShiftModal } from '@/features/shifts/components/CloseShiftModal';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -96,7 +100,12 @@ export function POSScreen() {
   const [lastSaleInvoice, setLastSaleInvoice] = useState<string | null>(null);
   const [salesRepId, setSalesRepId] = useState<number | null>(null);
   const [variantProduct, setVariantProduct] = useState<ProductDto | null>(null);
+  const [showCloseShift, setShowCloseShift] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Shift Guard ────────────────────────────────────────────────────────────
+  const { data: currentShift, isLoading: shiftLoading } = useCurrentShift();
+  const hasOpenShift = !!currentShift && (currentShift.status === 'Open' || !currentShift.closedAt);
 
   // Auto-detect SalesRep from JWT when logged in as SalesRep role
   const user = useAuthStore(s => s.user);
@@ -577,6 +586,17 @@ export function POSScreen() {
               <ShoppingCart size={18} /> الفاتورة
             </h3>
             <div className="flex items-center gap-2">
+              {/* Close Shift Button */}
+              {hasOpenShift && (
+                <button
+                  onClick={() => setShowCloseShift(true)}
+                  className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-lg bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 hover:bg-red-100 dark:hover:bg-red-900 transition-colors font-medium"
+                  title="إغلاق الشيفت"
+                >
+                  <StopCircle size={14} />
+                  <span className="hidden sm:inline">إغلاق الشيفت</span>
+                </button>
+              )}
               {/* Price Type Selector */}
               <select
                 value={priceType}
@@ -1147,6 +1167,16 @@ export function POSScreen() {
           }}
         />
       )}
+
+      {/* ── Shift Open (Blocking) Modal ───────────────────────────────────── */}
+      {!shiftLoading && !hasOpenShift && <OpenShiftModal open blocking />}
+
+      {/* ── Close Shift Modal ─────────────────────────────────────────────── */}
+      <CloseShiftModal
+        open={showCloseShift}
+        onClose={() => setShowCloseShift(false)}
+        shift={currentShift ?? null}
+      />
 
       {/* ── Discount Modal ────────────────────────────────────────────────── */}
       <Modal
